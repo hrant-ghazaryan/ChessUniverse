@@ -1,7 +1,17 @@
 ﻿namespace ChessUniverse.Library;
 
-public struct PiecePosition(int x, int y)
+public struct PiecePosition
 {
-    public int X { get; set; } = x;
-    public int Y { get; set; } = y;
+    public int Row { get; set; }
+    public int Col { get; set; }
+
+    public PiecePosition(int row, int col)
+    {
+        Row = row; Col = col;
+    }
+    public PiecePosition(string s)
+    {
+        int col = s[0] - 'A';
+        int row = 7 - (s[1] - '1');
+    }
 }

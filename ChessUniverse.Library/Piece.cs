@@ -2,22 +2,32 @@
 
 namespace ChessUniverse.Library;
 
-public class Piece(PieceColor color, PieceType type , char symbol)
+public class Piece(PieceColor color, PieceType type, char symbol)
 {
     public PieceColor Color { get; } = color;
     public PieceType Type { get; } = type;
-    public char Symbol { get; } = symbol;
+    public char Symbol { get; set; } = symbol;
+    public PiecePosition Position { get; set; }
     
     public virtual char GetSymbol(PieceColor color)
     {
         if (color == PieceColor.White)
-            return Symbol;
-        else
         {
-            Symbol.ToString().ToLower();
-            return Symbol;
+            string s = Symbol.ToString().ToUpper();
+            bool b = char.TryParse(s, out char c);
+            return c;
         }
+        else
+            return Symbol;
     }
+
+    public virtual bool IsMovePossible(PiecePosition start, PiecePosition target)
+        => false;
+    //public virtual ChessBoard IsMovePossible(ChessBoard board, 
+    //    PiecePosition startposition ,  PiecePosition targetposition)
+    //{
+    //    return board;
+    //}
 };
 
 
