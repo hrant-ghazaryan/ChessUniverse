@@ -21,13 +21,9 @@ public class Piece(PieceColor color, PieceType type, char symbol)
             return Symbol;
     }
 
-    public virtual bool IsMovePossible(PiecePosition start, PiecePosition target)
+    public virtual bool IsMovePossible(ref ChessBoard chessBoard, 
+        ref PiecePosition start, ref PiecePosition target)
         => false;
-    //public virtual ChessBoard IsMovePossible(ChessBoard board, 
-    //    PiecePosition startposition ,  PiecePosition targetposition)
-    //{
-    //    return board;
-    //}
 };
 
 

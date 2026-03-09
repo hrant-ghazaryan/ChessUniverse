@@ -1,10 +1,14 @@
 ﻿namespace ChessUniverse.Library;
 
-public struct PiecePosition
+public class PiecePosition
 {
     public int Row { get; set; }
     public int Col { get; set; }
 
+    public PiecePosition()
+    {
+        
+    }
     public PiecePosition(int row, int col)
     {
         Row = row; Col = col;

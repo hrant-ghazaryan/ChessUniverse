@@ -1,12 +1,35 @@
 ﻿using ChessUniverse.Library;
+using ChessUniverse.Library.Pieces;
+using ChessUniverse.Library.Enums;
 
-PiecePosition start = new PiecePosition(0, 1);
-PiecePosition target = new PiecePosition(2, 2);
+int q = 0;
 ChessBoard chessBoard = new ChessBoard();
 chessBoard.SetStartPosition();
 PrintBoard(chessBoard);
-Move(chessBoard, start, target);
-PrintBoard(chessBoard);
+
+do
+{
+    PiecePosition start = new PiecePosition();
+    Console.Write("Enter start position: ");
+    EnterNumber(ref start);
+    PiecePosition target = new PiecePosition();
+    Console.Write("Enter target position: ");
+    EnterNumber(ref target);
+    Move(ref chessBoard, ref start, ref target);
+    PrintBoard(chessBoard);
+    q++;
+} while (q != 10);
+
+//ChessBoard chessBoard = new ChessBoard();
+//chessBoard.SetStartPosition();
+//PiecePosition start = new PiecePosition();
+//Console.Write("Enter start position: ");
+//EnterNumber(ref start);
+//PiecePosition target = new PiecePosition();
+//Console.Write("Enter target position: ");
+//EnterNumber(ref target);
+//Bishop bishop = new Bishop(PieceColor.White);
+//Console.WriteLine(bishop.IsMovePossible(chessBoard, start, target));
 
 
 void PrintBoard(ChessBoard chessBoard)
@@ -28,14 +51,39 @@ void PrintBoard(ChessBoard chessBoard)
     }
     Console.WriteLine("    A  B  C  D  E  F  G  H");
 }
-
-ChessBoard Move(ChessBoard board, PiecePosition start, PiecePosition end)
+ChessBoard Move(ref ChessBoard board, ref PiecePosition start, ref PiecePosition end)
 {
-    if (board[start].IsMovePossible(start,end))
+    if (board[start.Row, start.Col].Type == PieceType.Queen || board[start.Row, start.Col].Type == PieceType.Bishop
+        || board[start.Row, start.Col].Type == PieceType.Rook)
     {
-        board[end.Row,end.Col] = board[start];
+        if (board[start.Row, start.Col].IsMovePossible(ref board, ref start, ref end) == false)
+        {
+            board[end.Row, end.Col] = board[start.Row, start.Col];
+            board[start.Row, start.Col] = null;
+            return board;
+        }
+    }
+    else if(board[start.Row,start.Col].IsMovePossible(ref board,ref start,ref end))
+    {
+        board[end.Row,end.Col] = board[start.Row,start.Col];
         board[start.Row,start.Col] = null;
         return board;
     }
     return board;
+}
+PiecePosition EnterNumber(ref PiecePosition position)
+{
+    string? coordinate;
+    do
+    {
+        coordinate = Console.ReadLine();
+    } while (coordinate?.Length != 2 || coordinate[0] - 'A' < 0 || coordinate[0] - 'A' > 7 
+                         || 7 - (coordinate[1] - '1') < 0 || 7 - (coordinate[1] - '1') > 7 );
+
+    char file = coordinate[0]; // A - H
+    char rank = coordinate[1]; // 1 - 8
+    position.Row = 7 - (rank - '1');
+    position.Col = file - 'A';
+
+    return position;
 }

@@ -1,6 +1,5 @@
 ﻿using ChessUniverse.Library.Enums;
 using ChessUniverse.Library.Pieces;
-using System.Data;
 
 namespace ChessUniverse.Library;
 
@@ -15,15 +14,21 @@ public class ChessBoard
     {
         get
         {
+            if (position.Row < 0 || position.Row > 7
+             || position.Col < 0 || position.Col > 7)
+                return _squares[position.Row, position.Col];
+            else
+                return null;
+        }
+        set
+        {
             int row = position.Row; // 1 - 8
             int col = position.Col; // A - H
-
-            if (row < 0 || row > 7
-                || col < 0 || col > 7)
-                return null;
-            return _squares[row, col];
+            if (position.Row < 0 || position.Row > 7
+             || position.Col < 0 || position.Col > 7)
+                return;
+            _squares[position.Row, position.Col] = value;
         }
-        set { }
     }
     public Piece? this[int row, int col]
     {

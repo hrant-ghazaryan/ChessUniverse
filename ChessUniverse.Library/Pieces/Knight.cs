@@ -6,7 +6,7 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't')
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(PiecePosition start, PiecePosition target)
+    public override bool IsMovePossible(ref ChessBoard chessBoard, ref PiecePosition start, ref PiecePosition target)
     {
         if (Math.Abs(start.Row - target.Row) == 2 && Math.Abs(start.Col - target.Col) == 1)
             return true;

@@ -20,7 +20,7 @@ public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p')
 
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(PiecePosition start, PiecePosition target)
+    public override bool IsMovePossible(ref ChessBoard chessBoard, ref PiecePosition start, ref PiecePosition target)
     {
         if (color == PieceColor.White)
         {
