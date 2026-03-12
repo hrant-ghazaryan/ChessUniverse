@@ -3,11 +3,11 @@ using System.Collections;
 
 namespace ChessUniverse.Library.Pieces;
 
-public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b')
+public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new PiecePosition())
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public  override bool IsMovePossible(ref ChessBoard chessBoard, ref PiecePosition startposition,ref PiecePosition targetposition)
+    public  override bool IsMovePossible(ChessBoard chessBoard, PiecePosition startposition, PiecePosition targetposition)
     {
         if (Math.Abs(startposition.Row - targetposition.Row) == Math.Abs(startposition.Col - targetposition.Col))
         {
@@ -18,7 +18,12 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b')
                 {
                     for (int j = 1; j < Math.Abs(startposition.Col - targetposition.Col); j++)
                     {
-                        movestotarget.Add(chessBoard[startposition.Row + i, targetposition.Row - j]);
+                        if (i == j)
+                        {
+                            if (chessBoard[startposition.Row + i, startposition.Col - j] == null) { }
+                            if (chessBoard[startposition.Row + i, startposition.Col - j] != null)
+                                return false;
+                        }
                     }
                 }
             }
@@ -28,7 +33,12 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b')
                 {
                     for (int j = 1; j < Math.Abs(startposition.Col - targetposition.Col); j++)
                     {
-                        movestotarget.Add(chessBoard[startposition.Row + i, targetposition.Row + j]);
+                        if (i == j)
+                        {
+                            if (chessBoard[startposition.Row + i, startposition.Col + j] == null) { }
+                            if (chessBoard[startposition.Row + i, startposition.Col + j] != null)
+                                return false;
+                        }
                     }
                 }
             }
@@ -38,8 +48,12 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b')
                 {
                     for (int j = 1; j < Math.Abs(startposition.Col - targetposition.Col); j++)
                     {
-                        if (i == j)
-                        movestotarget.Add(chessBoard[startposition.Row - i, targetposition.Row + j]);
+                        if (i == j) 
+                        {
+                            if (chessBoard[startposition.Row - i, startposition.Col + j] == null) { }
+                            if (chessBoard[startposition.Row - i, startposition.Col + j] != null)
+                                return false;
+                        }
                     }
                 }
             }
@@ -49,12 +63,18 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b')
                 {
                     for (int j = 1; j < Math.Abs(startposition.Col - targetposition.Col); j++)
                     {
-                        movestotarget.Add(chessBoard[startposition.Row - i, targetposition.Row - j]);
+                        if (i == j)
+                        {
+                            if (chessBoard[startposition.Row - i, startposition.Col - j] == null) { }
+                            if (chessBoard[startposition.Row - i, startposition.Col - j] != null)
+                                return false;
+                        }
                     }
                 }
             }
             foreach (var item in movestotarget)
             {
+                if (item == null) { }
                 if (item != null)
                     return false;
             }

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ChessUniverse.Library.Pieces;
 
-public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p')
+public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new PiecePosition())
 {
     private bool _isMoved;
     public bool IsMoved
@@ -11,7 +11,7 @@ public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p')
         get => _isMoved; 
         set
         {
-            if (Position.Row == 2 || Position.Col == 6)
+            if (Position.Row == 2 || Position.Row == 6)
                 _isMoved = false;
             else
                 _isMoved = true;
@@ -20,7 +20,7 @@ public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p')
 
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(ref ChessBoard chessBoard, ref PiecePosition start, ref PiecePosition target)
+    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition start, PiecePosition target)
     {
         if (color == PieceColor.White)
         {

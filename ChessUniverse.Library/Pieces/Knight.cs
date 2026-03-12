@@ -2,11 +2,11 @@
 
 namespace ChessUniverse.Library.Pieces;
 
-public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't')
+public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new PiecePosition())
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(ref ChessBoard chessBoard, ref PiecePosition start, ref PiecePosition target)
+    public override bool IsMovePossible( ChessBoard chessBoard,  PiecePosition start,  PiecePosition target)
     {
         if (Math.Abs(start.Row - target.Row) == 2 && Math.Abs(start.Col - target.Col) == 1)
             return true;

@@ -2,12 +2,12 @@
 
 namespace ChessUniverse.Library;
 
-public class Piece(PieceColor color, PieceType type, char symbol)
+public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition position)
 {
     public PieceColor Color { get; } = color;
     public PieceType Type { get; } = type;
     public char Symbol { get; set; } = symbol;
-    public PiecePosition Position { get; set; }
+    public PiecePosition Position { get; set; } = position;
     
     public virtual char GetSymbol(PieceColor color)
     {
@@ -20,10 +20,10 @@ public class Piece(PieceColor color, PieceType type, char symbol)
         else
             return Symbol;
     }
-
-    public virtual bool IsMovePossible(ref ChessBoard chessBoard, 
-        ref PiecePosition start, ref PiecePosition target)
+    public virtual bool IsMovePossible( ChessBoard chessBoard, 
+         PiecePosition start,  PiecePosition target)
         => false;
+
 };
 
 
