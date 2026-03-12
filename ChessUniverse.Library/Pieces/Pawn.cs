@@ -1,6 +1,4 @@
 ﻿using ChessUniverse.Library.Enums;
-using System.Runtime.CompilerServices;
-
 namespace ChessUniverse.Library.Pieces;
 
 public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new PiecePosition())

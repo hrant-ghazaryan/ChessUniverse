@@ -2,16 +2,17 @@
 using ChessUniverse.Library.Enums;
 
 int q = 0;
-bool h = true;
+bool T = true;
+bool C = false;
 ChessBoard chessBoard = new ChessBoard();
 chessBoard.SetStartPosition();
 PrintBoard(chessBoard);
 
 do
 {
-    if (h == true)
+    if (T == true)
         Console.WriteLine("White Please: ");
-    if (h == false)
+    if (T == false)
         Console.WriteLine("Black Please: ");
     PiecePosition start = new PiecePosition();
     Console.Write("Enter start position: ");
@@ -19,7 +20,7 @@ do
     PiecePosition target = new PiecePosition();
     Console.Write("Enter target position: ");
     EnterNumber(target);
-    Move(chessBoard, start, target, ref h);
+    Move(chessBoard, start, target, ref T, ref C);
     PrintBoard(chessBoard);
     q++;
 } while (q != 10);
@@ -43,15 +44,17 @@ void PrintBoard(ChessBoard chessBoard)
     }
     Console.WriteLine("    A  B  C  D  E  F  G  H");
 }
-bool IsChecked(ChessBoard chessBoard)
+(bool,int) IsChecked(ChessBoard chessBoard)
 {
-    PiecePosition BKP = null;
-    PiecePosition WKP;
+    int k = 0;
+    bool C = false;
+    PiecePosition? BKP = null;
+    PiecePosition? WKP = null;
     BKP = GetBlackKingPosition(chessBoard, ref BKP);
-    WKP = GetWhiteKingPosition(chessBoard);
-    for (int i = 0; i < 7; i++)
+    WKP = GetWhiteKingPosition(chessBoard, ref WKP);
+    for (int i = 0; i < 8; i++)
     {
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < 8; j++)
         {
             if (chessBoard[i, j]?.Color == PieceColor.White
                 && chessBoard[i, j].IsMovePossible(chessBoard, chessBoard[i, j]?.Position, BKP))
@@ -59,7 +62,8 @@ bool IsChecked(ChessBoard chessBoard)
                 Console.WriteLine();
                 Console.WriteLine("        CHECK!!!      ");
                 Console.WriteLine();
-                return true;
+                C = true;
+                k++; 
             }
             if (chessBoard[i, j]?.Color == PieceColor.Black
                 && chessBoard[i, j].IsMovePossible(chessBoard, chessBoard[i, j]?.Position, WKP))
@@ -67,56 +71,157 @@ bool IsChecked(ChessBoard chessBoard)
                 Console.WriteLine();
                 Console.WriteLine("        CHECK!!!      ");
                 Console.WriteLine();
-                return true;
+                C = true;
+                k++;
             }
         }
     }
-    return false;
+    return (C, k);
 }
-ChessBoard Move(ChessBoard board, PiecePosition start, PiecePosition end , ref bool h)
+ChessBoard MoveBack(ChessBoard board, PiecePosition start, PiecePosition end)
 {
-    if (h == true && board[start.Row,start.Col]?.Color == PieceColor.White)
+    PiecePosition temp = end;
+    if (IsChecked(board).Item1 && IsChecked(board).Item2 != 0)
     {
-        if (board[start.Row, start.Col]!.IsMovePossible(board, start, end))
+        board[start.Row, start.Col] = board[end.Row, end.Col];
+        board[end.Row, end.Col] = null;
+        return board;
+    }
+    return board;
+}
+ChessBoard Move(ChessBoard board, PiecePosition start, PiecePosition end , ref bool T, ref bool C)
+{
+    PiecePosition temp;
+    if (C == false)
+    {
+        if (T == true && board[start.Row, start.Col]?.Color == PieceColor.White)
         {
-            board[end.Row, end.Col] = board[start.Row, start.Col];
-            board[start.Row, start.Col] = null;
-            h = false;
-            IsChecked(chessBoard);
-            return board;
+            if (board[start.Row, start.Col]!.IsMovePossible(board, start, end))
+            {
+                temp = end;
+                board[end.Row, end.Col] = board[start.Row, start.Col];
+                board[end.Row, end.Col].Position = end;
+                board[start.Row, start.Col] = null;
+                T = false;
+                C = IsChecked(chessBoard).Item1;
+                return board;
+            }
+        }
+        if (T == false && board[start.Row, start.Col]?.Color == PieceColor.Black)
+        {
+            if (board[start.Row, start.Col]!.IsMovePossible(board, start, end))
+            {
+                temp = end;
+                board[end.Row, end.Col] = board[start.Row, start.Col];
+                board[end.Row, end.Col].Position = end;
+                board[start.Row, start.Col] = null;
+                T = true;
+                C = IsChecked(board).Item1;
+                return board;
+            }
+        }
+        return board;
+    }
+    if (C == true && IsChecked(board).Item2 > 1)
+    {
+        if (T == false && board[start.Row, start.Col]?.Color == PieceColor.Black
+        && board[start.Row, start.Col]?.Type == PieceType.King)
+        {
+            if (board[start.Row, start.Col]!.IsMovePossible(board, start, end))
+            {
+                board[end.Row, end.Col] = board[start.Row, start.Col];
+                board[end.Row, end.Col].Position = end;
+                board[start.Row, start.Col] = null;
+                T = true;
+                C = IsChecked(board).Item1;
+                if (C)
+                {
+                    MoveBack(board, start, end);
+                    C = false;
+                    Console.WriteLine("You are in CHECK , please protect your KING");
+                }
+                return board;
+            }
+        }
+        else if (T == true && board[start.Row, start.Col]?.Color == PieceColor.White
+        && board[start.Row, start.Col]?.Type == PieceType.King)
+        {
+            if (board[start.Row, start.Col]!.IsMovePossible(board, start, end))
+            {
+                board[end.Row, end.Col] = board[start.Row, start.Col];
+                board[end.Row, end.Col].Position = end;
+                board[start.Row, start.Col] = null;
+                T = false;
+                C = IsChecked(chessBoard).Item1;
+                if (C)
+                {
+                    MoveBack(board, start, end);
+                    C = false;
+                    Console.WriteLine("You are in CHECK , please protect your KING");
+                }
+                return board;
+            }
         }
     }
-    if (h == false && board[start.Row, start.Col]?.Color == PieceColor.Black)
+    else if (C == true)
     {
-        if (board[start.Row, start.Col]!.IsMovePossible(board, start, end))
+        if (T == false && board[start.Row, start.Col]?.Color == PieceColor.Black)
         {
-            board[end.Row, end.Col] = board[start.Row, start.Col];
-            board[start.Row, start.Col] = null;
-            h = true;
-            //IsChecked(chessBoard);
-            return board;
+            if (board[start.Row, start.Col]!.IsMovePossible(board, start, end))
+            {
+                board[end.Row, end.Col] = board[start.Row, start.Col];
+                board[end.Row, end.Col].Position = end;
+                board[start.Row, start.Col] = null;
+                T = true;
+                C = IsChecked(board).Item1;
+                if (C)
+                {
+                    MoveBack(board, start, end);
+                    C = false;
+                    Console.WriteLine("You are in CHECK , please protect your KING");
+                }
+                return board;
+            }
+        }
+        else if (T == true && board[start.Row, start.Col]?.Color == PieceColor.White)
+        {
+            if (board[start.Row, start.Col]!.IsMovePossible(board, start, end))
+            {
+                board[end.Row, end.Col] = board[start.Row, start.Col];
+                board[end.Row, end.Col].Position = end;
+                board[start.Row, start.Col] = null;
+                T = false;
+                C = IsChecked(chessBoard).Item1;
+                if (C)
+                {
+                    MoveBack(board, start, end);
+                    C = false;
+                    Console.WriteLine("You are in CHECK , please protect your KING");
+                }
+                return board;
+            }
         }
     }
     return board;
 }
-PiecePosition? GetWhiteKingPosition(ChessBoard chessBoard)
+PiecePosition GetWhiteKingPosition(ChessBoard chessBoard , ref PiecePosition WK)
 {
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 8; i++)
     {
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < 8; j++)
         {
             if (chessBoard[i, j]?.Type == PieceType.King 
                 && chessBoard[i, j]?.Color == PieceColor.White)
-                    return chessBoard[i, j].Position;
+                    WK = chessBoard[i, j].Position;
         }
     }
-    return null;
+    return WK;
 }
 PiecePosition GetBlackKingPosition(ChessBoard chessBoard , ref PiecePosition BP)
 {
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 8; i++)
     {
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < 8; j++)
         {
             if (chessBoard[i, j]?.Type == PieceType.King
                 && chessBoard[i, j]?.Color == PieceColor.Black)
@@ -141,3 +246,4 @@ PiecePosition EnterNumber(PiecePosition position)
 
     return position;
 }
+

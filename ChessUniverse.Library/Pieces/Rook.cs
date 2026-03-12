@@ -4,13 +4,30 @@ namespace ChessUniverse.Library.Pieces;
 
 public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new PiecePosition())
 {
+    private bool _hasMoved;
+    public bool HasMoved
+    {
+        get => _hasMoved;
+        set
+        {
+            if (Position.Row != 0 && Position.Col != 0)
+                _hasMoved = false;
+            else if (Position.Row != 0 && Position.Col != 7)
+                _hasMoved = false;
+            else if (Position.Row != 7 && Position.Col != 7)
+                _hasMoved = false;
+            else if (Position.Row != 7 && Position.Col != 0)
+                _hasMoved = false;
+            else
+                _hasMoved = true;
+        }
+    }
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition startposition, PiecePosition targetposition)
     {
         if (startposition.Row == targetposition.Row || startposition.Col == targetposition.Col)
         {
-            List<Piece> movestotarget = new List<Piece>();
             if (startposition.Row == targetposition.Row && startposition.Col > targetposition.Col)
             {
                 for (int j = 1; j < Math.Abs(startposition.Col - targetposition.Col); j++)

@@ -1,6 +1,4 @@
 ﻿using ChessUniverse.Library.Enums;
-using System.Collections;
-
 namespace ChessUniverse.Library.Pieces;
 
 public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new PiecePosition())

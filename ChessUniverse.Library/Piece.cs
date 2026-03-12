@@ -8,7 +8,8 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
     public PieceType Type { get; } = type;
     public char Symbol { get; set; } = symbol;
     public PiecePosition Position { get; set; } = position;
-    
+    public bool HasMoved { get; set; }
+
     public virtual char GetSymbol(PieceColor color)
     {
         if (color == PieceColor.White)

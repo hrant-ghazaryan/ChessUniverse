@@ -7,8 +7,24 @@ public class ChessBoard
 {
     const byte n = 8;
     private Piece?[,] _squares = new Piece[n, n];
+    private PiecePosition _coordinate;
 
-    public PiecePosition? Coordinate { get; set; }
+    public PiecePosition Coordinate
+    {
+        get => _coordinate;
+        set
+        {
+            for (int i = 0; i < _squares.GetLength(0); i++)
+            {
+                for (int j = 0; j < _squares.GetLength(1); j++)
+                {
+                    i = _coordinate.Row;
+                    j = _coordinate.Col;
+                    _squares[i, j] = _squares[_coordinate.Row, _coordinate.Col];
+                }
+            }
+        }
+    }
 
     public Piece? this[PiecePosition position]
     {
@@ -57,26 +73,27 @@ public class ChessBoard
     {
         Array.Clear(_squares, 0, _squares.Length);
         _squares[0, 0] = new Rook(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[0, 1] = new Knight(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[0, 2] = new Bishop(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[0, 3] = new Queen(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[0, 4] = new King(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[0, 5] = new Bishop(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[0, 6] = new Knight(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[0, 7] = new Rook(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
+        _squares[0, 1] = new Knight(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 1 } };
+        _squares[0, 2] = new Bishop(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 2 } };
+        _squares[0, 3] = new Queen(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 3} };
+        _squares[0, 4] = new King(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 4} };
+        _squares[0, 5] = new Bishop(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 5 } };
+        _squares[0, 6] = new Knight(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 6 } };
+        _squares[0, 7] = new Rook(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 7 } };
         for (int i = 0; i < n; i++)
         {
-            _squares[1, i] = new Pawn(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
-            _squares[6, i] = new Pawn(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } };
+            _squares[1, i] = new Pawn(PieceColor.Black) { Position = new PiecePosition { Row = 1, Col = i } };
+            _squares[6, i] = new Pawn(PieceColor.White) { Position = new PiecePosition { Row = 6, Col = i } };
         }
-        _squares[7, 0] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } }; //A1
-        _squares[7, 1] = new Knight(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[7, 2] = new Bishop(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[7, 3] = new Queen(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[7, 4] = new King(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[7, 5] = new Bishop(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[7, 6] = new Knight(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } };
-        _squares[7, 7] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 0, Col = 0 } };
+        _squares[7, 0] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 0 } }; //A1
+        _squares[7, 1] = new Knight(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 1 } };
+        _squares[7, 2] = new Bishop(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 2 } };
+        _squares[7, 3] = new Queen(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 3} };
+        _squares[7, 4] = new King(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 4} };
+        _squares[7, 5] = new Bishop(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 5 } };
+        _squares[7, 6] = new Knight(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 6 } };
+        _squares[7, 7] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 7} };
+
     }
 
 }

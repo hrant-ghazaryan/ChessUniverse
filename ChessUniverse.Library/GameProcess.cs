@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace ChessUniverse.Library;
+﻿namespace ChessUniverse.Library;
 
 public class GameProcess
 {
