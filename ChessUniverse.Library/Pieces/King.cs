@@ -1,4 +1,4 @@
-﻿using ChessUniverse.Library.Enums;
+using ChessUniverse.Library.Enums;
 namespace ChessUniverse.Library.Pieces;
 
 public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new PiecePosition())
@@ -19,7 +19,7 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
     }
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition start, PiecePosition target)
+    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition start, PiecePosition? target)
     {
         if (Math.Abs(start.Row - target.Row) == 1 && Math.Abs(start.Col - target.Col) == 0)
             return true;
