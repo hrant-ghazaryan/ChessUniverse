@@ -1,4 +1,4 @@
-﻿using ChessUniverse.Library.Enums;
+using ChessUniverse.Library.Enums;
 
 namespace ChessUniverse.Library.Pieces;
 
@@ -26,6 +26,8 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition startposition, PiecePosition targetposition)
     {
+        //rowStep = sign(targetRow - startRow)
+        //colStep = sign(targetCol - startCol)
         if (startposition.Row == targetposition.Row || startposition.Col == targetposition.Col)
         {
             if (startposition.Row == targetposition.Row && startposition.Col > targetposition.Col)
