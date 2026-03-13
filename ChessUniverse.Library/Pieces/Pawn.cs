@@ -1,4 +1,4 @@
-﻿using ChessUniverse.Library.Enums;
+using ChessUniverse.Library.Enums;
 namespace ChessUniverse.Library.Pieces;
 
 public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new PiecePosition())
@@ -18,20 +18,20 @@ public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new Piec
 
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition start, PiecePosition target)
+    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition start, PiecePosition? target)
     {
         if (color == PieceColor.White)
         {
-            if (start.Row - target.Row == 1 && start.Col == target.Col)
+            if (start.Row - target?.Row == 1 && start.Col == target?.Col)
                 return true;
-            else if (start.Row - target.Row == 2 && !IsMoved && start.Col == target.Col)
+            else if (start.Row - target?.Row == 2 && !IsMoved && start.Col == target?.Col)
                 return true;
         }
         if (color == PieceColor.Black)
         {
-            if (target.Row - start.Row == 1 && start.Col == target.Col)
+            if (target?.Row - start.Row == 1 && start.Col == target?.Col)
                 return true;
-            else if (target.Row - start.Row == 2 && !IsMoved && start.Col == target.Col)
+            else if (target?.Row - start.Row == 2 && !IsMoved && start.Col == target?.Col)
                 return true;
         }
         return false;
