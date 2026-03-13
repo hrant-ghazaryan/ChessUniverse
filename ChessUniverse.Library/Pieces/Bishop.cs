@@ -1,11 +1,11 @@
-﻿using ChessUniverse.Library.Enums;
+using ChessUniverse.Library.Enums;
 namespace ChessUniverse.Library.Pieces;
 
 public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new PiecePosition())
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public  override bool IsMovePossible(ChessBoard chessBoard, PiecePosition startposition, PiecePosition targetposition)
+    public  override bool IsMovePossible(ChessBoard chessBoard, PiecePosition startposition, PiecePosition? targetposition)
     {
         if (Math.Abs(startposition.Row - targetposition.Row) == Math.Abs(startposition.Col - targetposition.Col))
         {
