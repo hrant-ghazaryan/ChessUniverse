@@ -1,4 +1,4 @@
-﻿namespace ChessUniverse.Library;
+namespace ChessUniverse.Library;
 
 public class PiecePosition
 {
@@ -15,7 +15,13 @@ public class PiecePosition
     }
     public PiecePosition(string s)
     {
-        int col = s[0] - 'A';
-        int row = 7 - (s[1] - '1');
+        //5
+        if (s?.Length == 2 && s[0] - 'A' > 0 && s[0] - 'A' < 7
+         && 7 - (s[1] - '1') > 0 && 7 - (s[1] - '1') < 7)
+        {
+            //6
+            Col = s[0] - 'A';
+            Row = 7 - (s[1] - '1');
+        }
     }
 }
