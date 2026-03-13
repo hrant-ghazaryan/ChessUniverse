@@ -8,8 +8,7 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
     public PieceType Type { get; } = type;
     public char Symbol { get; set; } = symbol;
     public PiecePosition Position { get; set; } = position;
-    public bool HasMoved { get; set; }
-
+    public readonly bool HasMoved;
 
     public virtual ChessBoard Move(ChessBoard board,  PiecePosition end)
     {
@@ -24,12 +23,37 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
         //board[end.Row, end.Col].Position = end;
         //board[start.Row, start.Col] = null;
 
-        Piece piece = board[Position.Row, Position.Col]!;
-
+        Piece? piece = board[Position.Row, Position.Col];
+        if (Position.Col - end.Col == 2 && piece?.Type == PieceType.King
+            && board[end.Row, end.Col - 2]?.Type == PieceType.Rook)
+        {
+            if (board[Position.Row, Position.Col]?.HasMoved == false
+                && board[end.Row, end.Col - 2]?.HasMoved == false)
+            {
+                board[end.Row,end.Col] = board[Position.Row,Position.Col];
+                board[Position.Row, Position.Col] = null;
+                var temp = board[end.Row, end.Col - 2];
+                board[end.Row, end.Col + 1] = board[end.Row, end.Col - 2];
+                board[end.Row, end.Col - 2] = null;
+                return board;
+            }
+        }
+        if (end.Col - Position.Col == 2 && piece?.Type == PieceType.King
+            && board[end.Row, end.Col + 1]?.Type == PieceType.Rook)
+        {
+            if (board[Position.Row, Position.Col]?.HasMoved == false
+                && board[end.Row, end.Col + 1]?.HasMoved == false)
+            {
+                board[end.Row, end.Col] = board[Position.Row, Position.Col];
+                board[Position.Row, Position.Col] = null;
+                board[end.Row, end.Col - 1] = board[end.Row, end.Col + 1];
+                board[end.Row, end.Col + 1] = null;
+                return board;
+            }
+        }
         board[end.Row, end.Col] = piece;
         board[Position.Row, Position.Col] = null;
         piece.Position = end;
-
 
         return board;
     }

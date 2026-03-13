@@ -7,24 +7,6 @@ public class ChessBoard
 {
     const byte n = 8;
     private Piece?[,] _squares = new Piece[n, n];
-    private PiecePosition _coordinate;
-
-    public PiecePosition Coordinate
-    {
-        get => _coordinate;
-        set
-        {
-            for (int i = 0; i < _squares.GetLength(0); i++)
-            {
-                for (int j = 0; j < _squares.GetLength(1); j++)
-                {
-                    i = _coordinate.Row;
-                    j = _coordinate.Col;
-                    _squares[i, j] = _squares[_coordinate.Row, _coordinate.Col];
-                }
-            }
-        }
-    }
 
     public Piece? this[PiecePosition position]
     {

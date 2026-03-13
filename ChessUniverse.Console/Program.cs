@@ -23,7 +23,7 @@ do
     MoveValidation(chessBoard, start, target, ref T, ref C);
     PrintBoard(chessBoard);
     q++;
-} while (q != 10);
+} while (q != 20);
 
 void PrintBoard(ChessBoard chessBoard)
 {

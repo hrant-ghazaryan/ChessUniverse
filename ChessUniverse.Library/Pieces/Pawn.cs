@@ -3,6 +3,7 @@ namespace ChessUniverse.Library.Pieces;
 
 public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new PiecePosition())
 {
+
     private bool _isMoved;
     public bool IsMoved
     {
