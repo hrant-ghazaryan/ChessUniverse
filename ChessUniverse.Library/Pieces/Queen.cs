@@ -1,4 +1,4 @@
-﻿using ChessUniverse.Library.Enums;
+using ChessUniverse.Library.Enums;
 
 namespace ChessUniverse.Library.Pieces;
 
