@@ -1,4 +1,4 @@
-﻿using ChessUniverse.Library.Enums;
+using ChessUniverse.Library.Enums;
 using ChessUniverse.Library.Pieces;
 
 namespace ChessUniverse.Library;
@@ -30,8 +30,10 @@ public class ChessBoard
     {
         get
         {
-            if (position.Row < 0 || position.Row > 7
-             || position.Col < 0 || position.Col > 7)
+            //1
+            if (position.Row >= 0 && position.Row <= 7)
+                return _squares[position.Row, position.Col];
+            else if(position.Col >= 0 && position.Col <= 7)
                 return _squares[position.Row, position.Col];
             else
                 return null;
@@ -95,5 +97,52 @@ public class ChessBoard
         _squares[7, 7] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 7} };
 
     }
-
+    public static (bool, int) IsChecked(ChessBoard chessBoard)
+    {
+        int k = 0;
+        bool C = false;
+        PiecePosition? BKP = GetKingPosition(chessBoard, PieceColor.Black);
+        PiecePosition? WKP = GetKingPosition(chessBoard, PieceColor.White);
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                var piece = chessBoard[i,j];
+                if (piece?.Color == PieceColor.White
+                    && piece.IsMovePossible(chessBoard, piece.Position, BKP))
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("        CHECK!!!      ");
+                    Console.WriteLine();
+                    C = true;
+                    k++;
+                }
+                if (piece?.Color == PieceColor.Black
+                    && piece.IsMovePossible(chessBoard, piece.Position, WKP))
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("        CHECK!!!      ");
+                    Console.WriteLine();
+                    C = true;
+                    k++;
+                }
+            }
+        }
+        return (C, k);
+    }
+    //2
+    public static PiecePosition? GetKingPosition(ChessBoard chessBoard, PieceColor color)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                var piece = chessBoard[i, j];
+                if (piece?.Type == PieceType.King
+                    && piece?.Color == color)
+                    return piece.Position;
+            }
+        }
+        return null;
+    }
 }
