@@ -1,4 +1,4 @@
-﻿using ChessUniverse.Library.Enums;
+using ChessUniverse.Library.Enums;
 
 namespace ChessUniverse.Library;
 
@@ -9,6 +9,53 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
     public char Symbol { get; set; } = symbol;
     public PiecePosition Position { get; set; } = position;
     public bool HasMoved { get; set; }
+
+
+    public virtual ChessBoard Move(ChessBoard board,  PiecePosition end)
+    {
+        //PiecePosition temp = end;
+        //board[end.Row, end.Col] = board[Position.Row, Position.Col];
+        //board[end.Row, end.Col].Position = end;
+        //board[this.Position.Row, this.Position.Col] = null;
+        //return board;
+
+        //temp = end;
+        //board[end.Row, end.Col] = board[start.Row, start.Col];
+        //board[end.Row, end.Col].Position = end;
+        //board[start.Row, start.Col] = null;
+
+        Piece piece = board[Position.Row, Position.Col]!;
+
+        board[end.Row, end.Col] = piece;
+        board[Position.Row, Position.Col] = null;
+        piece.Position = end;
+
+
+        return board;
+    }
+    public ChessBoard? MoveBack(ChessBoard board, PiecePosition start)
+    {
+        //7
+        if (board[Position.Row, Position.Col] != null)
+        {
+            Piece piece = board[Position.Row, Position.Col]!; 
+            if (ChessBoard.IsChecked(board).Item1)
+            {
+
+                board[start.Row, start.Col] = piece;
+                board[Position.Row, Position.Col] = null;
+                return board;
+            }
+            return board;
+        }
+        return null;
+
+        //board[end.Row, end.Col] = piece;
+        //board[Position.Row, Position.Col] = null;
+        //piece.Position = end;
+        //PiecePosition temp = end;
+        
+    }
 
     public virtual char GetSymbol(PieceColor color)
     {
@@ -22,7 +69,7 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
             return Symbol;
     }
     public virtual bool IsMovePossible( ChessBoard chessBoard, 
-         PiecePosition start,  PiecePosition target)
+         PiecePosition start,  PiecePosition? target)
         => false;
 
 };
