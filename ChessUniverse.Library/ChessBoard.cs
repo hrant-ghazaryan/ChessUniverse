@@ -112,6 +112,24 @@ public class ChessBoard
         }
         return (C, k);
     }
+    public static bool IsChecked(ChessBoard chessBoard, PiecePosition position)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                var piece = chessBoard[i, j];
+                var pieceparam = chessBoard[position];
+                if (piece?.Color == PieceColor.White && pieceparam?.Color == PieceColor.Black
+                    && piece.IsMovePossible(chessBoard, piece.Position, position))
+                    return true;
+                if (piece?.Color == PieceColor.Black && pieceparam?.Color == PieceColor.White
+                    && piece.IsMovePossible(chessBoard, piece.Position, position))
+                    return true;
+            }
+        }
+        return false;
+    }
     //2
     public static PiecePosition? GetKingPosition(ChessBoard chessBoard, PieceColor color)
     {

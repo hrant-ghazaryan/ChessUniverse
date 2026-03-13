@@ -8,21 +8,10 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
     public PieceType Type { get; } = type;
     public char Symbol { get; set; } = symbol;
     public PiecePosition Position { get; set; } = position;
-    public readonly bool HasMoved;
+    public bool HasMoved { get; set; }
 
     public virtual ChessBoard Move(ChessBoard board,  PiecePosition end)
     {
-        //PiecePosition temp = end;
-        //board[end.Row, end.Col] = board[Position.Row, Position.Col];
-        //board[end.Row, end.Col].Position = end;
-        //board[this.Position.Row, this.Position.Col] = null;
-        //return board;
-
-        //temp = end;
-        //board[end.Row, end.Col] = board[start.Row, start.Col];
-        //board[end.Row, end.Col].Position = end;
-        //board[start.Row, start.Col] = null;
-
         Piece? piece = board[Position.Row, Position.Col];
         if (Position.Col - end.Col == 2 && piece?.Type == PieceType.King
             && board[end.Row, end.Col - 2]?.Type == PieceType.Rook)
@@ -38,22 +27,39 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
                 return board;
             }
         }
+        //if (end.Col - Position.Col == 2 && piece?.Type == PieceType.King
+        //    && board[end.Row, end.Col + 1]?.Type == PieceType.Rook)
+        //{
+        //    if (board[Position.Row, Position.Col]?.HasMoved == false
+        //        && board[end.Row, end.Col + 1]?.HasMoved == false)
+        //    {
+        //        board[end.Row, end.Col] = board[Position.Row, Position.Col];
+        //        board[Position.Row, Position.Col] = null;
+        //        board[end.Row, end.Col - 1] = board[end.Row, end.Col + 1];
+        //        board[end.Row, end.Col + 1] = null;
+        //        return board;
+        //    }
+        //}
         if (end.Col - Position.Col == 2 && piece?.Type == PieceType.King
             && board[end.Row, end.Col + 1]?.Type == PieceType.Rook)
         {
             if (board[Position.Row, Position.Col]?.HasMoved == false
                 && board[end.Row, end.Col + 1]?.HasMoved == false)
             {
-                board[end.Row, end.Col] = board[Position.Row, Position.Col];
-                board[Position.Row, Position.Col] = null;
+                board[end] = board[Position];
+                board[Position] = null;
                 board[end.Row, end.Col - 1] = board[end.Row, end.Col + 1];
                 board[end.Row, end.Col + 1] = null;
                 return board;
             }
         }
-        board[end.Row, end.Col] = piece;
-        board[Position.Row, Position.Col] = null;
-        piece.Position = end;
+        //board[end.Row, end.Col] = piece;
+        //board[Position.Row, Position.Col] = null;
+        //piece?.Position = end;
+        board[end] = piece;
+        board[Position] = null;
+        piece?.Position = end;
+        piece?.HasMoved = true;
 
         return board;
     }
@@ -73,14 +79,7 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
             return board;
         }
         return null;
-
-        //board[end.Row, end.Col] = piece;
-        //board[Position.Row, Position.Col] = null;
-        //piece.Position = end;
-        //PiecePosition temp = end;
-        
     }
-
     public virtual char GetSymbol(PieceColor color)
     {
         if (color == PieceColor.White)
@@ -92,6 +91,7 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
         else
             return Symbol;
     }
+
     public virtual bool IsMovePossible( ChessBoard chessBoard, 
          PiecePosition start,  PiecePosition? target)
         => false;
