@@ -16,25 +16,41 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
                 if (chessBoard[target.Row, target.Col] == null
                     && chessBoard[target.Row, target.Col + 1] == null)
                 {
-                    PiecePosition l = Position;
-                    chessBoard[l] = chessBoard[Position];
-                    if (ChessRules.IsChecked(chessBoard, l) == false) { }
-                    else
-                        Console.WriteLine("THIS POSITION IS UNDER CHECK");
+                    if (ChessRules.IsChecked(chessBoard).Item1)
+                    {
+                        Console.WriteLine("YOU ARE IN CHECK");
+                        return false;
+                    }
 
-                    PiecePosition l1 = new PiecePosition { Row = target.Row, Col = target.Col - 1 };
+                    PiecePosition? l1 = new PiecePosition { Row = target.Row, Col = target.Col - 1 };
                     chessBoard[l1] = chessBoard[Position];
-                    if (ChessRules.IsChecked(chessBoard, l1) == false)
+                    if (ChessRules.IsChecked(chessBoard, l1))
+                    {
                         chessBoard[l1] = null;
-                    else
+                        l1 = null;
                         Console.WriteLine("THIS POSITION IS UNDER CHECK");
+                        return false;
+                    }
+                    else
+                    {
+                        chessBoard[l1] = null;
+                        l1 = null;
+                    }
 
-                    PiecePosition l2 = target;
+                    PiecePosition? l2 = target;
                     chessBoard[l2] = chessBoard[Position];
-                    if (ChessRules.IsChecked(chessBoard, l2) == false)
+                    if (ChessRules.IsChecked(chessBoard, l2))
+                    {
                         chessBoard[l2] = null;
-                    else
+                        l2 = null;
                         Console.WriteLine("THIS POSITION IS UNDER CHECK");
+                        return false;
+                    }
+                    else
+                    {
+                        chessBoard[l2] = null;
+                        l2 = null;
+                    }
 
                     return true;
                 }
@@ -48,29 +64,46 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
                 if (chessBoard[target.Row, target.Col] == null
                     && chessBoard[target.Row, target.Col - 1] == null)
                 {
+                    if (ChessRules.IsChecked(chessBoard).Item1)
+                    {
+                        Console.WriteLine("YOU ARE IN CHECK");
+                        return false;
+                        //PiecePosition r = Position;
+                        //chessBoard[r] = chessBoard[Position];
+                        //if (ChessRules.IsChecked(chessBoard, r) == false) { }
+                    }
 
-                    PiecePosition r = Position;
-                    chessBoard[r] = chessBoard[Position];
-                    if (ChessRules.IsChecked(chessBoard, r) == false) { }
-                    else
-                        Console.WriteLine("THIS POSITION IS UNDER CHECK");
-
-                    PiecePosition r1 = new PiecePosition { Row = target.Row, Col = target.Col - 1 };
+                    PiecePosition? r1 = new PiecePosition { Row = target.Row, Col = target.Col - 1 };
                     chessBoard[r1] = chessBoard[Position];
-                    if (ChessRules.IsChecked(chessBoard, r1) == false)
+                    if (ChessRules.IsChecked(chessBoard, r1))
+                    {
                         chessBoard[r1] = null;
-                    else
+                        r1 = null;
                         Console.WriteLine("THIS POSITION IS UNDER CHECK");
+                        return false;
+                    }
+                    else
+                    {
+                        chessBoard[r1] = null;
+                        r1 = null;
+                    }
 
-                    PiecePosition r2 = target;
+                    PiecePosition? r2 = target;
                     chessBoard[r2] = chessBoard[Position];
-                    if (ChessRules.IsChecked(chessBoard, r2) == false)
+                    if (ChessRules.IsChecked(chessBoard, r2))
+                    {
                         chessBoard[r2] = null;
-                    else
+                        r2 = null;
                         Console.WriteLine("THIS POSITION IS UNDER CHECK");
+                        return false;
+                    }
+                    else
+                    {
+                        chessBoard[r2] = null;
+                        r2 = null;
+                    }
 
                     return true;
-                
                 }
             }
         }

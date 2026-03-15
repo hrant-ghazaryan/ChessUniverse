@@ -4,7 +4,6 @@ namespace ChessUniverse.Library.Pieces;
 
 public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new PiecePosition())
 {
-    private bool _hasMoved;
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition targetposition)

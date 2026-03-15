@@ -55,6 +55,12 @@ void PrintBoard(ChessBoard chessBoard)
             var piece = chessBoard[row, col];
             char symbol = piece?.GetSymbol(piece.Color) ?? '.';
             Console.Write($" {symbol} ");
+            //char symbol = '.';
+            //if (piece != null)
+            //{
+            //    //symbol = piece == null ? '.' : ChessRules.GetSymbol(piece, piece.Color);
+            //    //symbol = ChessRules.GetSymbol(piece, piece.Color) ?? '.';
+            //}
         }
         Console.ResetColor();
         Console.WriteLine();
