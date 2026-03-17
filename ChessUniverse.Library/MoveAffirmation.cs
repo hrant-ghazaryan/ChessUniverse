@@ -79,7 +79,7 @@ public class MoveAffirmation
                         board[end]?.Position = end;
                         board[Start] = null;
                         board[end.Row, end.Col - 1] = board[end.Row, end.Col + 1];
-                        board[end.Row, end.Col - 1]?.Position =
+                        board[end.Row, end.Col - 1]?.Position = 
                             new PiecePosition { Row = end.Row, Col = end.Col - 1 }; board[end.Row, end.Col + 1] = null;
                         Castling = (true, piece.Color);
                         if (ChessRules.IsChecked(board).Item1)
@@ -134,6 +134,13 @@ public class MoveAffirmation
                             break;
                     }
                 }
+
+                if (ChessRules.IsCheckMate(board, T))
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("        CHECK!!!      ");
+                    Console.WriteLine();
+                }
                 if (ChessRules.IsChecked(board).Item1)
                 {
                     Console.WriteLine();
@@ -176,7 +183,12 @@ public class MoveAffirmation
                     else
                         T = PieceColor.White;
                 }
-
+                if (ChessRules.IsChecked(board).Item1)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("        CHECK!!!      ");
+                    Console.WriteLine();
+                }
                 return board;
             }
         }

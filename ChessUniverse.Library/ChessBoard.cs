@@ -3,7 +3,7 @@ using ChessUniverse.Library.Pieces;
 
 namespace ChessUniverse.Library;
 
-public class ChessBoard
+public class ChessBoard 
 {
     const byte n = 8;
     private Piece?[,] _squares = new Piece[n, n];
