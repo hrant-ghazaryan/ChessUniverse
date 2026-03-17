@@ -1,5 +1,6 @@
 ﻿using ChessUniverse.Library.Enums;
 using ChessUniverse.Library.Pieces;
+using Microsoft.Extensions.Logging;
 
 namespace ChessUniverse.Library;
 
@@ -10,6 +11,10 @@ public class MoveAffirmation
     public (bool, PieceColor) Castling { get; set; }
     public Piece? MovedPiece { get; set; }
     public Piece? CapturedPiece { get; set; }
+
+
+    private static readonly ILogger logger =
+        LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger("MoveAffirmation");
 
     public List<ChessBoard> moves = new List<ChessBoard>();
 
@@ -32,10 +37,12 @@ public class MoveAffirmation
     public ChessBoard Move(ChessBoard board, PiecePosition end, ref PieceColor T)
     {
         Piece? piece = board[Start];
+
         if (ChessRules.IsChecked(board).Item1 == false)
         {
             if (ChessRules.MoveValidation(board, Start, end, T))
             {
+                logger.LogInformation($"{piece?.GetType().Name}: {Start.ToString()} - {end.ToString()}");
                 //CastlingLeft(board, end, ref T);
                 //CastlingRight(board, end, ref T);
                 //RegularMove(board, end, ref T);
@@ -102,7 +109,7 @@ public class MoveAffirmation
                     switch (newFigure)
                     {
                         case "T":
-                            Piece knight = new Knight(piece.Color) { Position = end, Type = PieceType.Knight};
+                            Piece knight = new Knight(piece.Color) { Position = end, Type = PieceType.Knight };
                             board[end] = null;
                             board[end] = knight;
                             board[end]?.Symbol = knight.GetSymbol(piece.Color);
@@ -136,7 +143,8 @@ public class MoveAffirmation
 
                 return board;
             }
-
+            else
+                logger.LogInformation($"INVALID MOVE!!!");
 
         }
         else if (ChessRules.IsChecked(board).Item1)

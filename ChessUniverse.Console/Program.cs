@@ -3,27 +3,10 @@ using ChessUniverse.Library.Enums;
 
 int q = 0;
 PieceColor T = PieceColor.White;
-bool C = false;
 ChessBoard chessBoard = new ChessBoard();
 chessBoard.SetStartPosition();
 PrintBoard(chessBoard);
 
-//do
-//{
-//    if (T == true)
-//        Console.WriteLine("White Please: ");
-//    if (T == false)
-//        Console.WriteLine("Black Please: ");
-//    PiecePosition start = new PiecePosition();
-//    Console.Write("Enter start position: ");
-//    EnterNumber(start);
-//    PiecePosition target = new PiecePosition();
-//    Console.Write("Enter target position: ");
-//    EnterNumber(target);
-//    ChessRules.MoveValidation(chessBoard, start, target, ref T, ref C);
-//    PrintBoard(chessBoard);
-//    q++;
-//} while (q != 20);
 do
 {
     if (T == PieceColor.White)

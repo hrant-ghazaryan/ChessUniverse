@@ -19,4 +19,12 @@ public class PiecePosition
             Row = 7 - (s[1] - '1');
         }
     }
+
+    public override string ToString()
+    {
+        char file = (char)('A' + Col);
+        int rank = 7 - (Row - 1);
+
+        return $"{file}{rank}";
+    }
 }
