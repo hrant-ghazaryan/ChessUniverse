@@ -1,4 +1,6 @@
 ﻿using ChessUniverse.Library.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Drawing;
 
 namespace ChessUniverse.Library;
 
@@ -65,6 +67,24 @@ public static class ChessRules
         }
         return false;
     }
+    public static (bool,Piece?) IsChecked(ChessBoard board, Piece? piece)
+    {
+        PiecePosition? kingposition = ChessBoard.GetKingPosition(board, PieceColor.White);
+
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (MoveValidation(board, piece.Position, kingposition, piece.Color))
+                {
+                    return (true,piece);
+                }
+                else
+                    return (false,null);
+            }
+        }
+        return (false, null);
+    }
     public static bool MoveValidation(ChessBoard board, PiecePosition start, PiecePosition end,
          PieceColor T)
     {
@@ -75,29 +95,6 @@ public static class ChessRules
         }
         return false;
     }
-    //public static (ChessBoard, Piece?, string? newFigure) PawnSwitch(ChessBoard board, Piece? piece)
-    //{
-    //    Console.Write("INSERT NEW TYPE FOR PAWN: ");
-    //    string? newFigure = Console.ReadLine();
-
-    //    if (piece?.Type == PieceType.Pawn)
-    //    {
-    //        if (piece.Position.Row == 7 || piece.Position.Row == 0)
-    //        {
-    //            while (newFigure != "Q" || newFigure != "K"
-    //                  || newFigure != "T" || newFigure != "B")
-    //            {
-    //                Console.Write("INSERT NEW TYPE FOR PAWN: ");
-    //                newFigure = Console.ReadLine();
-    //            }
-    //            return (board, piece, newFigure);
-    //        }
-    //        else
-    //            return (board, piece, newFigure);
-    //    }
-    //    else
-    //        return (board, piece, newFigure);
-    //}
     public static bool PawnPromotion(ChessBoard board, PiecePosition start)
     {
         Piece? piece = board[start];
@@ -113,5 +110,64 @@ public static class ChessRules
         }
         else
             return false;
+    }
+    //public static bool IsCheckmate(ChessBoard chessBoard, PieceColor color)
+    //{
+    //    //PiecePosition? kingposition = ChessBoard.GetKingPosition(chessBoard, color);
+    //    if (IsChecked(chessBoard).Item1)
+    //    {
+    //        for (int i = 0; i < 8; i++)
+    //        {
+    //            for (int j = 0; j < 8; j++)
+    //            {
+    //                var piece = chessBoard[i, j];
+    //                if (piece?.Color == color)
+    //                {
+    //                    for (int k = 0; k < 8; k++)
+    //                    {
+    //                        for (int l = 0; l < 8; l++)
+    //                        {
+    //                            if (MoveValidation(chessBoard, piece.Position, new PiecePosition { Row = k, Col = l }, color))
+    //                            {
+    //                                ChessBoard tempBoard = chessBoard;
+    //                                tempBoard[new PiecePosition { Row = k, Col = l }] = tempBoard[piece.Position];
+    //                                tempBoard[piece.Position] = null;
+    //                                if (!IsChecked(tempBoard).Item1)
+    //                                    return false;
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        Console.WriteLine("SITUATION IN CHECKMATE");
+    //        return true;
+    //    }
+    //    else
+    //        return false;
+    //}
+    public static bool IsCheckMate(ChessBoard board, PieceColor color)
+    {
+        PiecePosition? kingposition = ChessBoard.GetKingPosition(board, color);
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                Piece? piece = board[i, j];
+                if (IsChecked(board, piece).Item1)
+                {
+                    var piece1 = IsChecked(board, piece).Item2;
+                    if (piece1?.Type == PieceType.Pawn || piece1?.Type == PieceType.Knight)
+                    {
+                        if (MoveValidation(board, piece.Position, piece1.Position, piece.Color))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }
