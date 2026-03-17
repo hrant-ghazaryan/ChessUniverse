@@ -22,6 +22,8 @@ do
     MoveAffirmation ma = new MoveAffirmation(start, target);
     ma.Move(chessBoard, target, ref T);
     PrintBoard(chessBoard);
+
+
     q++;
 } while (q != 20);
 
@@ -38,12 +40,6 @@ void PrintBoard(ChessBoard chessBoard)
             var piece = chessBoard[row, col];
             char symbol = piece?.GetSymbol(piece.Color) ?? '.';
             Console.Write($" {symbol} ");
-            //char symbol = '.';
-            //if (piece != null)
-            //{
-            //    //symbol = piece == null ? '.' : ChessRules.GetSymbol(piece, piece.Color);
-            //    //symbol = ChessRules.GetSymbol(piece, piece.Color) ?? '.';
-            //}
         }
         Console.ResetColor();
         Console.WriteLine();
