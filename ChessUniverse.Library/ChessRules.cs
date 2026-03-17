@@ -73,9 +73,13 @@ public static class ChessRules
         {
             for (int j = 0; j < 8; j++)
             {
-                if (MoveValidation(board, piece.Position, kingposition, piece.Color))
+                var piece1 = board[i, j];
+                if (piece.Color == piece1.Color)
                 {
-                    return (true,piece);
+                    if (MoveValidation(board, piece1.Position, kingposition, piece1.Color))
+                    {
+                        return (true, piece1);
+                    }
                 }
                 else
                     return (false,null);
@@ -162,7 +166,125 @@ public static class ChessRules
                             return false;
                         }
                     }
+                    else
+                    {
+                        List<PiecePosition> movestotarget = new List<PiecePosition>();
+                        if (piece1!.Position.Row < kingposition!.Row && piece1.Position.Col > kingposition.Col)
+                        {
+                            for ( i = 1; i < Math.Abs(piece1.Position.Row - kingposition.Row); i++)
+                            {
+                                for (i = 1; j < Math.Abs(piece1.Position.Col - kingposition.Col); j++)
+                                {
+                                    if (i == j)
+                                    {
+                                        //if (MoveValidation(board, piece.Position, piece1.Position, color))
+                                        //{
+                                        //    return false;
+                                        //}
+                                    }
+                                }
+                            }
+                        }
+                        else if (piece1.Position.Row < kingposition.Row && piece1.Position.Col < kingposition.Col)
+                        {
+                            for ( i = 1; i < Math.Abs(piece1.Position.Row - kingposition.Row); i++)
+                            {
+                                for (i = 1; j < Math.Abs(piece1.Position.Col - kingposition.Col); j++)
+                                {
+                                    if (i == j)
+                                    {
+                                        if (MoveValidation(board, piece.Position, piece1.Position, color))
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (piece1.Position.Row > kingposition.Row && piece1.Position.Col < kingposition.Col)
+                        {
+                            for (i = 1; i < Math.Abs(piece1.Position.Row - kingposition.Row); i++)
+                            {
+                                for (i = 1; j < Math.Abs(piece1.Position.Col - kingposition.Col); j++)
+                                {
+                                    if (i == j)
+                                    {
+                                        if (MoveValidation(board, piece.Position, piece1.Position, color))
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (piece1.Position.Row > kingposition.Row && piece1.Position.Col > kingposition.Col)
+                        {
+                            for (i = 1; i < Math.Abs(piece1.Position.Row - kingposition.Row); i++)
+                            {
+                                for (i = 1; j < Math.Abs(piece1.Position.Col - kingposition.Col); j++)
+                                {
+                                    if (i == j)
+                                    {
+                                        if (MoveValidation(board, piece.Position, piece1.Position, color))
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (piece1.Position.Row == kingposition.Row || piece1.Position.Col == kingposition.Col)
+                        {
+                            if (piece1.Position.Row == kingposition.Row && piece1.Position.Col > kingposition.Col)
+                            {
+                                for ( j = 1; j < Math.Abs(piece1.Position.Col - kingposition.Col); j++)
+                                {
+                                    if (MoveValidation(board, piece.Position, piece1.Position, color))
+                                    {
+                                        return false;
+                                    }
+                                }
+                            }
+                            else if (piece1.Position.Row == kingposition.Row && piece1.Position.Col < kingposition.Col)
+                            {
+                                for ( j = 1; j < Math.Abs(piece1.Position.Col - kingposition.Col); j++)
+                                {
+                                    if (MoveValidation(board, board[piece!.Position.Row, piece.Position.Col - j]!.Position, piece1.Position, color))
+                                    {
+                                        return false;
+                                    }
+                                    board[piece.Position.Row, piece.Position.Col - j]
+                                    if (MoveValidation(board, piece.Position, piece1.Position, color))
+                                    {
+                                        return false;
+                                    }
+                                }
+                            }
+                            else if (piece1.Position.Row > kingposition.Row && piece1.Position.Col == kingposition.Col)
+                            {
+                                for ( j = 1; j < Math.Abs(piece1.Position.Row - kingposition.Row); j++)
+                                {
+                                    if (MoveValidation(board, piece.Position, piece1.Position, color))
+                                    {
+                                        return false;
+                                    }
+                                }
+                            }
+                            else if (piece1.Position.Row < kingposition.Row && piece1.Position.Col == kingposition.Col)
+                            {
+                                for ( j = 1; j < Math.Abs(piece1.Position.Row - kingposition.Row); j++)
+                                {
+                                    if (MoveValidation(board, piece.Position, piece1.Position, color))
+                                    {
+                                        return false;
+                                    }
+                                }
+                            }
+                            return true;
+                        }
+                    }
                 }
+                Console.WriteLine("SITUATION IS CHECKMATE");
                 return true;
             }
         }
