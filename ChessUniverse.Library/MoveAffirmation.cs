@@ -127,6 +127,13 @@ public class MoveAffirmation
                             break;
                     }
                 }
+
+                if (ChessRules.IsCheckMate(board, T))
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("        CHECK!!!      ");
+                    Console.WriteLine();
+                }
                 if (ChessRules.IsChecked(board).Item1)
                 {
                     Console.WriteLine();
@@ -168,7 +175,12 @@ public class MoveAffirmation
                     else
                         T = PieceColor.White;
                 }
-
+                if (ChessRules.IsChecked(board).Item1)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("        CHECK!!!      ");
+                    Console.WriteLine();
+                }
                 return board;
             }
         }
