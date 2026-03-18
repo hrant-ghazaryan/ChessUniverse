@@ -22,8 +22,13 @@ do
     MoveAffirmation ma = new MoveAffirmation(start, target);
     ma.Move(chessBoard, target, ref T);
     PrintBoard(chessBoard);
+    if (q == 5)
+    {
+        Game.UndoMove(chessBoard, ref T);
+        PrintBoard(chessBoard);
+    }
     q++;
-} while (q != 20);
+} while (q != 1000);
 
 void PrintBoard(ChessBoard chessBoard)
 {
