@@ -11,11 +11,6 @@ public class MoveAffirmation
     public (bool, PieceColor) Castling { get; set; }
     public Piece? MovedPiece { get; set; }
     public Piece? CapturedPiece { get; set; }
-
-
-    private static readonly ILogger logger =
-        LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger("MoveAffirmation");
-
     public List<ChessBoard> moves = new List<ChessBoard>();
 
     public MoveAffirmation(PiecePosition start, PiecePosition target)
@@ -23,6 +18,7 @@ public class MoveAffirmation
         Start = start;
         Target = target;
     }
+
     public ChessBoard? MoveBack(ChessBoard board, PiecePosition start, ref PieceColor T)
     {
         if (board[Target] != null)
@@ -45,6 +41,7 @@ public class MoveAffirmation
     public ChessBoard Move(ChessBoard board, PiecePosition end, ref PieceColor T)
     {
         Piece? piece = board[Start];
+        ChessRules.IsCheckMate(board, Start);
 
         if (ChessRules.IsChecked(board).Item1 == false)
         {
