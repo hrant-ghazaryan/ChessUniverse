@@ -90,7 +90,7 @@ public static class ChessRules
             if (board[start]?.Type == PieceType.King)
             {
                 if (board[start]!.IsMovePossible(board, end) && board[start]?.Color != board[end]?.Color
-                    && IsPieceProtected(board, end) == false)
+                    && IsPieceProtected(board, end) == false && !IsChecked(board,start))
                     return true;
                 else
                     return false;
@@ -309,7 +309,7 @@ public static class ChessRules
             if (kingposition.Row + 1 > 0 && kingposition.Row + 1 < 8 && kingposition.Col + 1 > 0 && kingposition.Col + 1 < 8)
             { kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col + 1 }); k++; }
 
-            if (kingposition.Row + 1 > 0 && kingposition.Row + 1 < 8 && kingposition.Col - 1 > 0 && start.Col - 1 < 8)
+            if (kingposition.Row + 1 > 0 && kingposition.Row + 1 < 8 && kingposition.Col - 1 > 0 && kingposition.Col - 1 < 8)
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col - 1 }); k++;
             }
@@ -343,5 +343,106 @@ public static class ChessRules
             return false;
         }
         return false;
+    }
+    public static bool IsCheckMate(ChessBoard board)
+    {
+        int w = 0;
+        int b = 0;
+        List<PiecePosition> kingmoves = new List<PiecePosition>();
+        PiecePosition? whitekingposition = ChessBoard.GetKingPosition(board, PieceColor.White);
+        PiecePosition? blackkingposition = ChessBoard.GetKingPosition(board, PieceColor.Black);
+
+        if (whitekingposition != null)
+        {
+            if (whitekingposition.Row + 1 > 0 && whitekingposition.Row + 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = whitekingposition.Row + 1, Col = whitekingposition.Col });
+                w++;
+            }
+            if (whitekingposition.Row + 1 > 0 && whitekingposition.Row + 1 < 8 && whitekingposition.Col + 1 > 0 && whitekingposition.Col + 1 < 8)
+            { kingmoves.Add(new PiecePosition { Row = whitekingposition.Row + 1, Col = whitekingposition.Col + 1 }); w++; }
+
+            if (whitekingposition.Row + 1 > 0 && whitekingposition.Row + 1 < 8 && whitekingposition.Col - 1 > 0 && whitekingposition.Col - 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = whitekingposition.Row + 1, Col = whitekingposition.Col - 1 }); w++;
+            }
+            if (whitekingposition.Col + 1 > 0 && whitekingposition.Col + 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = whitekingposition.Row, Col = whitekingposition.Col + 1 }); w++;
+            }
+            if (whitekingposition.Col - 1 > 0 && whitekingposition.Col - 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = whitekingposition.Row, Col = whitekingposition.Col - 1 }); w++;
+            }
+            if (whitekingposition.Row - 1 > 0 && whitekingposition.Row - 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = whitekingposition.Row - 1, Col = whitekingposition.Col }); w++;
+            }
+            if (whitekingposition.Row - 1 > 0 && whitekingposition.Row - 1 < 8 && whitekingposition.Col + 1 > 0 && whitekingposition.Col + 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = whitekingposition.Row - 1, Col = whitekingposition.Col + 1 }); w++;
+            }
+            if (whitekingposition.Row - 1 > 0 && whitekingposition.Row - 1 < 8 && whitekingposition.Col - 1 > 0 && whitekingposition.Col - 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = whitekingposition.Row - 1, Col = whitekingposition.Col - 1 }); w++;
+            }
+            foreach (var move in kingmoves)
+            {
+                if (!MoveValidation(board, whitekingposition, move, board[whitekingposition]?.Color))
+                    w--;
+            }
+        }
+        if (blackkingposition != null)
+        {
+            if (blackkingposition.Row + 1 > 0 && blackkingposition.Row + 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = blackkingposition.Row + 1, Col = blackkingposition.Col });
+                b++;
+            }
+            if (blackkingposition.Row + 1 > 0 && blackkingposition.Row + 1 < 8 && blackkingposition.Col + 1 > 0 && blackkingposition.Col + 1 < 8)
+            { kingmoves.Add(new PiecePosition { Row = blackkingposition.Row + 1, Col = blackkingposition.Col + 1 }); b++; }
+
+            if (blackkingposition.Row + 1 > 0 && blackkingposition.Row + 1 < 8 && blackkingposition.Col - 1 > 0 && blackkingposition.Col - 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = blackkingposition.Row + 1, Col = blackkingposition.Col - 1 }); b++;
+            }
+            if (blackkingposition.Col + 1 > 0 && blackkingposition.Col + 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = blackkingposition.Row, Col = blackkingposition.Col + 1 }); b++;
+            }
+            if (blackkingposition.Col - 1 > 0 && blackkingposition.Col - 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = blackkingposition.Row, Col = blackkingposition.Col - 1 }); b++;
+            }
+            if (blackkingposition.Row - 1 > 0 && blackkingposition.Row - 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = blackkingposition.Row - 1, Col = blackkingposition.Col }); b++;
+            }
+            if (blackkingposition.Row - 1 > 0 && blackkingposition.Row - 1 < 8 && blackkingposition.Col + 1 > 0 && blackkingposition.Col + 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = blackkingposition.Row - 1, Col = blackkingposition.Col + 1 }); b++;
+            }
+            if (blackkingposition.Row - 1 > 0 && blackkingposition.Row - 1 < 8 && blackkingposition.Col - 1 > 0 && blackkingposition.Col - 1 < 8)
+            {
+                kingmoves.Add(new PiecePosition { Row = blackkingposition.Row - 1, Col = blackkingposition.Col - 1 }); b++;
+            }
+            foreach (var move in kingmoves)
+            {
+                if (!MoveValidation(board, whitekingposition, move, board[blackkingposition]?.Color))
+                    b--;
+            }
+        }
+        if (w == 0)
+        {
+            Console.WriteLine("WHITE IN CHECKMATE");
+            return true;
+        }
+        else if (b == 0)
+        {
+            Console.WriteLine("BLACK IN CHECKMATE");
+            return true;
+        }
+        else
+            return false;
     }
 }

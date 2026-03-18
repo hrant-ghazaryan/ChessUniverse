@@ -1,6 +1,5 @@
 ﻿using ChessUniverse.Library.Enums;
 using ChessUniverse.Library.Pieces;
-using Microsoft.Extensions.Logging;
 
 namespace ChessUniverse.Library;
 
@@ -41,7 +40,6 @@ public class MoveAffirmation
     public ChessBoard Move(ChessBoard board, PiecePosition end, ref PieceColor T)
     {
         Piece? piece = board[Start];
-        ChessRules.IsCheckMate(board, Start);
 
         if (ChessRules.IsChecked(board).Item1 == false)
         {
@@ -56,9 +54,20 @@ public class MoveAffirmation
                 PawnPromotionMove(board, end);
                 if (ChessRules.IsChecked(board).Item1)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("        CHECK!!!      ");
-                    Console.WriteLine();
+                    PiecePosition? kingposition = ChessBoard.GetKingPosition(board, T);
+                    if (ChessRules.IsCheckMate(board, kingposition))
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("        CHECKMATE!!!      ");
+                        Console.WriteLine();
+                        return board;
+                    }
+                }
+                else if (ChessRules.IsChecked(board).Item1)
+                {
+                        Console.WriteLine();
+                        Console.WriteLine("        CHECK!!!      ");
+                        Console.WriteLine();
                 }
 
                 return board;

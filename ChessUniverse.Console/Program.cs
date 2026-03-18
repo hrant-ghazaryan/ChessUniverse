@@ -22,8 +22,6 @@ do
     MoveAffirmation ma = new MoveAffirmation(start, target);
     ma.Move(chessBoard, target, ref T);
     PrintBoard(chessBoard);
-
-
     q++;
 } while (q != 20);
 
