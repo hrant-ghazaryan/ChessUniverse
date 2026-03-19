@@ -2,6 +2,7 @@ using ChessUniverse.Library;
 using ChessUniverse.Library.Enums;
 
 int q = 0;
+bool isCheckMate = false;
 PieceColor T = PieceColor.White;
 ChessBoard chessBoard = new ChessBoard();
 chessBoard.SetStartPosition();
@@ -20,15 +21,11 @@ do
     Console.Write("Enter target position: ");
     EnterNumber(target);
     MoveAffirmation ma = new MoveAffirmation(start, target);
+    isCheckMate = ma.Move(chessBoard, target, ref T).Item2;
     ma.Move(chessBoard, target, ref T);
     PrintBoard(chessBoard);
-    if (q == 5)
-    {
-        Game.UndoMove(chessBoard, ref T);
-        PrintBoard(chessBoard);
-    }
     q++;
-} while (q != 1000);
+} while (isCheckMate == false);
 
 void PrintBoard(ChessBoard chessBoard)
 {
