@@ -4,7 +4,6 @@ namespace ChessUniverse.Library;
 
 public class Game
 {
-    public ChessBoard board { get; set; }
     public PieceColor T { get; set; }
 
     public static List<MoveAffirmation>? moves = new List<MoveAffirmation>();

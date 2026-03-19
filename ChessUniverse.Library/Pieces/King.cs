@@ -116,4 +116,18 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
 
         return false;
     }
+        public override List<PiecePosition> GetPossibleMoves(ChessBoard board)
+        {
+            List<PiecePosition> possibleMoves = new List<PiecePosition>();
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    PiecePosition targetposition = new PiecePosition(i, j);
+                    if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]!.Color))
+                        possibleMoves.Add(targetposition);
+                }
+            }
+            return possibleMoves;
+    }
 }

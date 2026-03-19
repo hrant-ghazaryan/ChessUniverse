@@ -23,7 +23,8 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
     }
     public virtual bool IsMovePossible( ChessBoard chessBoard, PiecePosition target)
         => false;
-
+    public virtual List<PiecePosition> GetPossibleMoves(ChessBoard chessBoard)
+        => new List<PiecePosition>();
 };
 
 

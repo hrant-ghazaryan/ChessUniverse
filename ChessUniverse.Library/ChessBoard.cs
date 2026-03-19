@@ -94,4 +94,18 @@ public class ChessBoard
         }
         return null;
     }
+    public static List<PiecePosition> GetPiecePositions(ChessBoard board, PieceColor color)
+    {
+        List<PiecePosition> positions = new List<PiecePosition>();
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                var piece = board[i, j];
+                if (piece != null && piece.Color == color)
+                    positions.Add(piece.Position);
+            }
+        }
+        return positions;
+    }
 }
