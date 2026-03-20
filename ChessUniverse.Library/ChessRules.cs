@@ -71,18 +71,20 @@ public static class ChessRules
         }
         return false;
     }
-    public static (bool, Piece?) IsChecked(ChessBoard board, Piece? piece)
+    public static (bool, Piece?) IsChecked(ChessBoard board, Piece? king)
     {
-        PiecePosition? kingposition = ChessBoard.GetKingPosition(board, PieceColor.White);
-
-        for (int i = 0; i < 8; i++)
+        //PiecePosition? kingposition = ChessBoard.GetKingPosition(board, PieceColor.White);
+        if (king != null)
         {
-            for (int j = 0; j < 8; j++)
+            for (int i = 0; i < 8; i++)
             {
-                var piece1 = board[i, j];
-                if (MoveValidation(board, piece1?.Position, kingposition, piece1?.Color))
+                for (int j = 0; j < 8; j++)
                 {
-                    return (true, piece1);
+                    var piece1 = board[i, j];
+                    if (MoveValidation(board, piece1?.Position, king.Position, piece1?.Color))
+                    {
+                        return (true, piece1);
+                    }
                 }
             }
         }
@@ -105,13 +107,10 @@ public static class ChessRules
                         {
                             if (piece?.Color != board[end]?.Color)
                             {
-                                if (!IsPieceProtected(board, end))
-                                {
-                                    if (!IsChecked(board, start))
+                                    if (!IsChecked(board, end))
                                         return true;
                                     else
                                         return false;
-                                }
                             }
                             else
                                 return false;
