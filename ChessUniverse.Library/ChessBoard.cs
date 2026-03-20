@@ -3,7 +3,7 @@ using ChessUniverse.Library.Pieces;
 
 namespace ChessUniverse.Library;
 
-public class ChessBoard 
+public class ChessBoard : ICloneable
 {
     const byte n = 8;
     private Piece?[,] _squares = new Piece[n, n];
@@ -107,5 +107,23 @@ public class ChessBoard
             }
         }
         return positions;
+    }
+
+    public object Clone()
+    {
+        ChessBoard newBoard = new ChessBoard();
+
+        for (int i = 0;i < 8; i++)
+        {
+            for(int j = 0;j < 8; j++)
+            {
+                var piece = _squares[i, j];
+                if (piece != null)
+                {
+                    newBoard[i, j] = (Piece)piece.Clone();
+                }
+            }
+        }
+        return newBoard;
     }
 }

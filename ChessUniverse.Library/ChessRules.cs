@@ -99,28 +99,28 @@ public static class ChessRules
 
             if (endPiece == null || piece.Color != endPiece.Color)
             {
-                if (T == piece?.Color)
+                if (T == piece?.Color && piece?.Type == PieceType.King)
                 {
-                    if (T == piece?.Color && piece?.Type == PieceType.King)
+                    if (piece.IsMovePossible(board, end))
                     {
-                        if (piece.IsMovePossible(board, end))
+                        if (piece?.Color != board[end]?.Color)
                         {
-                            if (piece?.Color != board[end]?.Color)
-                            {
-                                    if (!IsChecked(board, end))
-                                        return true;
-                                    else
-                                        return false;
-                            }
-                            else
-                                return false;
+                            //{
+                            //        if (!IsChecked(board, end))
+                            //            return true;
+                            //        else
+                            //            return false;
+                            return true;
                         }
                         else
                             return false;
                     }
-                    else if (board[start]?.Type != PieceType.King && board[start]!.IsMovePossible(board, end) && board[start]?.Color != board[end]?.Color)
-                        return true;
+                    else
+                        return false;
                 }
+                else if (T == piece?.Color && board[start]?.Type != PieceType.King
+                && board[start]!.IsMovePossible(board, end) && board[start]?.Color != board[end]?.Color)
+                    return true;
             }
         }
         return false;
@@ -298,8 +298,13 @@ public static class ChessRules
             }
             foreach (var move in kingmoves)
             {
-                if (!MoveValidation(board, kingposition, move, board[kingposition]?.Color))
+                ChessBoard newBoard = new ChessBoard();
+                newBoard = (ChessBoard)board.Clone();
+                Piece.SwitchPositions(newBoard, kingposition, move);
+                if (MoveValidation(board, kingposition, move, board[kingposition]?.Color) && !IsChecked(newBoard).Item1)
+                {
                     k--;
+                }
             }
 
             if (k == 0)

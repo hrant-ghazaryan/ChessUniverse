@@ -82,6 +82,7 @@ public class MoveAffirmation
                     Game.moves?.Add(new MoveAffirmation(Start, Target, piece!, board[end], Castling));
                     return (new MoveAffirmation(Start, Target, piece!, board[end], Castling), false);
                 }
+
                 RegularMove(board, end, ref T);
                 PawnPromotionMove(board, end);
                 Game.moves?.Add(new MoveAffirmation(Start, Target, piece!, targetPiece, Castling));
@@ -107,14 +108,17 @@ public class MoveAffirmation
             if (ChessRules.MoveValidation(board, Start, end, T))
             {
                 RegularMove(board, end, ref T);
+                Game.moves?.Add(new MoveAffirmation(Start, Target, piece!, board[end], Castling));
 
                 if (ChessRules.IsChecked(board).Item1)
+                {
                     MoveBack(board, Start, ref T);
-                else
-                    Game.moves?.Add(new MoveAffirmation(Start, Target, piece!, board[end], Castling));
+                    Game.moves?.RemoveAt(Game.moves.Count - 1);
+                }
 
                 if (ChessRules.IsChecked(board).Item1)
                     Console.WriteLine("        CHECK!!!      ");
+
                 return (new MoveAffirmation(Start, Target, piece!, board[end], Castling), false);
             }
 
