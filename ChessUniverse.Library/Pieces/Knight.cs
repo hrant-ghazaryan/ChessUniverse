@@ -6,13 +6,18 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible( ChessBoard chessBoard, PiecePosition target)
+    public override bool IsMovePossible( ChessBoard chessBoard, PiecePosition? target)
     {
-        if (Math.Abs(Position.Row - target.Row) == 2 && Math.Abs(Position.Col - target.Col) == 1)
-            return true;
-        else if (Math.Abs(Position.Row - target.Row) == 1 && Math.Abs(Position.Col - target.Col) == 2)
-            return true;
-        return false;
+        if (target is not null)
+        {
+            if (Math.Abs(Position.Row - target.Row) == 2 && Math.Abs(Position.Col - target.Col) == 1)
+                return true;
+            else if (Math.Abs(Position.Row - target.Row) == 1 && Math.Abs(Position.Col - target.Col) == 2)
+                return true;
+            return false;
+        }
+        else 
+            return false;
     }
     public override List<PiecePosition> GetPossibleMoves(ChessBoard board)
     {
@@ -22,7 +27,7 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
             for (int j = 0; j < 8; j++)
             {
                 PiecePosition targetposition = new PiecePosition(i, j);
-                if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]!.Color))
+                if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]?.Color))
                     possibleMoves.Add(targetposition);
             }
         }

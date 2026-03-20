@@ -55,7 +55,7 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
                 }
             }
         }
-        else if (target.Col - Position.Col == 2 && chessBoard[target.Row, target.Col + 1]?.Type == PieceType.Rook)
+        else if (target.Col - Position.Col == 2 && target.Col + 1 < 8 && chessBoard[target.Row, target.Col + 1]?.Type == PieceType.Rook)
         {
             if (chessBoard[Position.Row, Position.Col]?.HasMoved == false
                 && chessBoard[target.Row, target.Col + 1]?.HasMoved == false)
@@ -107,7 +107,7 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
             }
         }
 
-        if (Math.Abs(Position.Row - target!.Row) == 1 && Math.Abs(Position.Col - target.Col) == 0)
+        if (Math.Abs(Position.Row - target.Row) == 1 && Math.Abs(Position.Col - target.Col) == 0)
             return true;
         else if (Math.Abs(Position.Row - target.Row) == 0 && Math.Abs(Position.Col - target.Col) == 1)
             return true;
@@ -116,18 +116,18 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
 
         return false;
     }
-        public override List<PiecePosition> GetPossibleMoves(ChessBoard board)
+    public override List<PiecePosition> GetPossibleMoves(ChessBoard board)
+    {
+        List<PiecePosition> possibleMoves = new List<PiecePosition>();
+        for (int i = 0; i < 8; i++)
         {
-            List<PiecePosition> possibleMoves = new List<PiecePosition>();
-            for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
             {
-                for (int j = 0; j < 8; j++)
-                {
-                    PiecePosition targetposition = new PiecePosition(i, j);
-                    if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]!.Color))
-                        possibleMoves.Add(targetposition);
-                }
+                PiecePosition targetposition = new PiecePosition(i, j);
+                if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]!.Color))
+                    possibleMoves.Add(targetposition);
             }
-            return possibleMoves;
+        }
+        return possibleMoves;
     }
 }

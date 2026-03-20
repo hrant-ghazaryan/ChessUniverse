@@ -1,7 +1,8 @@
 using ChessUniverse.Library.Enums;
+using System.Drawing;
 namespace ChessUniverse.Library.Pieces;
 
-public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new PiecePosition())
+public class Pawn : Piece/*(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new PiecePosition())*/ 
 {
 
     private bool _isMoved;
@@ -16,12 +17,16 @@ public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new Piec
                 _isMoved = true;
         }
     }
+    public Pawn(PieceColor color)
+        : base(color, PieceType.Pawn, 'p', new PiecePosition())
+    {
+    }
 
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition target)
     {
-        if (color == PieceColor.White)
+        if (Color == PieceColor.White)
         {
             if (Position.Row - target.Row == 1 && Math.Abs(Position.Col - target.Col) == 1
                 && chessBoard[target] != null)
@@ -31,7 +36,7 @@ public class Pawn(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new Piec
             else if (Position.Row - target?.Row == 2 && !HasMoved && Position.Col == target?.Col)
                 return true;
         }
-        if (color == PieceColor.Black)
+        if (Color == PieceColor.Black)
         {
             if (target!.Row - Position.Row == 1 && Math.Abs(target!.Col - Position.Col) == 1
                 && chessBoard[target] != null)

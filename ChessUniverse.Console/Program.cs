@@ -3,7 +3,6 @@ using ChessUniverse.Library.Enums;
 
 int q = 0;
 bool isCheckMate = false;
-bool isStaleMate = false;
 PieceColor T = PieceColor.White;
 ChessBoard chessBoard = new ChessBoard();
 chessBoard.SetStartPosition();
@@ -23,15 +22,9 @@ do
     EnterNumber(target);
     MoveAffirmation ma = new MoveAffirmation(start, target);
     isCheckMate = ma.Move(chessBoard, target, ref T).Item2;
-    ma.Move(chessBoard, target, ref T);
     PrintBoard(chessBoard);
     q++;
-    if (ChessRules.IsStaleMate(chessBoard,T) == true)
-    {
-        Console.WriteLine("Stalemate!");
-        isStaleMate = true;
-    }
-} while (isCheckMate == false && isStaleMate == false);
+} while (isCheckMate == false);
 
 void PrintBoard(ChessBoard chessBoard)
 {

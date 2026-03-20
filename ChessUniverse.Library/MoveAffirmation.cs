@@ -18,7 +18,7 @@ public class MoveAffirmation
         Start = start;
         Target = target;
     }
-    public MoveAffirmation(PiecePosition start, PiecePosition target, Piece movedPiece, Piece? capturedFigure, (bool,PieceColor) castling)
+    public MoveAffirmation(PiecePosition start, PiecePosition target, Piece movedPiece, Piece? capturedFigure, (bool, PieceColor) castling)
     {
         Start = start;
         Target = target;
@@ -31,13 +31,13 @@ public class MoveAffirmation
     {
         if (board[Target] != null)
         {
-            Piece piece = board[Target]!;
+            Piece? piece = board[Target];
             board[Start] = piece;
 
-            if (Game.moves?[Game.moves.Count - 1].CapturedPiece != null)
+            if (Game.moves?[Game.moves.Count - 1].CapturedPiece != null && board[start]?.Type == Game.moves?[Game.moves.Count - 1]?.MovedPiece?.Type)
                 board[Target] = Game.moves?[Game.moves.Count - 1].CapturedPiece;
             else
-                board[Target] = null; 
+                board[Target] = null;
 
             if (T == PieceColor.White)
                 T = PieceColor.Black;
@@ -47,7 +47,7 @@ public class MoveAffirmation
             Console.WriteLine(" INVALID MOVE! ");
             Console.WriteLine();
             return board;
-            
+
         }
         return null;
     }
@@ -63,7 +63,7 @@ public class MoveAffirmation
         else
             T = PieceColor.White;
     }
-    public (MoveAffirmation,bool) Move(ChessBoard board, PiecePosition end, ref PieceColor T)
+    public (MoveAffirmation, bool) Move(ChessBoard board, PiecePosition end, ref PieceColor T)
     {
         Piece? piece = board[Start];
         Piece? targetPiece = board[end];
@@ -75,12 +75,12 @@ public class MoveAffirmation
                 if (CastlingLeft(board, end, ref T).Item2)
                 {
                     Game.moves?.Add(new MoveAffirmation(Start, Target, piece!, board[end], Castling));
-                    return (new MoveAffirmation(Start, Target, piece!, board[end], Castling),false);
+                    return (new MoveAffirmation(Start, Target, piece!, board[end], Castling), false);
                 }
                 if (CastlingRight(board, end, ref T).Item2)
                 {
                     Game.moves?.Add(new MoveAffirmation(Start, Target, piece!, board[end], Castling));
-                    return (new MoveAffirmation(Start, Target, piece!, board[end], Castling),false);
+                    return (new MoveAffirmation(Start, Target, piece!, board[end], Castling), false);
                 }
                 RegularMove(board, end, ref T);
                 PawnPromotionMove(board, end);
@@ -89,16 +89,16 @@ public class MoveAffirmation
                 if (ChessRules.IsChecked(board).Item1)
                 {
                     PiecePosition? kingposition = ChessBoard.GetKingPosition(board, T);
-                    if (ChessRules.IsCheckMate(board, kingposition, Target))
+                    if (kingposition is not null && ChessRules.IsCheckMate(board, kingposition, Target))
                     {
                         Console.WriteLine("        CHECKMATE!!!      ");
-                        return (new MoveAffirmation(Start, Target, piece!, board[end], Castling),true);
+                        return (new MoveAffirmation(Start, Target, piece!, board[end], Castling), true);
                     }
+                    else
+                        Console.WriteLine("        CHECK!!!      ");
                 }
-                else if (ChessRules.IsChecked(board).Item1)
-                    Console.WriteLine("        CHECK!!!      ");
 
-                return (new MoveAffirmation(Start, Target, piece!, board[end], Castling),false);
+                return (new MoveAffirmation(Start, Target, piece!, board[end], Castling), false);
             }
 
         }
@@ -115,7 +115,7 @@ public class MoveAffirmation
 
                 if (ChessRules.IsChecked(board).Item1)
                     Console.WriteLine("        CHECK!!!      ");
-                return (new MoveAffirmation(Start, Target, piece!, board[end], Castling),false);
+                return (new MoveAffirmation(Start, Target, piece!, board[end], Castling), false);
             }
 
         }
@@ -131,9 +131,9 @@ public class MoveAffirmation
                     Game.moves?.Add(new MoveAffirmation(Start, Target, piece!, board[end], Castling));
             }
         }
-        return (new MoveAffirmation(Start, Target, piece!, board[end], Castling),false);
+        return (new MoveAffirmation(Start, Target, piece!, board[end], Castling), false);
     }
-    public (ChessBoard,bool) CastlingLeft(ChessBoard board, PiecePosition end, ref PieceColor T)
+    public (ChessBoard, bool) CastlingLeft(ChessBoard board, PiecePosition end, ref PieceColor T)
     {
         Piece? piece = board[Start];
         if (Start.Col - end.Col == 2 && piece?.Type == PieceType.King
@@ -158,12 +158,12 @@ public class MoveAffirmation
                     T = PieceColor.Black;
                 else
                     T = PieceColor.White;
-                return (board,true);
+                return (board, true);
             }
         }
-        return (board,false);
+        return (board, false);
     }
-    public (ChessBoard,bool) CastlingRight(ChessBoard board, PiecePosition end, ref PieceColor T)
+    public (ChessBoard, bool) CastlingRight(ChessBoard board, PiecePosition end, ref PieceColor T)
     {
         Piece? piece = board[Start];
         if (end.Col - Start.Col == 2 && piece?.Type == PieceType.King
@@ -182,36 +182,41 @@ public class MoveAffirmation
                 if (ChessRules.IsChecked(board).Item1)
                 {
                     MoveBack(board, Start, ref T);
-                    return (board,false);
+                    return (board, false);
                 }
                 if (T == PieceColor.White)
                     T = PieceColor.Black;
                 else
                     T = PieceColor.White;
-                return (board,true);
+                return (board, true);
             }
         }
-        return (board,false);
+        return (board, false);
     }
+
     public void PawnPromotionMove(ChessBoard board, PiecePosition end)
     {
         if (ChessRules.PawnPromotion(board, end))
         {
             Console.Write("INSERT NEW TYPE FOR PAWN: ");
             string? newFigure = Console.ReadLine();
-            Piece newPiece = newFigure switch
+            if (board[end] is Piece pawn)
             {
-                "T" => new Knight(board[end].Color),
-                "B" => new Bishop(board[end].Color),
-                "R" => new Rook(board[end].Color),
-                "Q" => new Queen(board[end].Color),
-                _ => throw new Exception()
-            };
+                Piece newPiece = newFigure switch
+                {
+                    "T" => new Knight(pawn.Color),
+                    "B" => new Bishop(pawn.Color),
+                    "R" => new Rook(pawn.Color),
+                    "Q" => new Queen(pawn.Color),
+                    _ => throw new Exception()
+                };
+                newPiece.Position = end;
+                newPiece.Symbol = newPiece.GetSymbol(newPiece.Color);
 
-            newPiece.Position = end;
-            newPiece.Symbol = newPiece.GetSymbol(newPiece.Color);
+                board[end] = newPiece;
+            }
 
-            board[end] = newPiece;
+
         }
     }
 }

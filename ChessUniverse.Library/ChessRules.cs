@@ -1,5 +1,4 @@
 ﻿using ChessUniverse.Library.Enums;
-using System.Diagnostics.Contracts;
 
 namespace ChessUniverse.Library;
 
@@ -16,6 +15,12 @@ public static class ChessRules
         }
         else
             return piece.Symbol;
+    }
+    public static bool IsInside(int position)
+    {
+        if (position >= 0 && position < 8)
+            return true;
+        return false;
     }
     public static (bool, int) IsChecked(ChessBoard chessBoard)
     {
@@ -75,7 +80,7 @@ public static class ChessRules
             for (int j = 0; j < 8; j++)
             {
                 var piece1 = board[i, j];
-                if (MoveValidation(board, piece1?.Position, kingposition, piece1.Color))
+                if (MoveValidation(board, piece1?.Position, kingposition, piece1?.Color))
                 {
                     return (true, piece1);
                 }
@@ -86,18 +91,38 @@ public static class ChessRules
     public static bool MoveValidation(ChessBoard? board, PiecePosition? start, PiecePosition? end,
          PieceColor? T)
     {
-        if (T == board[start]?.Color)
+        if (start is not null && board is not null && board[start] is Piece piece && end is not null)
         {
-            if (board[start]?.Type == PieceType.King)
+            Piece? endPiece = board[end];
+
+            if (endPiece == null || piece.Color != endPiece.Color)
             {
-                if (board[start]!.IsMovePossible(board, end) && board[start]?.Color != board[end]?.Color
-                    && IsPieceProtected(board, end) == false && !IsChecked(board, start))
-                    return true;
-                else
-                    return false;
+                if (T == piece?.Color)
+                {
+                    if (T == piece?.Color && piece?.Type == PieceType.King)
+                    {
+                        if (piece.IsMovePossible(board, end))
+                        {
+                            if (piece?.Color != board[end]?.Color)
+                            {
+                                if (!IsPieceProtected(board, end))
+                                {
+                                    if (!IsChecked(board, start))
+                                        return true;
+                                    else
+                                        return false;
+                                }
+                            }
+                            else
+                                return false;
+                        }
+                        else
+                            return false;
+                    }
+                    else if (board[start]?.Type != PieceType.King && board[start]!.IsMovePossible(board, end) && board[start]?.Color != board[end]?.Color)
+                        return true;
+                }
             }
-            if (board[start]!.IsMovePossible(board, end) && board[start]?.Color != board[end]?.Color)
-                return true;
         }
         return false;
     }
@@ -124,14 +149,10 @@ public static class ChessRules
             for (int j = 0; j < 8; j++)
             {
                 Piece? piece = board[i, j];
-                if (piece != null && piece.Position.Row != position.Row && piece.Position.Col != position.Col)
+                if (piece != null && piece?.Color == board[position]?.Color)
                 {
-                    if (piece?.Color == board[position]?.Color
-                        && piece!.IsMovePossible(board, position))
-                    {
-                        Console.WriteLine();
-                        return true; 
-                    }
+                    if (piece!.IsMovePossible(board, position))
+                        return true;
                 }
             }
         }
@@ -140,7 +161,6 @@ public static class ChessRules
     public static bool IsCheckMate(ChessBoard board, PiecePosition kingposition, PiecePosition attacker)
     {
         int k = 0;
-        int a = 0;
         List<PiecePosition> kingmoves = new List<PiecePosition>();
         List<PiecePosition> attackermoves = new List<PiecePosition>();
         if (Math.Abs(attacker.Row - kingposition.Row) > 1 || Math.Abs(attacker.Col - kingposition.Col) > 1)
@@ -153,10 +173,7 @@ public static class ChessRules
                     for (int j = 1; j < Math.Abs(kingposition.Col - attacker.Col); j++)
                     {
                         if (i == j)
-                        {
                             attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col + j });
-                            a++;
-                        }
                     }
                 }
             }
@@ -164,10 +181,7 @@ public static class ChessRules
             if (attacker.Row < kingposition.Row && attacker.Col == kingposition.Col)
             {
                 for (int i = 1; i < Math.Abs(kingposition.Row - attacker.Row); i++)
-                {
                     attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col });
-                    a++;
-                }
             }
             //3
             if (attacker.Row < kingposition.Row && attacker.Col > kingposition.Col)
@@ -177,10 +191,7 @@ public static class ChessRules
                     for (int j = 1; j < Math.Abs(kingposition.Col - attacker.Col); j++)
                     {
                         if (i == j)
-                        {
                             attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col - j });
-                            a++;
-                        }
                     }
                 }
             }
@@ -188,19 +199,13 @@ public static class ChessRules
             if (attacker.Row == kingposition.Row && attacker.Col < kingposition.Col)
             {
                 for (int j = 1; j < Math.Abs(kingposition.Col - attacker.Col); j++)
-                {
                     attackermoves.Add(new PiecePosition { Row = attacker.Row, Col = attacker.Col + j });
-                    a++;
-                }
             }
             //5
             if (attacker.Row == kingposition.Row && attacker.Col > kingposition.Col)
             {
                 for (int j = 1; j < Math.Abs(kingposition.Col - attacker.Col); j++)
-                {
                     attackermoves.Add(new PiecePosition { Row = attacker.Row, Col = attacker.Col - j });
-                    a++;
-                }
             }
             //6
             if (attacker.Row > kingposition.Row && attacker.Col < kingposition.Col)
@@ -210,10 +215,7 @@ public static class ChessRules
                     for (int j = 1; j < Math.Abs(kingposition.Col - attacker.Col); j++)
                     {
                         if (i == j)
-                        {
                             attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col + j });
-                            a++;
-                        }
                     }
                 }
             }
@@ -221,10 +223,7 @@ public static class ChessRules
             if (attacker.Row > kingposition.Row && attacker.Col == kingposition.Col)
             {
                 for (int i = 1; i < Math.Abs(kingposition.Row - attacker.Row); i++)
-                {
                     attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col });
-                    a++;
-                }
             }
             //8
             if (attacker.Row > kingposition.Row && attacker.Col > kingposition.Col)
@@ -234,10 +233,7 @@ public static class ChessRules
                     for (int j = 1; j < Math.Abs(kingposition.Col - attacker.Col); j++)
                     {
                         if (i == j)
-                        {
                             attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col - j });
-                            a++;
-                        }
                     }
                 }
             }
@@ -252,9 +248,7 @@ public static class ChessRules
                         {
                             if (piece.Color == board[kingposition]?.Color
                             && MoveValidation(board, piece.Position, item, board[kingposition]!.Color))
-                            {
                                 return false;
-                            }
                         }
                     }
                 }
@@ -263,47 +257,46 @@ public static class ChessRules
         }
         else
         {
-            if (kingposition.Row + 1 > 0 && kingposition.Row + 1 < 8)
+            if (IsInside(kingposition.Row + 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col });
                 k++;
             }
-            if (kingposition.Row + 1 > 0 && kingposition.Row + 1 < 8 && kingposition.Col + 1 > 0 && kingposition.Col + 1 < 8)
+            if (IsInside(kingposition.Row + 1) && IsInside(kingposition.Col + 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col + 1 });
                 k++;
             }
-            if (kingposition.Row + 1 > 0 && kingposition.Row + 1 < 8 && kingposition.Col - 1 > 0 && kingposition.Col - 1 < 8)
+            if (IsInside(kingposition.Row + 1) && IsInside(kingposition.Col - 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col - 1 });
                 k++;
             }
-            if (kingposition.Col + 1 > 0 && kingposition.Col + 1 < 8)
+            if (IsInside(kingposition.Col + 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row, Col = kingposition.Col + 1 });
                 k++;
             }
-            if (kingposition.Col - 1 > 0 && kingposition.Col - 1 < 8)
+            if (IsInside(kingposition.Col - 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row, Col = kingposition.Col - 1 });
                 k++;
             }
-            if (kingposition.Row - 1 > 0 && kingposition.Row - 1 < 8)
+            if (IsInside(kingposition.Row - 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col });
                 k++;
             }
-            if (kingposition.Row - 1 > 0 && kingposition.Row - 1 < 8 && kingposition.Col + 1 > 0 && kingposition.Col + 1 < 8)
+            if (IsInside(kingposition.Row - 1) && IsInside(kingposition.Col + 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col + 1 });
                 k++;
             }
-            if (kingposition.Row - 1 > 0 && kingposition.Row - 1 < 8 && kingposition.Col - 1 > 0 && kingposition.Col - 1 < 8)
+            if (IsInside(kingposition.Row - 1) && IsInside(kingposition.Col - 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col - 1 });
                 k++;
             }
-
             foreach (var move in kingmoves)
             {
                 if (!MoveValidation(board, kingposition, move, board[kingposition]?.Color))
@@ -320,7 +313,7 @@ public static class ChessRules
         int pieceCount = ChessBoard.GetPiecePositions(board, T).Count;
         foreach (var item in ChessBoard.GetPiecePositions(board, T))
         {
-            if (board[item]!.GetPossibleMoves(board).Count == 0)
+            if (board[item]?.GetPossibleMoves(board).Count == 0)
                 pieceCount--;
         }
         if (pieceCount == 0)
