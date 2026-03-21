@@ -1,9 +1,8 @@
 using ChessUniverse.Library.Enums;
-using System.Reflection.Metadata.Ecma335;
 
 namespace ChessUniverse.Library;
 
-public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition position) : ICloneable
+public abstract class Piece(PieceColor color, PieceType type, char symbol, PiecePosition position) : ICloneable
 {
     public PieceColor Color { get; } = color;
     public PieceType Type { get; set;  } = type;
@@ -22,8 +21,7 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
         else
             return Symbol;
     }
-    public virtual bool IsMovePossible(ChessBoard chessBoard, PiecePosition target)
-        => true;
+    public abstract bool IsMovePossible(ChessBoard chessBoard, PiecePosition target);
     public virtual List<PiecePosition> GetPossibleMoves(ChessBoard chessBoard)
         => new List<PiecePosition>();
     public static ChessBoard SwitchPositions(ChessBoard board, PiecePosition startPosition, PiecePosition targetPosition)
@@ -37,13 +35,8 @@ public class Piece(PieceColor color, PieceType type, char symbol, PiecePosition 
         }
         return board;
     }
-    public object Clone()
-    {
-        return new Piece(this.Color, this.Type, this.Symbol, new PiecePosition { Row = this.Position.Row, Col = this.Position.Col })
-        {
-            HasMoved = this.HasMoved
-        };
-    }
+    public abstract object Clone();
+
 };
 
 

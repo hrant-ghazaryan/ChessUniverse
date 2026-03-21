@@ -33,4 +33,11 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
         }
         return possibleMoves;
     }
+    public override Piece Clone()
+    {
+        return new Knight(this.Color)
+        {
+            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+        };
+    }
 }

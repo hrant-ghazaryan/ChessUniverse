@@ -21,7 +21,7 @@ public class Game
             throw new Exception("No piece at target position");
 
         T = piece.Color;
-        lastMove?.MoveBack(board, lastMove.Start, ref T);
+        //lastMove?.MoveBack(board, lastMove.Start, ref T);
         moves.RemoveAt(moves.Count - 1);
 
         if (T == PieceColor.White)

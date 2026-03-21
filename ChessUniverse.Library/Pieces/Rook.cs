@@ -66,4 +66,11 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
         }
         return possibleMoves;
     }
+    public override Piece Clone()
+    {
+        return new Rook(this.Color)
+        {
+            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+        };
+    }
 }

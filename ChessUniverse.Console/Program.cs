@@ -21,10 +21,10 @@ do
     Console.Write("Enter target position: ");
     EnterNumber(target);
     MoveAffirmation ma = new MoveAffirmation(start, target);
-    isCheckMate = ma.Move(chessBoard, target, ref T).Item2;
+    isCheckMate = ma.Move(ref chessBoard, target, ref T);
     PrintBoard(chessBoard);
     q++;
-} while (isCheckMate == false);
+} while (q != 20);
 
 void PrintBoard(ChessBoard chessBoard)
 {

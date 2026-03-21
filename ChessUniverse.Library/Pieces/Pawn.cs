@@ -1,8 +1,7 @@
 using ChessUniverse.Library.Enums;
-using System.Drawing;
 namespace ChessUniverse.Library.Pieces;
 
-public class Pawn : Piece/*(PieceColor color) : Piece(color, PieceType.Pawn, 'p', new PiecePosition())*/ 
+public class Pawn : Piece
 {
 
     private bool _isMoved;
@@ -61,5 +60,12 @@ public class Pawn : Piece/*(PieceColor color) : Piece(color, PieceType.Pawn, 'p'
             }
         }
         return possibleMoves;
+    }
+    public override Piece Clone()
+    {
+        return new Pawn(this.Color)
+        {
+            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+        };
     }
 }

@@ -132,4 +132,11 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
         }
         return possibleMoves;
     }
+    public override Piece Clone()
+    {
+        return new King(this.Color)
+        {
+            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+        };
+    }
 }

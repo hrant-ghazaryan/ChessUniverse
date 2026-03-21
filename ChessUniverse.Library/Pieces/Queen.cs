@@ -120,4 +120,11 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
         }
         return possibleMoves;
     }
+    public override Piece Clone()
+    {
+        return new Queen(this.Color)
+        {
+            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+        };
+    }
 }

@@ -94,5 +94,12 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new 
         }
         return possibleMoves;
     }
+    public override Piece Clone()
+    {
+        return new Bishop(this.Color)
+        {
+            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+        };
+    }
 }
 
