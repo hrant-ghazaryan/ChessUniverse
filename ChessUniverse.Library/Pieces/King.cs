@@ -7,7 +7,8 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition target)
     {
-        if (Position.Col - target.Col == 2 && chessBoard[target.Row, target.Col - 2]?.Type == PieceType.Rook)
+        if (Position.Col - target.Col == 2 && Position.Row == target.Row && 
+            chessBoard[target.Row, target.Col - 2]?.Type == PieceType.Rook)
         {
             if (chessBoard[Position.Row, Position.Col]?.HasMoved == false
                 && chessBoard[target.Row, target.Col - 2]?.HasMoved == false)
@@ -55,7 +56,8 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
                 }
             }
         }
-        else if (target.Col - Position.Col == 2 && target.Col + 1 < 8 && chessBoard[target.Row, target.Col + 1]?.Type == PieceType.Rook)
+        else if (target.Col - Position.Col == 2 && Position.Row == target.Row
+            && target.Col + 1 < 8 && chessBoard[target.Row, target.Col + 1]?.Type == PieceType.Rook)
         {
             if (chessBoard[Position.Row, Position.Col]?.HasMoved == false
                 && chessBoard[target.Row, target.Col + 1]?.HasMoved == false)

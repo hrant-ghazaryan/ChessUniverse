@@ -1,4 +1,6 @@
 ﻿using ChessUniverse.Library.Enums;
+using System.ComponentModel.Design;
+using System.IO.Pipelines;
 
 namespace ChessUniverse.Library;
 
@@ -73,23 +75,29 @@ public static class ChessRules
     }
     public static (bool, Piece?) IsChecked(ChessBoard board, Piece? king)
     {
-        //PiecePosition? kingposition = ChessBoard.GetKingPosition(board, PieceColor.White);
-        if (king != null)
+        for (int i = 0; i < 8; i++)
         {
-            for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
             {
-                for (int j = 0; j < 8; j++)
-                {
-                    var piece1 = board[i, j];
-                    if (MoveValidation(board, piece1?.Position, king.Position, piece1?.Color))
-                    {
-                        return (true, piece1);
-                    }
-                }
+                var attacker = board[i, j];
+                if (MoveValidation(board, attacker?.Position, king?.Position, attacker?.Color))
+                    return (true, attacker);
             }
         }
         return (false, null);
     }
+    //public static bool MoveValidation(ChessBoard? board, PiecePosition? start, PiecePosition? end, PieceColor? T)
+    //{
+    //    var piece = board[start];
+    //    if (piece == null || piece.Color != T)
+    //        return false;
+
+    //    var endPiece = board[end];
+    //    if (endPiece != null && endPiece.Color == T)
+    //        return false;
+
+    //    return piece.IsMovePossible(board, end);
+    //}
     public static bool MoveValidation(ChessBoard? board, PiecePosition? start, PiecePosition? end,
          PieceColor? T)
     {
@@ -97,34 +105,20 @@ public static class ChessRules
         {
             Piece? endPiece = board[end];
 
-            if (endPiece == null || piece.Color != endPiece.Color)
+            if (T == piece?.Color)
             {
-                if (T == piece?.Color && piece?.Type == PieceType.King)
+                if (endPiece == null || piece?.Color != endPiece.Color)
                 {
-                    if (piece.IsMovePossible(board, end))
-                    {
-                        if (piece?.Color != board[end]?.Color)
-                        {
-                            //{
-                            //        if (!IsChecked(board, end))
-                            //            return true;
-                            //        else
-                            //            return false;
-                            return true;
-                        }
-                        else
-                            return false;
-                    }
-                    else
-                        return false;
+                    if (piece?.Type == PieceType.King && piece!.IsMovePossible(board, end) && !IsChecked(board, endPiece).Item1)
+                        return true;
+                    else if (piece!.IsMovePossible(board, end))
+                        return true;
                 }
-                else if (T == piece?.Color && board[start]?.Type != PieceType.King
-                && board[start]!.IsMovePossible(board, end) && board[start]?.Color != board[end]?.Color)
-                    return true;
             }
         }
         return false;
     }
+
     public static bool PawnPromotion(ChessBoard board, PiecePosition start)
     {
         Piece? piece = board[start];
@@ -141,25 +135,9 @@ public static class ChessRules
         else
             return false;
     }
-    public static bool IsPieceProtected(ChessBoard board, PiecePosition position)
-    {
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                Piece? piece = board[i, j];
-                if (piece != null && piece?.Color == board[position]?.Color)
-                {
-                    if (piece!.IsMovePossible(board, position))
-                        return true;
-                }
-            }
-        }
-        return false;
-    }
     public static bool IsCheckMate(ChessBoard board, PiecePosition kingposition, PiecePosition attacker)
     {
-        int k = 0;
+        int safeMovesCount = 0;
         List<PiecePosition> kingmoves = new List<PiecePosition>();
         List<PiecePosition> attackermoves = new List<PiecePosition>();
         if (Math.Abs(attacker.Row - kingposition.Row) > 1 || Math.Abs(attacker.Col - kingposition.Col) > 1)
@@ -236,78 +214,108 @@ public static class ChessRules
                     }
                 }
             }
+            ChessBoard newBoard = new ChessBoard();
+            newBoard = (ChessBoard)board.Clone();
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
                 {
                     var piece = board[i, j];
-                    if (piece != null && piece.Color == board[kingposition]!.Color)
                     {
-                        foreach (var item in attackermoves)
+                        if (piece != null && piece.Color == board[kingposition]!.Color)
                         {
-                            if (piece.Color == board[kingposition]?.Color
-                            && MoveValidation(board, piece.Position, item, board[kingposition]!.Color))
-                                return false;
+                            foreach (var move in attackermoves)
+                            {
+                                if (MoveValidation(board, piece.Position, attacker, board[kingposition]?.Color))
+                                    return false;
+                                else if (MoveValidation(newBoard, piece.Position, move, board[kingposition]?.Color))
+                                {
+                                    Piece.SwitchPositions(newBoard, piece.Position, move);
+
+                                    if (!IsChecked(newBoard, kingposition))
+                                        return false;
+                                }
+                            }
                         }
                     }
                 }
             }
             return true;
+
         }
         else
         {
+            //int[] dr = { -1, -1, -1, 0, 0, 1, 1, 1 };
+            //int[] dc = { -1, 0, 1, -1, 1, -1, 0, 1 };
+
+            //for (int i = 0; i < 8; i++)
+            //{
+            //    int newr = kingposition.Row + dr[i];
+            //    int newc = kingposition.Col + dc[i];
+
+            //    if (IsInside(newr) && IsInside(newc))
+            //        kingmoves.Add(new PiecePosition { Row = newr, Col = newc });
+            //}
             if (IsInside(kingposition.Row + 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col });
-                k++;
+                safeMovesCount++;
             }
             if (IsInside(kingposition.Row + 1) && IsInside(kingposition.Col + 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col + 1 });
-                k++;
+                safeMovesCount++;
             }
             if (IsInside(kingposition.Row + 1) && IsInside(kingposition.Col - 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col - 1 });
-                k++;
+                safeMovesCount++;
             }
             if (IsInside(kingposition.Col + 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row, Col = kingposition.Col + 1 });
-                k++;
+                safeMovesCount++;
             }
             if (IsInside(kingposition.Col - 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row, Col = kingposition.Col - 1 });
-                k++;
+                safeMovesCount++;
             }
             if (IsInside(kingposition.Row - 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col });
-                k++;
+                safeMovesCount++;
             }
             if (IsInside(kingposition.Row - 1) && IsInside(kingposition.Col + 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col + 1 });
-                k++;
+                safeMovesCount++;
             }
             if (IsInside(kingposition.Row - 1) && IsInside(kingposition.Col - 1))
             {
                 kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col - 1 });
-                k++;
+                safeMovesCount++;
             }
-            foreach (var move in kingmoves)
+            for (int i = 0; i < 8; i++)
             {
-                ChessBoard newBoard = new ChessBoard();
-                newBoard = (ChessBoard)board.Clone();
-                Piece.SwitchPositions(newBoard, kingposition, move);
-                if (MoveValidation(board, kingposition, move, board[kingposition]?.Color) && !IsChecked(newBoard).Item1)
+                for (int j = 0; j < 8; j++)
                 {
-                    k--;
+                    var piece = board[i, j];
+                    if (piece != null&& piece.IsMovePossible(board, attacker))
+                            return false;
+
+                    foreach (var move in kingmoves)
+                    {
+                        ChessBoard newBoard = new ChessBoard();
+                        newBoard = (ChessBoard)board.Clone();
+                        Piece.SwitchPositions(newBoard, kingposition, move);
+                        if (IsChecked(newBoard, newBoard[move]).Item1)
+                            safeMovesCount--;
+                    }
                 }
             }
 
-            if (k == 0)
+            if (safeMovesCount == 0)
                 return true;
         }
         return false;

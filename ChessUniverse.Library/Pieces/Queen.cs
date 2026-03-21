@@ -14,7 +14,6 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
             {
                 for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
                 {
-                    if (chessBoard[Position.Row, Position.Col - j] == null) { }
                     if (chessBoard[Position.Row, Position.Col - j] != null)
                         return false;
                 }
@@ -23,7 +22,6 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
             {
                 for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
                 {
-                    if (chessBoard[Position.Row, Position.Col + j] == null) { }
                     if (chessBoard[Position.Row, Position.Col + j] != null)
                         return false;
                 }
@@ -32,7 +30,6 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
             {
                 for (int j = 1; j < Math.Abs(Position.Row - targetposition.Row); j++)
                 {
-                    if (chessBoard[Position.Row - j, Position.Col] == null) { }
                     if (chessBoard[Position.Row - j, Position.Col] != null)
                         return false;
                 }
@@ -41,7 +38,6 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
             {
                 for (int j = 1; j < Math.Abs(Position.Row - targetposition.Row); j++)
                 {
-                    if (chessBoard[Position.Row + j, Position.Col] == null) { }
                     if (chessBoard[Position.Row + j, Position.Col] != null)
                         return false;
                 }
@@ -50,7 +46,6 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
         }
         if (Math.Abs(Position.Row - targetposition.Row) == Math.Abs(Position.Col - targetposition.Col))
         {
-            List<Piece> movestotarget = new List<Piece>();
             if (Position.Row < targetposition.Row && Position.Col > targetposition.Col)
             {
                 for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
@@ -59,7 +54,6 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
                     {
                         if (i == j)
                         {
-                            if (chessBoard[Position.Row + i, Position.Col - j] == null) { }
                             if (chessBoard[Position.Row + i, Position.Col - j] != null)
                                 return false;
                         }
@@ -74,7 +68,6 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
                     {
                         if (i == j)
                         {
-                            if (chessBoard[Position.Row + i, Position.Col + j] == null) { }
                             if (chessBoard[Position.Row + i, Position.Col + j] != null)
                                 return false;
                         }
@@ -89,7 +82,6 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
                     {
                         if (i == j)
                         {
-                            if (chessBoard[Position.Row - i, Position.Col + j] == null) { }
                             if (chessBoard[Position.Row - i, Position.Col + j] != null)
                                 return false;
                         }
@@ -104,18 +96,11 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
                     {
                         if (i == j)
                         {
-                            if (chessBoard[Position.Row - i, Position.Col - j] == null) { }
                             if (chessBoard[Position.Row - i, Position.Col - j] != null)
                                 return false;
                         }
                     }
                 }
-            }
-            foreach (var item in movestotarget)
-            {
-                if (item == null) { }
-                if (item != null)
-                    return false;
             }
             return true;
         }

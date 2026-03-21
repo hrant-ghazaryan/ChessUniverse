@@ -79,7 +79,6 @@ public class ChessBoard : ICloneable
         _squares[7, 7] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 7} };
 
     }
-   
     public static PiecePosition? GetKingPosition(ChessBoard chessBoard, PieceColor color)
     {
         for (int i = 0; i < 8; i++)
@@ -108,7 +107,6 @@ public class ChessBoard : ICloneable
         }
         return positions;
     }
-
     public object Clone()
     {
         ChessBoard newBoard = new ChessBoard();
@@ -119,9 +117,7 @@ public class ChessBoard : ICloneable
             {
                 var piece = _squares[i, j];
                 if (piece != null)
-                {
                     newBoard[i, j] = (Piece)piece.Clone();
-                }
             }
         }
         return newBoard;
