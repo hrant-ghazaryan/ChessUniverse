@@ -1,6 +1,4 @@
 ﻿using ChessUniverse.Library.Enums;
-using System.ComponentModel.Design;
-using System.IO.Pipelines;
 
 namespace ChessUniverse.Library;
 
@@ -86,18 +84,6 @@ public static class ChessRules
         }
         return (false, null);
     }
-    //public static bool MoveValidation(ChessBoard? board, PiecePosition? start, PiecePosition? end, PieceColor? T)
-    //{
-    //    var piece = board[start];
-    //    if (piece == null || piece.Color != T)
-    //        return false;
-
-    //    var endPiece = board[end];
-    //    if (endPiece != null && endPiece.Color == T)
-    //        return false;
-
-    //    return piece.IsMovePossible(board, end);
-    //}
     public static bool MoveValidation(ChessBoard? board, PiecePosition? start, PiecePosition? end,
          PieceColor? T)
     {
@@ -245,64 +231,28 @@ public static class ChessRules
         }
         else
         {
-            //int[] dr = { -1, -1, -1, 0, 0, 1, 1, 1 };
-            //int[] dc = { -1, 0, 1, -1, 1, -1, 0, 1 };
+            int[] dr = [1, 1, 1, 0, 0, -1, -1, -1];
+            int[] dc = [-1, 0, 1, -1, 1, -1, 0, 1];
 
-            //for (int i = 0; i < 8; i++)
-            //{
-            //    int newr = kingposition.Row + dr[i];
-            //    int newc = kingposition.Col + dc[i];
+            for (int i = 0; i < 8; i++)
+            {
+                int newRow = kingposition.Row + dr[i];
+                int newCol = kingposition.Col + dc[i];
 
-            //    if (IsInside(newr) && IsInside(newc))
-            //        kingmoves.Add(new PiecePosition { Row = newr, Col = newc });
-            //}
-            if (IsInside(kingposition.Row + 1))
-            {
-                kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col });
-                safeMovesCount++;
+                if (IsInside(newRow) && IsInside(newCol))
+                {
+                    kingmoves.Add(new PiecePosition { Row = newRow, Col = newCol });
+                    safeMovesCount++;
+                }
             }
-            if (IsInside(kingposition.Row + 1) && IsInside(kingposition.Col + 1))
-            {
-                kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col + 1 });
-                safeMovesCount++;
-            }
-            if (IsInside(kingposition.Row + 1) && IsInside(kingposition.Col - 1))
-            {
-                kingmoves.Add(new PiecePosition { Row = kingposition.Row + 1, Col = kingposition.Col - 1 });
-                safeMovesCount++;
-            }
-            if (IsInside(kingposition.Col + 1))
-            {
-                kingmoves.Add(new PiecePosition { Row = kingposition.Row, Col = kingposition.Col + 1 });
-                safeMovesCount++;
-            }
-            if (IsInside(kingposition.Col - 1))
-            {
-                kingmoves.Add(new PiecePosition { Row = kingposition.Row, Col = kingposition.Col - 1 });
-                safeMovesCount++;
-            }
-            if (IsInside(kingposition.Row - 1))
-            {
-                kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col });
-                safeMovesCount++;
-            }
-            if (IsInside(kingposition.Row - 1) && IsInside(kingposition.Col + 1))
-            {
-                kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col + 1 });
-                safeMovesCount++;
-            }
-            if (IsInside(kingposition.Row - 1) && IsInside(kingposition.Col - 1))
-            {
-                kingmoves.Add(new PiecePosition { Row = kingposition.Row - 1, Col = kingposition.Col - 1 });
-                safeMovesCount++;
-            }
+            
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
                 {
                     var piece = board[i, j];
-                    if (piece != null&& piece.IsMovePossible(board, attacker))
-                            return false;
+                    if (piece != null && piece.IsMovePossible(board, attacker))
+                        return false;
 
                     foreach (var move in kingmoves)
                     {

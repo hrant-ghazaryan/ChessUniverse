@@ -19,7 +19,6 @@ public class PiecePosition
             Row = 7 - (s[1] - '1');
         }
     }
-
     public override string ToString()
     {
         char file = (char)('A' + Col);
