@@ -22,8 +22,7 @@ public abstract class Piece(PieceColor color, PieceType type, char symbol, Piece
             return Symbol;
     }
     public abstract bool IsMovePossible(ChessBoard chessBoard, PiecePosition target);
-    public virtual List<PiecePosition> GetPossibleMoves(ChessBoard chessBoard)
-        => new List<PiecePosition>();
+    public abstract (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard chessBoard);
     public static ChessBoard SwitchPositions(ChessBoard board, PiecePosition startPosition, PiecePosition targetPosition)
     {
         if (startPosition is not null && targetPosition is not null 

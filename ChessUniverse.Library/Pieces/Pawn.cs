@@ -7,7 +7,7 @@ public class Pawn : Piece
     private bool _isMoved;
     public bool IsMoved
     {
-        get => _isMoved; 
+        get => _isMoved;
         set
         {
             if (Position.Row == 2 || Position.Row == 6)
@@ -47,7 +47,7 @@ public class Pawn : Piece
         }
         return false;
     }
-    public override List<PiecePosition> GetPossibleMoves(ChessBoard board)
+    public override (List<PiecePosition>,bool) GetPossibleMoves(ChessBoard board)
     {
         List<PiecePosition> possibleMoves = new List<PiecePosition>();
         for (int i = 0; i < 8; i++)
@@ -59,7 +59,10 @@ public class Pawn : Piece
                     possibleMoves.Add(targetposition);
             }
         }
-        return possibleMoves;
+        if (possibleMoves.Count > 0)
+            return (possibleMoves,true);
+        else
+            return (possibleMoves, false);
     }
     public override Piece Clone()
     {

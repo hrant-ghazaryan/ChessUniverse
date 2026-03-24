@@ -52,7 +52,7 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
         }
         return false;
     }
-    public override List<PiecePosition> GetPossibleMoves(ChessBoard board)
+    public override (List<PiecePosition>,bool) GetPossibleMoves(ChessBoard board)
     {
         List<PiecePosition> possibleMoves = new List<PiecePosition>();
         for (int i = 0; i < 8; i++)
@@ -64,7 +64,10 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
                     possibleMoves.Add(targetposition);
             }
         }
-        return possibleMoves;
+        if (possibleMoves.Count > 0)
+            return (possibleMoves, true);
+        else
+            return (possibleMoves, false);
     }
     public override Piece Clone()
     {

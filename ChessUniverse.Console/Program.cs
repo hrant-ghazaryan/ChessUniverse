@@ -10,6 +10,12 @@ PrintBoard(chessBoard);
 
 do
 {
+    if (ChessRules.IsStaleMate(chessBoard, T))
+    {
+        Console.WriteLine(" StaleMate! ");
+        break;
+    }
+
     if (T == PieceColor.White)
         Console.WriteLine("White Please: ");
     if (T == PieceColor.Black)
@@ -24,7 +30,7 @@ do
     isCheckMate = ma.Move(ref chessBoard, target, ref T);
     PrintBoard(chessBoard);
     q++;
-} while (q != 20);
+} while (q != 120);
 
 void PrintBoard(ChessBoard chessBoard)
 {

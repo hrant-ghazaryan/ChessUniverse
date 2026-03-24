@@ -4,18 +4,6 @@ namespace ChessUniverse.Library;
 
 public static class ChessRules
 {
-
-    public static char GetSymbol(Piece piece, PieceColor color)
-    {
-        if (color == PieceColor.White)
-        {
-            string s = piece.Symbol.ToString().ToUpper();
-            bool b = char.TryParse(s, out char c);
-            return c;
-        }
-        else
-            return piece.Symbol;
-    }
     public static bool IsInside(int position)
     {
         if (position >= 0 && position < 8)
@@ -104,7 +92,6 @@ public static class ChessRules
         }
         return false;
     }
-
     public static bool PawnPromotion(ChessBoard board, PiecePosition start)
     {
         Piece? piece = board[start];
@@ -126,7 +113,8 @@ public static class ChessRules
         int safeMovesCount = 0;
         List<PiecePosition> kingmoves = new List<PiecePosition>();
         List<PiecePosition> attackermoves = new List<PiecePosition>();
-        if (Math.Abs(attacker.Row - kingposition.Row) > 1 || Math.Abs(attacker.Col - kingposition.Col) > 1)
+        if (Math.Abs(attacker.Row - kingposition.Row) == Math.Abs(attacker.Col - kingposition.Col) &&
+            Math.Abs(attacker.Row - kingposition.Row) > 1 && Math.Abs(attacker.Col - kingposition.Col) > 1 )
         {
             //1
             if (attacker.Row < kingposition.Row && attacker.Col < kingposition.Col)
@@ -275,12 +263,9 @@ public static class ChessRules
         int pieceCount = ChessBoard.GetPiecePositions(board, T).Count;
         foreach (var item in ChessBoard.GetPiecePositions(board, T))
         {
-            if (board[item]?.GetPossibleMoves(board).Count == 0)
-                pieceCount--;
+            if (board[item]?.GetPossibleMoves(board).Item2 == true)
+                return false;
         }
-        if (pieceCount == 0)
-            return true;
-        else
-            return false;
+        return true;
     }
 }

@@ -4,8 +4,6 @@ namespace ChessUniverse.Library;
 
 public class Game
 {
-    public PieceColor T { get; set; }
-
     public static List<MoveAffirmation> moves = new List<MoveAffirmation>();
     public static ChessBoard UndoMove(ChessBoard board, ref PieceColor T)
     {
