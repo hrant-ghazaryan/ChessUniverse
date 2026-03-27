@@ -24,12 +24,27 @@ public class ChessRulesTest
     {
         Piece[,] checkBoard = new Piece[8, 8];
         checkBoard[0, 4] = new King(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 4 } };
-        checkBoard[5, 3] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 5, Col = 3 } };
+        checkBoard[5, 4] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 5, Col = 4 } };
         checkBoard[7, 4] = new King(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 4 } };
         ChessBoard board = new ChessBoard(checkBoard);
-        
-        var checkChecker = ChessRules.IsChecked(board,new PiecePosition(0,4));
+
+
+        var checkChecker = ChessRules.IsChecked(board, new PiecePosition(0,4));
         Assert.True(checkChecker);
+    }
+
+    [Fact]
+    public void IsStaleMateTest()
+    {
+        Piece[,] stalemateBoard = new Piece[8, 8];
+        stalemateBoard[0, 7] = new King(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 7 } };
+        stalemateBoard[1, 5] = new Queen(PieceColor.White) { Position = new PiecePosition { Row = 1, Col = 5 } };
+        stalemateBoard[2, 6] = new King(PieceColor.White) { Position = new PiecePosition { Row = 2, Col = 6 } };
+        ChessBoard board = new ChessBoard(stalemateBoard);
+
+        var isStalemateChecker = ChessRules.IsStaleMate(board, PieceColor.Black);
+        Assert.True(isStalemateChecker);
+        
     }
 
     public static IEnumerable<object[]> MoveTestCases => new List<object[]>

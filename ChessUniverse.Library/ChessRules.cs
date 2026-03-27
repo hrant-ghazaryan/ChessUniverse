@@ -41,6 +41,7 @@ public static class ChessRules
         }
         return (C, k);
     }
+    //checkk
     public static bool IsChecked(ChessBoard chessBoard, PiecePosition position)
     {
         for (int i = 0; i < 8; i++)
@@ -260,8 +261,9 @@ public static class ChessRules
     }
     public static bool IsStaleMate(ChessBoard board, PieceColor T)
     {
-        int pieceCount = ChessBoard.GetPiecePositions(board, T).Count;
-        foreach (var item in ChessBoard.GetPiecePositions(board, T))
+        List<PiecePosition> allTPieces = ChessBoard.GetAllPiecePositions(board, T);
+        int pieceCount = allTPieces.Count;
+        foreach (var item in allTPieces)
         {
             if (board[item]?.GetPossibleMoves(board).Item2 == true)
                 return false;

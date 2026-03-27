@@ -95,7 +95,7 @@ public class ChessBoard : ICloneable
         }
         return null;
     }
-    public static List<PiecePosition> GetPiecePositions(ChessBoard board, PieceColor color)
+    public static List<PiecePosition> GetAllPiecePositions(ChessBoard board, PieceColor color)
     {
         List<PiecePosition> positions = new List<PiecePosition>();
         for (int i = 0; i < 8; i++)

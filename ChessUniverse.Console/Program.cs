@@ -1,36 +1,46 @@
 using ChessUniverse.Library;
 using ChessUniverse.Library.Enums;
+using ChessUniverse.Library.Pieces;
 
-int q = 0;
-bool isCheckMate = false;
-PieceColor T = PieceColor.White;
-ChessBoard chessBoard = new ChessBoard();
-chessBoard.SetStartPosition();
-PrintBoard(chessBoard);
+//int q = 0;
+//bool isCheckMate = false;
+//PieceColor T = PieceColor.White;
+//ChessBoard chessBoard = new ChessBoard();
+//chessBoard.SetStartPosition();
+//PrintBoard(chessBoard);
 
-do
-{
-    if (ChessRules.IsStaleMate(chessBoard, T))
-    {
-        Console.WriteLine(" StaleMate! ");
-        break;
-    }
+//do
+//{
+//    if (ChessRules.IsStaleMate(chessBoard, T))
+//    {
+//        Console.WriteLine(" StaleMate! ");
+//        break;
+//    }
 
-    if (T == PieceColor.White)
-        Console.WriteLine("White Please: ");
-    if (T == PieceColor.Black)
-        Console.WriteLine("Black Please: ");
-    PiecePosition start = new PiecePosition();
-    Console.Write("Enter start position: ");
-    EnterNumber(start);
-    PiecePosition target = new PiecePosition();
-    Console.Write("Enter target position: ");
-    EnterNumber(target);
-    MoveAffirmation ma = new MoveAffirmation(start, target);
-    isCheckMate = ma.Move(ref chessBoard, target, ref T);
-    PrintBoard(chessBoard);
-    q++;
-} while (q != 120);
+//    if (T == PieceColor.White)
+//        Console.WriteLine("White Please: ");
+//    if (T == PieceColor.Black)
+//        Console.WriteLine("Black Please: ");
+//    PiecePosition start = new PiecePosition();
+//    Console.Write("Enter start position: ");
+//    EnterNumber(start);
+//    PiecePosition target = new PiecePosition();
+//    Console.Write("Enter target position: ");
+//    EnterNumber(target);
+//    MoveAffirmation ma = new MoveAffirmation(start, target);
+//    isCheckMate = ma.Move(ref chessBoard, target, ref T);
+//    PrintBoard(chessBoard);
+//    q++;
+//} while (q != 120);
+
+Piece[,] stalemateBoard = new Piece[8, 8];
+stalemateBoard[0, 7] = new King(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 7 } };
+stalemateBoard[1, 5] = new Queen(PieceColor.White) { Position = new PiecePosition { Row = 1, Col = 5 } };
+stalemateBoard[2, 6] = new King(PieceColor.White) { Position = new PiecePosition { Row = 2, Col = 6 } };
+ChessBoard board = new ChessBoard(stalemateBoard);
+
+var isStalemateChecker = ChessRules.IsStaleMate(board, PieceColor.Black);
+Console.WriteLine(isStalemateChecker); 
 
 void PrintBoard(ChessBoard chessBoard)
 {

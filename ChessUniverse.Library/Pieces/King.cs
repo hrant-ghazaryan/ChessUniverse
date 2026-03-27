@@ -7,7 +7,7 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition target)
     {
-        if (Position.Col - target.Col == 2 && Position.Row == target.Row && 
+        if (Position.Col - target.Col == 2 && Position.Row == target.Row &&
             chessBoard[target.Row, target.Col - 2]?.Type == PieceType.Rook)
         {
             if (chessBoard[Position.Row, Position.Col]?.HasMoved == false
@@ -118,22 +118,29 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
 
         return false;
     }
-    public override (List<PiecePosition>,bool) GetPossibleMoves(ChessBoard board)
+    public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
     {
+
+        ChessBoard copyBoard = new ChessBoard();
+        copyBoard = (ChessBoard)board.Clone();
+
         List<PiecePosition> possibleMoves = new List<PiecePosition>();
+
         for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
             {
+                if (i == Position.Row && j == Position.Col)
+                    continue;
                 PiecePosition targetposition = new PiecePosition(i, j);
                 if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]!.Color))
-                    possibleMoves.Add(targetposition);
+                {
+                    if (!ChessRules.IsChecked(copyBoard, targetposition))
+                        possibleMoves.Add(targetposition);
+                }
             }
         }
-        if (possibleMoves.Count > 0)
-            return (possibleMoves, true);
-        else
-            return (possibleMoves, false);
+        return (possibleMoves, possibleMoves.Count > 0);
     }
     public override Piece Clone()
     {
