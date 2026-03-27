@@ -1,4 +1,5 @@
 ﻿using ChessUniverse.Library.Enums;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ChessUniverse.Library;
 
@@ -50,28 +51,18 @@ public static class ChessRules
             {
                 var piece = chessBoard[i, j];
                 var pieceparam = chessBoard[position];
-                if (piece?.Color == PieceColor.White && pieceparam?.Color == PieceColor.Black
+                if (piece is not null )
+                {
+                    if (piece?.Color == PieceColor.White && pieceparam?.Color == PieceColor.Black
                     && piece.IsMovePossible(chessBoard, position))
-                    return true;
-                if (piece?.Color == PieceColor.Black && pieceparam?.Color == PieceColor.White
+                        return true;
+                    if (piece?.Color == PieceColor.Black && pieceparam?.Color == PieceColor.White
                     && piece.IsMovePossible(chessBoard, position))
-                    return true;
+                        return true;
+                }
             }
         }
         return false;
-    }
-    public static (bool, Piece?) IsChecked(ChessBoard board, Piece? king)
-    {
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                var attacker = board[i, j];
-                if (MoveValidation(board, attacker?.Position, king?.Position, attacker?.Color))
-                    return (true, attacker);
-            }
-        }
-        return (false, null);
     }
     public static bool MoveValidation(ChessBoard? board, PiecePosition? start, PiecePosition? end,
          PieceColor? T)
@@ -84,7 +75,7 @@ public static class ChessRules
             {
                 if (endPiece == null || piece?.Color != endPiece.Color)
                 {
-                    if (piece?.Type == PieceType.King && piece!.IsMovePossible(board, end) && !IsChecked(board, endPiece).Item1)
+                    if (piece?.Type == PieceType.King && piece!.IsMovePossible(board, end) && !IsChecked(board, end))
                         return true;
                     else if (piece!.IsMovePossible(board, end))
                         return true;
@@ -98,14 +89,7 @@ public static class ChessRules
         Piece? piece = board[start];
 
         if (piece?.Type == PieceType.Pawn)
-        {
-            if (piece.Position.Row == 7 || piece.Position.Row == 0)
-            {
-                return true;
-            }
-            else
-                return false;
-        }
+            return (piece.Position.Row == 7 || piece.Position.Row == 0);
         else
             return false;
     }
@@ -248,7 +232,7 @@ public static class ChessRules
                         ChessBoard newBoard = new ChessBoard();
                         newBoard = (ChessBoard)board.Clone();
                         Piece.SwitchPositions(newBoard, kingposition, move);
-                        if (IsChecked(newBoard, newBoard[move]).Item1)
+                        if (IsChecked(newBoard, move))
                             safeMovesCount--;
                     }
                 }
@@ -261,6 +245,7 @@ public static class ChessRules
     }
     public static bool IsStaleMate(ChessBoard board, PieceColor T)
     {
+
         List<PiecePosition> allTPieces = ChessBoard.GetAllPiecePositions(board, T);
         int pieceCount = allTPieces.Count;
         foreach (var item in allTPieces)
@@ -269,5 +254,9 @@ public static class ChessRules
                 return false;
         }
         return true;
+
+        
     }
+
+    
 }

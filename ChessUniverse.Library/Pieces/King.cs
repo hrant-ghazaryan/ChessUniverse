@@ -113,7 +113,7 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
             return true;
         else if (Math.Abs(Position.Row - target.Row) == 0 && Math.Abs(Position.Col - target.Col) == 1)
             return true;
-        else if (Math.Abs(Position.Row - target.Row) + Math.Abs(Position.Col - target.Col) == 2)
+        else if (Math.Abs(Position.Row - target.Row) == 1 &&  Math.Abs(Position.Col - target.Col) == 1)
             return true;
 
         return false;
@@ -121,6 +121,23 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
     public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
     {
 
+        bool IsCheckedForStaleMate(ChessBoard chessBoard, PiecePosition position)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    var piece = chessBoard[i, j];
+                    var pieceparam = chessBoard[position];
+                    if (piece is not null)
+                    {
+                        if (piece.IsMovePossible(chessBoard, position))
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
         ChessBoard copyBoard = new ChessBoard();
         copyBoard = (ChessBoard)board.Clone();
 
@@ -135,7 +152,7 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
                 PiecePosition targetposition = new PiecePosition(i, j);
                 if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]!.Color))
                 {
-                    if (!ChessRules.IsChecked(copyBoard, targetposition))
+                    if (!IsCheckedForStaleMate(copyBoard, targetposition))
                         possibleMoves.Add(targetposition);
                 }
             }

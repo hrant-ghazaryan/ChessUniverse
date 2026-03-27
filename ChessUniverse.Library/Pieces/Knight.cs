@@ -6,7 +6,7 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible( ChessBoard chessBoard, PiecePosition? target)
+    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition? target)
     {
         if (target is not null)
         {
@@ -16,10 +16,10 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
                 return true;
             return false;
         }
-        else 
+        else
             return false;
     }
-    public override (List<PiecePosition>,bool) GetPossibleMoves(ChessBoard board)
+    public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
     {
         List<PiecePosition> possibleMoves = new List<PiecePosition>();
         for (int i = 0; i < 8; i++)
@@ -31,10 +31,7 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
                     possibleMoves.Add(targetposition);
             }
         }
-        if (possibleMoves.Count > 0)
-            return (possibleMoves, true);
-        else
-            return (possibleMoves, false);
+        return (possibleMoves, possibleMoves.Count > 0);
     }
     public override Piece Clone()
     {
