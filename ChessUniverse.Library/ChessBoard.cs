@@ -7,7 +7,9 @@ public class ChessBoard : ICloneable
 {
     const byte n = 8;
     private Piece?[,] _squares = new Piece[n, n];
-
+    public ChessBoard() { }
+    public ChessBoard(Piece[,] newBoard)
+        => _squares = newBoard;
     public Piece? this[PiecePosition position]
     {
         get
