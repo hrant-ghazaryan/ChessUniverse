@@ -8,16 +8,18 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition? target)
     {
-        if (target is not null)
-        {
-            if (Math.Abs(Position.Row - target.Row) == 2 && Math.Abs(Position.Col - target.Col) == 1)
-                return true;
-            else if (Math.Abs(Position.Row - target.Row) == 1 && Math.Abs(Position.Col - target.Col) == 2)
-                return true;
+        if (target is null)
             return false;
-        }
-        else
+        if (!ChessRules.IsInside(target.Row) || !ChessRules.IsInside(target.Col))
             return false;
+
+        //Սկզբնական և վերջնական դիրքերի տողերի տարբերությունը
+        int dRow = Math.Abs(Position.Row - target.Row);
+
+        //Սկզբնական և վերջնական դիրքերի սյուների տարբերությունը
+        int dCol = Math.Abs(Position.Col - target.Col);
+
+        return (dRow == 1 && dCol == 2) || (dRow == 2 && dCol == 1);
     }
     public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
     {

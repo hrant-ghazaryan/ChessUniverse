@@ -1,35 +1,32 @@
 using ChessUniverse.Library;
 using ChessUniverse.Library.Enums;
-using ChessUniverse.Library.Pieces;
-using System.Collections;
 
 int q = 0;
-//bool isCheckMate = false;
-PieceColor T = PieceColor.White;
+PieceColor Turn = PieceColor.White;
 ChessBoard chessBoard = new ChessBoard();
 chessBoard.SetStartPosition();
 PrintBoard(chessBoard);
-
+Game game = new Game();
 do
 {
-    if (ChessRules.IsStaleMate(chessBoard, T))
-    {
-        Console.WriteLine(" StaleMate! ");
-        break;
-    }
+    Console.WriteLine(Turn == PieceColor.White ? "White Please: " : "Black Please: ");
 
-    Console.WriteLine(T == PieceColor.White ? "White Please: " : "Black Please: ");
     PiecePosition start = new PiecePosition();
     Console.Write("Enter start position: ");
     EnterNumber(start);
+
     PiecePosition target = new PiecePosition();
     Console.Write("Enter target position: ");
     EnterNumber(target);
-    MoveAffirmation ma = new MoveAffirmation(start, target);
-    ma.Move(ref chessBoard, target, ref T);
+
+    MoveInfo moveInfo = new MoveInfo(start, target, Turn);
+    game.Move(ref chessBoard, ref moveInfo);
     PrintBoard(chessBoard);
+
     q++;
+    Turn = moveInfo.T;
 } while (q != 120);
+
 
 void PrintBoard(ChessBoard chessBoard)
 {
@@ -66,4 +63,5 @@ PiecePosition EnterNumber(PiecePosition position)
 
     return position;
 }
+
 

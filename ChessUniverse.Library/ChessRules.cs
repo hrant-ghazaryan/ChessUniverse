@@ -1,5 +1,4 @@
 ﻿using ChessUniverse.Library.Enums;
-using System.Security.Cryptography.X509Certificates;
 
 namespace ChessUniverse.Library;
 
@@ -51,7 +50,7 @@ public static class ChessRules
             {
                 var piece = chessBoard[i, j];
                 var pieceparam = chessBoard[position];
-                if (piece is not null )
+                if (piece is not null)
                 {
                     if (piece?.Color == PieceColor.White && pieceparam?.Color == PieceColor.Black
                     && piece.IsMovePossible(chessBoard, position))
@@ -99,7 +98,7 @@ public static class ChessRules
         List<PiecePosition> kingmoves = new List<PiecePosition>();
         List<PiecePosition> attackermoves = new List<PiecePosition>();
         if (Math.Abs(attacker.Row - kingposition.Row) == Math.Abs(attacker.Col - kingposition.Col) &&
-            Math.Abs(attacker.Row - kingposition.Row) > 1 && Math.Abs(attacker.Col - kingposition.Col) > 1 )
+            Math.Abs(attacker.Row - kingposition.Row) > 1 && Math.Abs(attacker.Col - kingposition.Col) > 1)
         {
             //1
             if (attacker.Row < kingposition.Row && attacker.Col < kingposition.Col)
@@ -218,7 +217,7 @@ public static class ChessRules
                     safeMovesCount++;
                 }
             }
-            
+
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
@@ -255,8 +254,108 @@ public static class ChessRules
         }
         return true;
 
-        
+
+    }
+    public static bool IsCastlingLeftPossible(ChessBoard chessBoard, MoveInfo moveInfo)
+    {
+
+        if (moveInfo.Start.Col - moveInfo.Target.Col != 2 ||
+            moveInfo.Start.Row != moveInfo.Target.Row ||
+            moveInfo.Target.Col - 2 < 0 || moveInfo.Target.Col - 2 > 8)
+            return false;
+
+        if (chessBoard[moveInfo.Start.Row, moveInfo.Start.Col]?.HasMoved != false
+            || chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2]?.HasMoved != false)
+            return false;
+
+        if (chessBoard[moveInfo.Target.Row, moveInfo.Target.Col] != null
+            || chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1] != null)
+            return false;
+
+        if (IsChecked(chessBoard).Item1)
+        {
+            Console.WriteLine("YOU ARE IN CHECK");
+            return false;
+        }
+
+        PiecePosition? l1 = new PiecePosition { Row = moveInfo.Target.Row, Col = moveInfo.Target.Col - 1 };
+        chessBoard[l1] = chessBoard[moveInfo.Start];
+        if (IsChecked(chessBoard, l1))
+        {
+            chessBoard[l1] = null;
+            l1 = null;
+            Console.WriteLine("THIS POSITION IS UNDER CHECK");
+            return false;
+        }
+        else
+        {
+            chessBoard[l1] = null;
+            l1 = null;
+        }
+
+        PiecePosition? l2 = moveInfo.Target;
+        chessBoard[l2] = chessBoard[moveInfo.Start];
+        if (IsChecked(chessBoard, l2))
+        {
+            chessBoard[l2] = null;
+            l2 = null;
+            Console.WriteLine("THIS POSITION IS UNDER CHECK");
+            return false;
+        }
+        else
+            return true;
+    }
+    public static bool IsCastlingRightPossible(ChessBoard chessBoard, MoveInfo moveInfo)
+    {
+        if (moveInfo.Target.Col - moveInfo.Start.Col != 2 ||
+            moveInfo.Start.Row != moveInfo.Target.Row ||
+            moveInfo.Target.Col + 1 < 0 || moveInfo.Target.Col + 1 > 7)
+            return false;
+
+        if (chessBoard[moveInfo.Start.Row, moveInfo.Start.Col]?.HasMoved != false
+            || chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1]?.HasMoved != false)
+            return false;
+
+        if (chessBoard[moveInfo.Target.Row, moveInfo.Target.Col] != null
+            || chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 1] != null)
+            return false;
+
+        if (ChessRules.IsChecked(chessBoard).Item1)
+        {
+            Console.WriteLine("YOU ARE IN CHECK");
+            return false;
+        }
+
+        PiecePosition? r1 = new PiecePosition { Row = moveInfo.Target.Row, Col = moveInfo.Target.Col - 1 };
+        chessBoard[r1] = chessBoard[moveInfo.Start];
+        if (ChessRules.IsChecked(chessBoard, r1))
+        {
+            chessBoard[r1] = null;
+            r1 = null;
+            Console.WriteLine("THIS POSITION IS UNDER CHECK");
+            return false;
+        }
+        else
+        {
+            chessBoard[r1] = null;
+            r1 = null;
+        }
+
+        PiecePosition? r2 = moveInfo.Target;
+        chessBoard[r2] = chessBoard[moveInfo.Start];
+        if (ChessRules.IsChecked(chessBoard, r2))
+        {
+            chessBoard[r2] = null;
+            r2 = null;
+            Console.WriteLine("THIS POSITION IS UNDER CHECK");
+            return false;
+        }
+        else
+        {
+            chessBoard[r2] = null;
+            r2 = null;
+        }
+        return true;
     }
 
-    
 }

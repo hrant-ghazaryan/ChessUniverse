@@ -10,9 +10,12 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
     {
         //rowStep = sign(targetRow - startRow)
         //colStep = sign(targetCol - startCol)
-        if (Position.Row == targetposition.Row || Position.Col == targetposition.Col)
+        bool sameRow = Position.Row == targetposition.Row;
+        bool sameCol = Position.Col == targetposition.Col;
+
+        if (sameRow || sameCol)
         {
-            if (Position.Row == targetposition.Row && Position.Col > targetposition.Col)
+            if (sameRow && Position.Col > targetposition.Col)
             {
                 for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
                 {
@@ -21,7 +24,7 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
                         return false;
                 }
             }
-            if (Position.Row == targetposition.Row && Position.Col < targetposition.Col)
+            if (sameRow && Position.Col < targetposition.Col)
             {
                 for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
                 {
@@ -30,7 +33,7 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
                         return false;
                 }
             }
-            if (Position.Row > targetposition.Row && Position.Col == targetposition.Col)
+            if (Position.Row > targetposition.Row && sameCol)
             {
                 for (int j = 1; j < Math.Abs(Position.Row - targetposition.Row); j++)
                 {
@@ -39,7 +42,7 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
                         return false;
                 }
             }
-            if (Position.Row < targetposition.Row && Position.Col == targetposition.Col)
+            if (Position.Row < targetposition.Row && sameCol)
             {
                 for (int j = 1; j < Math.Abs(Position.Row - targetposition.Row); j++)
                 {

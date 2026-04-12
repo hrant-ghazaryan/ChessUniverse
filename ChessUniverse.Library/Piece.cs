@@ -35,7 +35,6 @@ public abstract class Piece(PieceColor color, PieceType type, char symbol, Piece
         return board;
     }
     public abstract object Clone();
-
 };
 
 
