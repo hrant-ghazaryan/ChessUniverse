@@ -68,7 +68,7 @@ public class Game
     {
         if (ChessRules.PawnPromotion(board, moveInfo.Target))
         {
-            Console.Write("INSERT NEW TYPE FOR PAWN: ");
+            Console.Write("INSERT NEW TYPE FOR PAWN: Q | R | B | T ");
             string? newFigure = Console.ReadLine();
             if (board[moveInfo.Target] is Piece pawn)
             {
