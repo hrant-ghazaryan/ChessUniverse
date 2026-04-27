@@ -9,7 +9,7 @@
     <Grid>
         <!-- board.png - Margin="132,45,441,0" -->
         <Image Name="board" Source="/images/board/chessboard.png" Margin="132,62,415,16"/>
-        
+
         <Grid Name="grid_figure" Height="453" Width="453" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="224,102,0,0">
             <!-- white figure -->
             <Image Name="wh_pawn_A"   Tag="pawn"  Source="/images/figures/white-soldier.png"  Height="50" Width="35" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,344,0,0" Stretch="Fill"  MouseDown="MouseDown" MouseMove="MouseMove" MouseUp="MouseUp"></Image>
@@ -54,8 +54,10 @@
             <Image Name="bl_rook_H"   Tag="rook"   Source="/images/figures/black-ship.png"     Height="50" Width="45" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="405,4,0,0" Stretch="Fill" MouseDown="MouseDown" MouseMove="MouseMove" MouseUp="MouseUp"></Image>
         </Grid>
 
-        <Label Name="label1" Content="X:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,415,0,0"></Label>
-        <Label Name="label2" Content="Y:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,435,0,0"></Label>
-        <Label Name="label3" Content="M:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,390,0,0"></Label>
+        <Label Name="label1" Content="X:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,350,0,0"></Label>
+        <Label Name="label2" Content="Y:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,378,0,0"></Label>
+        <Label Name="label3" Content="M:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,317,0,0"></Label>
+        <Grid Name="BlackCaptured" HorizontalAlignment="Center" Height="90" Margin="768,122,0,0" VerticalAlignment="Top" Width="370"/>
+        <Grid Name="WhiteCaptured" HorizontalAlignment="Center" Height="90" Margin="768,485,0,0" VerticalAlignment="Top" Width="370"/>
     </Grid>
 </Window>
