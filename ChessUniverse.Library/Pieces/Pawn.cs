@@ -32,7 +32,8 @@ public class Pawn : Piece
                 return true;
             if (Position.Row - target?.Row == 1 && Position.Col == target?.Col && chessBoard[target] == null)
                 return true;
-            else if (Position.Row - target?.Row == 2 && Position.Row == 6 && Position.Col == target?.Col)
+            else if (Position.Row == 6 && Position.Row - target?.Row == 2 &&  Position.Col == target?.Col 
+                && chessBoard[5,Position.Col] is null)
                 return true;
         }
         if (Color == PieceColor.Black)
@@ -42,7 +43,8 @@ public class Pawn : Piece
                 return true;
             if (target?.Row - Position.Row == 1 && Position.Col == target?.Col && chessBoard[target] == null)
                 return true;
-            else if (target?.Row - Position.Row == 2 && Position.Row == 1 && Position.Col == target?.Col)
+            else if (Position.Row == 1 && target?.Row - Position.Row == 2 && Position.Col == target?.Col
+                && chessBoard[2,Position.Col] is null)
                 return true;
         }
         return false;

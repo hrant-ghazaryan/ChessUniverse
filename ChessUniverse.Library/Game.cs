@@ -61,7 +61,7 @@ public class Game
             board[moveInfo.Start] = null;
             piece?.Position = moveInfo.Target;
             piece?.HasMoved = true;
-            PawnPromotionMove(board, moveInfo);
+            //PawnPromotionMove(board, moveInfo);
         }
     }
     public void PawnPromotionMove(ChessBoard board, MoveInfo moveInfo)
@@ -95,11 +95,10 @@ public class Game
             moveInfo.T = PieceColor.White;
         return moveInfo;
     }
-
-    private (ChessBoard, bool) CastlingLeft(ChessBoard chessBoard, MoveInfo moveInfo)
+    public static (ChessBoard, bool) CastlingLeft(ChessBoard chessBoard, MoveInfo moveInfo)
     {
         if (chessBoard[moveInfo.Start]?.Type != PieceType.King ||
-            chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2]?.Type != PieceType.Rook)
+            (ChessRules.IsInside(moveInfo.Target.Col - 2) && chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2]?.Type != PieceType.Rook))
             return (chessBoard, false);
 
         var color = chessBoard[moveInfo.Start].Color;
@@ -124,10 +123,10 @@ public class Game
         else
             return (chessBoard, false);
     }
-    private (ChessBoard, bool) CastlingRight(ChessBoard chessBoard, MoveInfo moveInfo)
+    public static (ChessBoard, bool) CastlingRight(ChessBoard chessBoard, MoveInfo moveInfo)
     {
         if (chessBoard[moveInfo.Start]?.Type != PieceType.King ||
-            chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1]?.Type != PieceType.Rook)
+            (ChessRules.IsInside(moveInfo.Target.Col + 1) && chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1]?.Type != PieceType.Rook))
             return (chessBoard,false);
 
         var color = chessBoard[moveInfo.Start].Color;

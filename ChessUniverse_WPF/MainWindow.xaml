@@ -57,7 +57,8 @@
         <Label Name="label1" Content="X:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,350,0,0"></Label>
         <Label Name="label2" Content="Y:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,378,0,0"></Label>
         <Label Name="label3" Content="M:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,317,0,0"></Label>
-        <Grid Name="BlackCaptured" HorizontalAlignment="Center" Height="90" Margin="768,122,0,0" VerticalAlignment="Top" Width="370"/>
-        <Grid Name="WhiteCaptured" HorizontalAlignment="Center" Height="90" Margin="768,485,0,0" VerticalAlignment="Top" Width="370"/>
+        
+        <WrapPanel Name="BlackCaptures" HorizontalAlignment="Left" Height="80" Margin="757,80,0,0" VerticalAlignment="Top" Width="179"/>
+        <WrapPanel Name="WhiteCaptures" HorizontalAlignment="Left" Height="80" Margin="757,538,0,0" VerticalAlignment="Top" Width="179"/>
     </Grid>
 </Window>
