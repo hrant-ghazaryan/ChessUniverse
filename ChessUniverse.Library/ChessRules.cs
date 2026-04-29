@@ -300,8 +300,9 @@ public static class ChessRules
             l2 = null;
             return false;
         }
-        else
-            return true;
+        chessBoard[l2] = null;
+        l2 = null;
+        return true;
     }
     public static bool IsCastlingRightPossible(ChessBoard chessBoard, MoveInfo moveInfo)
     {

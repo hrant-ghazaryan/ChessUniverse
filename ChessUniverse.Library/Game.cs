@@ -58,9 +58,9 @@ public class Game
         {
             Piece? piece = board[moveInfo.Start];
             board[moveInfo.Target] = piece;
+            piece?.HasMoved = true;
             board[moveInfo.Start] = null;
             piece?.Position = moveInfo.Target;
-            piece?.HasMoved = true;
             //PawnPromotionMove(board, moveInfo);
         }
     }

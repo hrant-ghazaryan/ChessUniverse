@@ -21,7 +21,7 @@ public partial class MainWindow : Window
     private int _imgUpY;
 
     Game game = new Game();
-
+    private  bool firstBoardLoc;
     private int _cellSize = 57;
     ChessBoard pieceBoard = new ChessBoard();
     private System.Windows.Point _ptLast = new System.Windows.Point();
@@ -46,7 +46,12 @@ public partial class MainWindow : Window
         _imgDownX = (int)img.Margin.Left;
         _imgDownY = (int)img.Margin.Top;
 
-        BoardLocParsal(pieceBoard);
+        if (!firstBoardLoc)
+        {
+            BoardLocParsal(pieceBoard);
+            firstBoardLoc = true;
+        }
+
     }
 
     private void CaptureToWrap(Image? imgCaptured)
@@ -86,15 +91,14 @@ public partial class MainWindow : Window
         }
 
         //Չթույլատրված քայլի դեպքում ֆիգուրի ետ վերադարձ իր նախնական դիրք
-        if ((row != enteredPieceRow || col != enteredPieceCol) &&
-            !pieceBoard[enteredPieceRow, enteredPieceCol]!.IsMovePossible(pieceBoard, new PiecePosition(row, col)))
+        else if ((row == enteredPieceRow && col == enteredPieceCol) || 
+                !pieceBoard[enteredPieceRow, enteredPieceCol]!.IsMovePossible(pieceBoard, new PiecePosition(row, col)))
         {
             img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
             Mouse.Capture(null);
             StackPanel.SetZIndex(img, 0);
             return;
         }
-
         else
         {
             // Սպանված ֆիգուրայի դուրս բերումը խաղատախտակից
@@ -159,7 +163,8 @@ public partial class MainWindow : Window
                             0, 0);
                     }
                 }
-
+                Mouse.Capture(null);
+                StackPanel.SetZIndex(img, 0);
                 return;
             }
             // ՈՒՂՂՄԱՆ ԵՆԹԱԿԱ
@@ -183,6 +188,8 @@ public partial class MainWindow : Window
                             0, 0);
                     }
                 }
+                Mouse.Capture(null);
+                StackPanel.SetZIndex(img, 0);
                 return;
             }
             game.RegularMove(pieceBoard, moveInfo);
