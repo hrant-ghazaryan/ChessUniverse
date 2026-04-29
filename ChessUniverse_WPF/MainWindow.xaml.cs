@@ -136,52 +136,55 @@ public partial class MainWindow : Window
                 (new PiecePosition(enteredPieceRow, enteredPieceCol), new PiecePosition(row, col));
 
             // ՈՒՂՂՄԱՆ ԵՆԹԱԿԱ
-            /*if (ChessRules.IsCastlingLeftPossible(pieceBoard, moveInfo))
+            if (ChessRules.IsCastlingLeftPossible(pieceBoard, moveInfo))
             {
                 // Board Update
-                pieceBoard = Game.CastlingRight(pieceBoard, moveInfo).Item1;
+                pieceBoard = Game.CastlingLeft(pieceBoard, moveInfo).Item1;
 
                 // UI Update
                 img?.Margin = new Thickness(
                 col * _cellSize + (_cellSize - img.Width) / 2,
                 row * _cellSize + (_cellSize - img.Height) / 2,
                 0, 0);
+
                 foreach (var item in grid_figure.Children)
                 {
                     var imgTarget = (Image)item;
                     int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
                     int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
-                    if (rowTarget == row && colTarget - col == 1)
+                    if (rowTarget == row && colTarget == 0)
                     {
-                        imgTarget.Margin = new Thickness(col - (_cellSize * 2)  + (_cellSize - img.Width) / 2,
+                        imgTarget.Margin = new Thickness(imgTarget.Margin.Left + (_cellSize * 3),
                             imgTarget.Margin.Top,
                             0, 0);
                     }
                 }
+
                 return;
-            }*/
+            }
             // ՈՒՂՂՄԱՆ ԵՆԹԱԿԱ
-            /*if (ChessRules.IsCastlingRightPossible(pieceBoard, moveInfo))
+            if (ChessRules.IsCastlingRightPossible(pieceBoard, moveInfo))
             {
                 pieceBoard = Game.CastlingRight(pieceBoard, moveInfo).Item1;
                 img?.Margin = new Thickness(
                 col * _cellSize + (_cellSize - img.Width) / 2,
                 row * _cellSize + (_cellSize - img.Height) / 2,
                 0, 0);
+
                 foreach (var item in grid_figure.Children)
                 {
                     var imgTarget = (Image)item;
                     int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
                     int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
-                    if (rowTarget == row && colTarget - col == 1)
+                    if (rowTarget == row && colTarget == 7)
                     {
-                        imgTarget.Margin = new Thickness(col - (_cellSize * 2) + (_cellSize - img.Width) / 2,
+                        imgTarget.Margin = new Thickness(imgTarget.Margin.Left - (_cellSize * 2),
                             imgTarget.Margin.Top,
                             0, 0);
                     }
                 }
                 return;
-            }*/
+            }
             game.RegularMove(pieceBoard, moveInfo);
 
             //Ֆիգուրի քայլ UI

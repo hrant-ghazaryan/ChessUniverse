@@ -258,6 +258,9 @@ public static class ChessRules
     }
     public static bool IsCastlingLeftPossible(ChessBoard chessBoard, MoveInfo moveInfo)
     {
+        if (chessBoard[moveInfo.Start]?.Type != PieceType.King ||
+            (IsInside(moveInfo.Target.Col - 2) && chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2]?.Type != PieceType.Rook))
+            return false;
 
         if (moveInfo.Start.Col - moveInfo.Target.Col != 2 ||
             moveInfo.Start.Row != moveInfo.Target.Row ||
@@ -273,10 +276,7 @@ public static class ChessRules
             return false;
 
         if (IsChecked(chessBoard).Item1)
-        {
-            Console.WriteLine("YOU ARE IN CHECK");
             return false;
-        }
 
         PiecePosition? l1 = new PiecePosition { Row = moveInfo.Target.Row, Col = moveInfo.Target.Col - 1 };
         chessBoard[l1] = chessBoard[moveInfo.Start];
@@ -284,7 +284,6 @@ public static class ChessRules
         {
             chessBoard[l1] = null;
             l1 = null;
-            Console.WriteLine("THIS POSITION IS UNDER CHECK");
             return false;
         }
         else
@@ -299,7 +298,6 @@ public static class ChessRules
         {
             chessBoard[l2] = null;
             l2 = null;
-            Console.WriteLine("THIS POSITION IS UNDER CHECK");
             return false;
         }
         else

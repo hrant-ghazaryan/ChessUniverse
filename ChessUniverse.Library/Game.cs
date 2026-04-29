@@ -97,40 +97,31 @@ public class Game
     }
     public static (ChessBoard, bool) CastlingLeft(ChessBoard chessBoard, MoveInfo moveInfo)
     {
-        if (chessBoard[moveInfo.Start]?.Type != PieceType.King ||
-            (ChessRules.IsInside(moveInfo.Target.Col - 2) && chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2]?.Type != PieceType.Rook))
-            return (chessBoard, false);
-
         var color = chessBoard[moveInfo.Start].Color;
-        if (ChessRules.IsCastlingLeftPossible(chessBoard,moveInfo))
-        {
-            //Թագավորի դիրքի փոփոխություն – 2 դիրք ձախ.
-            chessBoard[moveInfo.Target] = chessBoard[moveInfo.Start];
-            chessBoard[moveInfo.Target]?.Position = moveInfo.Target;
-            chessBoard[moveInfo.Start] = null;
+        //Թագավորի դիրքի փոփոխություն – 2 դիրք ձախ.
+        chessBoard[moveInfo.Target] = chessBoard[moveInfo.Start];
+        chessBoard[moveInfo.Target]?.Position = moveInfo.Target;
+        chessBoard[moveInfo.Start] = null;
 
-            //Նավակի դիրքի փոփոփխություն – 3 դիրք աջ.
-            chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1] = chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2];
-            chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1]?.Position =
-                new PiecePosition { Row = moveInfo.Target.Row, Col = moveInfo.Target.Col + 1 };
-            chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2] = null;
+        //Նավակի դիրքի փոփոփխություն – 3 դիրք աջ.
+        chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1] = chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2];
+        chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1]?.Position =
+            new PiecePosition { Row = moveInfo.Target.Row, Col = moveInfo.Target.Col + 1 };
+        chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2] = null;
 
-            //Castling property ի փոփոխություն․
-            moveInfo.Castling = (true, color);
+        //Castling property ի փոփոխություն․
+        moveInfo.Castling = (true, color);
 
-            return (chessBoard, true);
-        }
-        else
-            return (chessBoard, false);
+        return (chessBoard, true);
     }
     public static (ChessBoard, bool) CastlingRight(ChessBoard chessBoard, MoveInfo moveInfo)
     {
         if (chessBoard[moveInfo.Start]?.Type != PieceType.King ||
             (ChessRules.IsInside(moveInfo.Target.Col + 1) && chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1]?.Type != PieceType.Rook))
-            return (chessBoard,false);
+            return (chessBoard, false);
 
         var color = chessBoard[moveInfo.Start].Color;
-        if (ChessRules.IsCastlingRightPossible(chessBoard,moveInfo))
+        if (ChessRules.IsCastlingRightPossible(chessBoard, moveInfo))
         {
             chessBoard[moveInfo.Target] = chessBoard[moveInfo.Start];
             chessBoard[moveInfo.Target]?.Position = moveInfo.Target;

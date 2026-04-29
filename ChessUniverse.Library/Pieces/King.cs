@@ -7,11 +7,15 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition target)
     {
+        MoveInfo moveInfo = new MoveInfo(Position, target);
+
         int dRow = Math.Abs(Position.Row - target.Row);
         int dCol = Math.Abs(Position.Col - target.Col);
 
-        return dRow <= 1 && dCol <= 1 && !(dRow == 0 && dCol == 0) &&
-            ChessRules.IsInside(target.Row) && ChessRules.IsInside(target.Col);
+        return (dRow <= 1 && dCol <= 1 && !(dRow == 0 && dCol == 0) &&
+              ChessRules.IsInside(target.Row) && ChessRules.IsInside(target.Col))
+              || ChessRules.IsCastlingLeftPossible(chessBoard, moveInfo)
+              || ChessRules.IsCastlingRightPossible(chessBoard, moveInfo); 
     }
     public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
     {
