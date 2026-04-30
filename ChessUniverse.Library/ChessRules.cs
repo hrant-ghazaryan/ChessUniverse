@@ -42,27 +42,49 @@ public static class ChessRules
         return (C, k);
     }
     //checkk
-    public static bool IsChecked(ChessBoard chessBoard, PiecePosition position)
+    public static bool IsChecked(ChessBoard chessBoard, PiecePosition activeKingPosition)
     {
+        var pieceparam = chessBoard[activeKingPosition];
+
         for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
             {
                 var piece = chessBoard[i, j];
-                var pieceparam = chessBoard[position];
                 if (piece is not null)
                 {
                     if (piece?.Color == PieceColor.White && pieceparam?.Color == PieceColor.Black
-                    && piece.IsMovePossible(chessBoard, position))
+                    && piece.IsMovePossible(chessBoard, activeKingPosition))
                         return true;
                     if (piece?.Color == PieceColor.Black && pieceparam?.Color == PieceColor.White
-                    && piece.IsMovePossible(chessBoard, position))
+                    && piece.IsMovePossible(chessBoard, activeKingPosition))
                         return true;
                 }
             }
         }
         return false;
     }
+    // +
+    public static bool IsChecked(ChessBoard chessBoard, PiecePosition? activeKingPosition, PieceColor activeTurn)
+    {
+        var pieceparam = chessBoard[activeKingPosition];
+
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                var piece = chessBoard[i, j];
+                if (piece is not null)
+                {
+                    if (piece?.Color != activeTurn
+                    && piece!.IsMovePossible(chessBoard, activeKingPosition))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static bool MoveValidation(ChessBoard? board, PiecePosition? start, PiecePosition? end,
          PieceColor? T)
     {
@@ -87,10 +109,8 @@ public static class ChessRules
     {
         Piece? piece = board[start];
 
-        if (piece?.Type == PieceType.Pawn)
-            return (piece.Position.Row == 7 || piece.Position.Row == 0);
-        else
-            return false;
+        return piece?.Type == PieceType.Pawn && 
+            (piece?.Position.Row == 7 || piece?.Position.Row == 0);
     }
     public static bool IsCheckMate(ChessBoard board, PiecePosition kingposition, PiecePosition attacker)
     {

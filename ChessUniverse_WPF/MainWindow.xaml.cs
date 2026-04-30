@@ -4,7 +4,6 @@ using ChessUniverse.Library.Pieces;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Navigation;
 
 namespace ChessUniverse_WPF;
 
@@ -25,13 +24,14 @@ public partial class MainWindow : Window
     private bool firstBoardLoc;
     private int _cellSize = 57;
     ChessBoard pieceBoard = new ChessBoard();
+    PieceColor acctiveTurn;
     private System.Windows.Point _ptLast = new System.Windows.Point();
 
     public MainWindow()
     {
         InitializeComponent();
     }
-
+    #region MOUSE
     private void MouseDown(object sender, MouseEventArgs e)
     {
         _t = true;
@@ -72,6 +72,7 @@ public partial class MainWindow : Window
     private void MouseUp(object sender, MouseEventArgs e)
     {
         _t = false;
+        MoveType currentMoveType;
 
         //Ընտրված ֆիգուրի նախնական կորդինատի փոխակերպումը երկչափ զանգվածի տողի և սյան
         int enteredPieceRow = (int)(_imgDownY + 28.5) / 57;
@@ -89,45 +90,11 @@ public partial class MainWindow : Window
         MoveInfo moveInfo = new MoveInfo
             (enteredPiece, imgPosition);
 
+        MoveResult moveDetails = MakeMove(pieceBoard, moveInfo);
+        pieceBoard = moveDetails.Board;
+        currentMoveType = moveDetails.MoveType;
+        MoveUIUpdate(img, moveInfo, currentMoveType);
         // Ֆիգուրի առկայության ստուգում մկնիկով նշված վայրում(կորդինատում)
-        if (!IsMovePossible(pieceBoard, img, moveInfo))
-        {
-            img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
-            Mouse.Capture(null);
-            StackPanel.SetZIndex(img, 0);
-            return;
-        }
-
-        // Սպանված ֆիգուրայի դուրս բերումը խաղատախտակից
-        CaptureToWrap(img, moveInfo);
-
-        // Ֆիգուրի քայլ board ում
-        if (ChessRules.IsCastlingLeftPossible(pieceBoard, moveInfo))
-        {
-            // Board Update
-            pieceBoard = Game.CastlingLeft(pieceBoard, moveInfo).Item1;
-
-            // UI Update
-            LeftCastlingUI(img, moveInfo);
-            return;
-
-        }
-        if (ChessRules.IsCastlingRightPossible(pieceBoard, moveInfo))
-        {
-            // Board Update
-            pieceBoard = Game.CastlingRight(pieceBoard, moveInfo).Item1;
-            RightCastlingUI(img, moveInfo);
-            return;
-
-        }
-
-        //Ֆիգուրի քայլ Board
-        game.RegularMove(pieceBoard, moveInfo);
-        //Ֆիգուրի քայլ UI
-        img?.Margin = new Thickness(
-            col * _cellSize + (_cellSize - img.Width) / 2,
-            row * _cellSize + (_cellSize - img.Height) / 2,
-            0, 0);
 
         //մկնիկի բաց թողում
         Mouse.Capture(null);
@@ -135,22 +102,21 @@ public partial class MainWindow : Window
 
         label3.Content = "M: " + img.Margin.Left.ToString() + " " + img.Margin.Top.ToString();
     }
+    #endregion
 
-    private bool IsMovePossible(ChessBoard pieceBoard, Image img, MoveInfo moveInfo)
+    #region UI
+    private void AddingCaptureToWrap(Image? imgCaptured)
     {
-        bool samePosition = moveInfo.Target?.Row == moveInfo.Start?.Row && moveInfo?.Target?.Col == moveInfo?.Start?.Col;
-        Piece? currentPiece = pieceBoard[moveInfo.Start];
-
-        //Չթույլատրված քայլի դեպքում ֆիգուրի ետ վերադարձ իր նախնական դիրք
-        if (currentPiece is null || samePosition ||
-            !currentPiece.IsMovePossible(pieceBoard, moveInfo.Target))
-        {
-            img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
-            Mouse.Capture(null);
-            StackPanel.SetZIndex(img, 0);
-            return false;
-        }
-        return true;
+        grid_figure.Children.Remove(imgCaptured);
+        imgCaptured?.Margin = new Thickness(0);
+        imgCaptured?.Width = 20;
+        imgCaptured?.Height = 20;
+        imgCaptured?.IsHitTestVisible = false;
+        string? name = imgCaptured!.Name.ToString();
+        if (name[0] == 'b')
+            BlackCaptures.Children.Add(imgCaptured);
+        else
+            WhiteCaptures.Children.Add(imgCaptured);
     }
     private void CaptureToWrap(Image? img, MoveInfo moveInfo)
     {
@@ -184,20 +150,6 @@ public partial class MainWindow : Window
                 img?.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
         }
     }
-    private void AddingCaptureToWrap(Image? imgCaptured)
-    {
-        grid_figure.Children.Remove(imgCaptured);
-        imgCaptured?.Margin = new Thickness(0);
-        imgCaptured?.Width = 20;
-        imgCaptured?.Height = 20;
-        imgCaptured?.IsHitTestVisible = false;
-        string? name = imgCaptured!.Name.ToString();
-        if (name[0] == 'b')
-            BlackCaptures.Children.Add(imgCaptured);
-        else
-            WhiteCaptures.Children.Add(imgCaptured);
-    }
-    
     private void LeftCastlingUI(Image img, MoveInfo moveInfo)
     {
 
@@ -244,27 +196,115 @@ public partial class MainWindow : Window
         Mouse.Capture(null);
         StackPanel.SetZIndex(img, 0);
     }
-    
-
-    // ՈՒՂՂՄԱՆ ԵՆԹԱԿԱ
-    /*public void UIUpdate(ChessBoard pieceBoard)
+    public void MoveUIUpdate(Image img, MoveInfo moveInfo, MoveType moveType)
     {
-        grid_figure.Children.Clear();
-        for (int i = 0; i < 8; i++)
+        switch (moveType)
         {
-            for (int j = 0; j < 8; j++)
-            {
-                if (pieceBoard[i, j] is not null)
-                {
-                    grid_figure.Children.Add(new Image()
-                    {
-                        Margin = new Thickness(j * _cellSize + (_cellSize - img.Width) / 2,
-                row * _cellSize + (_cellSize - img.Height) / 2,
-                0, 0);), } )
-                }
-}
+            case MoveType.InvalidMove:
+                img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
+                break;
+            case MoveType.RegularMove:
+                CaptureToWrap(img, moveInfo);
+                img?.Margin = new Thickness(
+            moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
+            moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
+            0, 0);
+                break;
+            case MoveType.LeftCastling:
+                LeftCastlingUI(img, moveInfo);
+                break;
+            case MoveType.RightCastling:
+                RightCastlingUI(img, moveInfo);
+                break;
+            case MoveType.PawnPromotion:
+                break;
         }
-    }*/
+    }
+    #endregion
+
+    #region LOGIC
+    private bool IsMovePossible(ChessBoard pieceBoard, MoveInfo moveInfo)
+    {
+        bool samePosition = moveInfo.Target?.Row == moveInfo.Start?.Row && moveInfo?.Target?.Col == moveInfo?.Start?.Col;
+        Piece? currentPiece = pieceBoard[moveInfo.Start];
+
+        //Չթույլատրված քայլի դեպքում ֆիգուրի ետ վերադարձ իր նախնական դիրք
+        return currentPiece is null || !samePosition ||
+            currentPiece.IsMovePossible(pieceBoard, moveInfo.Target);
+    }
+    public MoveResult MakeMove(ChessBoard board, MoveInfo moveInfo)
+    {
+        MoveType currentMoveType;
+        if (acctiveTurn != board[moveInfo.Start]?.Color)
+            return new MoveResult(board, MoveType.InvalidMove);
+        //1
+        bool checkStartState = false;
+        bool checkTargetState = false;
+        PieceColor passiveTurn;
+        if (acctiveTurn == PieceColor.White)
+            passiveTurn = PieceColor.Black;
+        else
+            passiveTurn = PieceColor.White;
+
+        PiecePosition? acctiveKing = new PiecePosition();
+
+        //2
+        acctiveKing = ChessBoard.GetKingPosition(board, acctiveTurn);
+        //3
+        checkStartState = ChessRules.IsChecked(board, acctiveKing, acctiveTurn);
+        //4
+        ChessBoard cloneBoard = (ChessBoard)board.Clone();
+        //5
+        if (!IsMovePossible(board, moveInfo))
+            return new MoveResult(board, MoveType.InvalidMove);
+
+        //6
+        if (ChessRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
+        { cloneBoard = Game.CastlingLeft(cloneBoard, moveInfo).Item1; currentMoveType = MoveType.LeftCastling; }
+        else if (ChessRules.IsCastlingRightPossible(cloneBoard, moveInfo))
+        { cloneBoard = Game.CastlingRight(cloneBoard, moveInfo).Item1; currentMoveType = MoveType.RightCastling; }
+        else { game.RegularMove(cloneBoard, moveInfo); currentMoveType = MoveType.RegularMove; }
+        /*if (IsMovePossible(cloneBoard,moveInfo))
+        {
+            //6
+            if (ChessRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
+            { cloneBoard = Game.CastlingLeft(cloneBoard, moveInfo).Item1; currentMoveType = MoveType.LeftCastling; }
+            else if (ChessRules.IsCastlingRightPossible(cloneBoard, moveInfo))
+            { cloneBoard = Game.CastlingRight(cloneBoard, moveInfo).Item1; currentMoveType = MoveType.RightCastling; }
+            else { game.RegularMove(cloneBoard, moveInfo); currentMoveType = MoveType.RegularMove; }
+        }
+        else
+            return (board, MoveType.InvalidMove);*/
+        //7
+        acctiveKing = ChessBoard.GetKingPosition(cloneBoard, acctiveTurn);
+        checkTargetState = ChessRules.IsChecked(cloneBoard, acctiveKing, acctiveTurn);
+        //8
+        if (checkStartState && checkTargetState)
+        {
+            MessageBox.Show("Invalid Move: You are in check!");
+            return new MoveResult(board, MoveType.InvalidMove);
+        }
+        else if (!checkStartState && checkTargetState)
+        {
+            MessageBox.Show("Invalid Move: Check way was opened!");
+            return new MoveResult(board, MoveType.InvalidMove);
+        }
+        PiecePosition? passiveKing = new PiecePosition();
+        //9
+        passiveKing = ChessBoard.GetKingPosition(cloneBoard, passiveTurn);
+        //10
+        if (ChessRules.IsChecked(cloneBoard, passiveKing, passiveTurn))
+            MessageBox.Show("Check!");
+        acctiveTurn = MoveChanger(acctiveTurn);
+        return new MoveResult(cloneBoard, currentMoveType);
+    }
+    PieceColor MoveChanger(PieceColor acctiveTurn)
+    {
+        if (acctiveTurn == PieceColor.White)
+            return PieceColor.Black;
+        return PieceColor.White;
+    }
+    #endregion
 
     public void BoardLocParsal(ChessBoard boardPiece)
     {

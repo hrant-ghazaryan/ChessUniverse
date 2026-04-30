@@ -11,16 +11,14 @@ public class ChessBoard : ICloneable
     public ChessBoard(Piece[,] newBoard)
         => _squares = newBoard;
     public Piece? this[PiecePosition position]
-    {
+    { 
         get
         {
-            //1
-            if (position.Row >= 0 && position.Row <= 7)
-                return _squares[position.Row, position.Col];
-            else if(position.Col >= 0 && position.Col <= 7)
-                return _squares[position.Row, position.Col];
-            else
+            if (position.Row < 0 || position.Row > 7 ||
+            position.Col < 0 || position.Col > 7)
                 return null;
+
+            return _squares[position.Row, position.Col];
         }
         set
         {
@@ -81,7 +79,9 @@ public class ChessBoard : ICloneable
         _squares[7, 7] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 7} };
 
     }
-    public static PiecePosition? GetKingPosition(ChessBoard chessBoard, PieceColor color)
+
+    // +
+    public static PiecePosition? GetKingPosition(ChessBoard chessBoard, PieceColor activeTurn)
     {
         for (int i = 0; i < 8; i++)
         {
@@ -89,7 +89,7 @@ public class ChessBoard : ICloneable
             {
                 var piece = chessBoard[i, j];
                 if (piece?.Type == PieceType.King
-                    && piece?.Color == color)
+                    && piece?.Color == activeTurn)
                     return piece.Position;
             }
         }
