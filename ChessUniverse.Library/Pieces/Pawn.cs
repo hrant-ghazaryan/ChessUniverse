@@ -25,6 +25,9 @@ public class Pawn : Piece
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition target)
     {
+        if (chessBoard[target]?.Color == chessBoard[Position]?.Color)
+            return false;
+
         if (Color == PieceColor.White)
         {
             if (Position.Row - target.Row == 1 && Math.Abs(Position.Col - target.Col) == 1

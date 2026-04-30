@@ -13,6 +13,9 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
         if (!ChessRules.IsInside(target.Row) || !ChessRules.IsInside(target.Col))
             return false;
 
+        if (chessBoard[target]?.Color == chessBoard[Position]?.Color)
+            return false;
+
         //Սկզբնական և վերջնական դիրքերի տողերի տարբերությունը
         int dRow = Math.Abs(Position.Row - target.Row);
 

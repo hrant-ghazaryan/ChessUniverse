@@ -9,6 +9,9 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
     {
         MoveInfo moveInfo = new MoveInfo(Position, target);
 
+        if (chessBoard[target]?.Color == chessBoard[Position]?.Color)
+            return false;
+
         int dRow = Math.Abs(Position.Row - target.Row);
         int dCol = Math.Abs(Position.Col - target.Col);
 

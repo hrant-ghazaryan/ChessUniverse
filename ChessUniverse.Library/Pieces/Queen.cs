@@ -8,6 +8,9 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
      => base.GetSymbol(color);
     public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition targetposition)
     {
+        if (chessBoard[targetposition]?.Color == chessBoard[Position]?.Color)
+            return false;
+
         if (Position.Row == targetposition.Row || Position.Col == targetposition.Col)
         {
             if (Position.Row == targetposition.Row && Position.Col > targetposition.Col)

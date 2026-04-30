@@ -13,6 +13,9 @@ public class Rook(PieceColor color ) : Piece(color, PieceType.Rook, 'r' ,new Pie
         bool sameRow = Position.Row == targetposition.Row;
         bool sameCol = Position.Col == targetposition.Col;
 
+        if (chessBoard[targetposition]?.Color == chessBoard[Position]?.Color)
+            return false;
+
         if (sameRow || sameCol)
         {
             if (sameRow && Position.Col > targetposition.Col)

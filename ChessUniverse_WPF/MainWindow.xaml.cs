@@ -4,6 +4,7 @@ using ChessUniverse.Library.Pieces;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Navigation;
 
 namespace ChessUniverse_WPF;
 
@@ -21,7 +22,7 @@ public partial class MainWindow : Window
     private int _imgUpY;
 
     Game game = new Game();
-    private  bool firstBoardLoc;
+    private bool firstBoardLoc;
     private int _cellSize = 57;
     ChessBoard pieceBoard = new ChessBoard();
     private System.Windows.Point _ptLast = new System.Windows.Point();
@@ -30,6 +31,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
+
     private void MouseDown(object sender, MouseEventArgs e)
     {
         _t = true;
@@ -53,161 +55,6 @@ public partial class MainWindow : Window
         }
 
     }
-
-    private void CaptureToWrap(Image? imgCaptured)
-    {
-        grid_figure.Children.Remove(imgCaptured);
-        imgCaptured?.Margin = new Thickness(0);
-        imgCaptured?.Width = 20;
-        imgCaptured?.Height = 20;
-        imgCaptured?.IsHitTestVisible = false;
-        string? name = imgCaptured!.Name.ToString();
-        if (name[0] == 'b')
-            BlackCaptures.Children.Add(imgCaptured);
-        else
-            WhiteCaptures.Children.Add(imgCaptured);
-    }
-    private void MouseUp(object sender, MouseEventArgs e)
-    {
-        _t = false;
-        var img = (System.Windows.Controls.Image)sender;
-
-        //Մկնիկով նշված վայրի – կորդինատի փոխակերպումը երկչափ զանգվածի տողի և սյան
-        int row = (int)(img.Margin.Top + 28.5) / 57;
-        int col = (int)(img.Margin.Left + 28.5) / 57;
-        row = Math.Clamp(row, 0, 7);
-        col = Math.Clamp(col, 0, 7);
-
-        //Ընտրված ֆիգուրի նախնական կորդինատի փոխակերպումը երկչափ զանգվածի տողի և սյան
-        int enteredPieceRow = (int)(_imgDownY + 28.5) / 57;
-        int enteredPieceCol = (int)(_imgDownX + 28.5) / 57;
-
-        // Ֆիգուրի առկայության ստուգում մկնիկով նշված վայրում(կորդինատում)
-        if (pieceBoard[enteredPieceRow, enteredPieceCol] is null)
-        {
-            Mouse.Capture(null);
-            StackPanel.SetZIndex(img, 0);
-            return;
-        }
-
-        //Չթույլատրված քայլի դեպքում ֆիգուրի ետ վերադարձ իր նախնական դիրք
-        else if ((row == enteredPieceRow && col == enteredPieceCol) || 
-                !pieceBoard[enteredPieceRow, enteredPieceCol]!.IsMovePossible(pieceBoard, new PiecePosition(row, col)))
-        {
-            img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
-            Mouse.Capture(null);
-            StackPanel.SetZIndex(img, 0);
-            return;
-        }
-        else
-        {
-            // Սպանված ֆիգուրայի դուրս բերումը խաղատախտակից
-            if (pieceBoard[row, col] is not null)
-            {
-                bool isCaptured = false;
-                var imgCaptured = img;
-
-                // Ստուգում ենք ֆիգուրի վերջնական դիրքում ուրիշ ֆիգուրայի առկայությունը
-                foreach (var item in grid_figure.Children)
-                {
-                    var imgTarget = (Image)item;
-                    int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
-                    int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
-
-                    if (rowTarget == row && colTarget == col &&
-                    imgTarget?.Name?.ToString()?[0] != img?.Name?.ToString()?[0])
-                    {
-                        isCaptured = true;
-                        imgCaptured = imgTarget;
-                    }
-                }
-                // Ուրիշ ֆիգուրայի առկայության դեպքում ջնջում ենք ֆիգուրան խաղատախտակից
-                // և ավելացնում սպանված ֆիգուրների WrapPanel ում
-                if (isCaptured)
-                    CaptureToWrap(imgCaptured);
-
-                // Արդեն առկա ֆիգուրի նույն գույնը ունենալու դեպքում
-                // ընտրված ֆիգուրի վերադարձը իր նախնական դիրք
-                else
-                {
-                    img?.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
-                    return;
-                }
-            }
-
-            // Ֆիգուրի քայլ board ում
-            MoveInfo moveInfo = new MoveInfo
-                (new PiecePosition(enteredPieceRow, enteredPieceCol), new PiecePosition(row, col));
-
-            // ՈՒՂՂՄԱՆ ԵՆԹԱԿԱ
-            if (ChessRules.IsCastlingLeftPossible(pieceBoard, moveInfo))
-            {
-                // Board Update
-                pieceBoard = Game.CastlingLeft(pieceBoard, moveInfo).Item1;
-
-                // UI Update
-                img?.Margin = new Thickness(
-                col * _cellSize + (_cellSize - img.Width) / 2,
-                row * _cellSize + (_cellSize - img.Height) / 2,
-                0, 0);
-
-                foreach (var item in grid_figure.Children)
-                {
-                    var imgTarget = (Image)item;
-                    int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
-                    int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
-                    if (rowTarget == row && colTarget == 0)
-                    {
-                        imgTarget.Margin = new Thickness(imgTarget.Margin.Left + (_cellSize * 3),
-                            imgTarget.Margin.Top,
-                            0, 0);
-                    }
-                }
-                Mouse.Capture(null);
-                StackPanel.SetZIndex(img, 0);
-                return;
-            }
-            // ՈՒՂՂՄԱՆ ԵՆԹԱԿԱ
-            if (ChessRules.IsCastlingRightPossible(pieceBoard, moveInfo))
-            {
-                pieceBoard = Game.CastlingRight(pieceBoard, moveInfo).Item1;
-                img?.Margin = new Thickness(
-                col * _cellSize + (_cellSize - img.Width) / 2,
-                row * _cellSize + (_cellSize - img.Height) / 2,
-                0, 0);
-
-                foreach (var item in grid_figure.Children)
-                {
-                    var imgTarget = (Image)item;
-                    int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
-                    int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
-                    if (rowTarget == row && colTarget == 7)
-                    {
-                        imgTarget.Margin = new Thickness(imgTarget.Margin.Left - (_cellSize * 2),
-                            imgTarget.Margin.Top,
-                            0, 0);
-                    }
-                }
-                Mouse.Capture(null);
-                StackPanel.SetZIndex(img, 0);
-                return;
-            }
-            game.RegularMove(pieceBoard, moveInfo);
-
-            //Ֆիգուրի քայլ UI
-            img?.Margin = new Thickness(
-                col * _cellSize + (_cellSize - img.Width) / 2,
-                row * _cellSize + (_cellSize - img.Height) / 2,
-                0, 0);
-
-        }
-
-        //մկնիկի բաց թողում
-        Mouse.Capture(null);
-        StackPanel.SetZIndex(img, 0);
-
-        label3.Content = "M: " + img.Margin.Left.ToString() + " " + img.Margin.Top.ToString();
-    }
     private void MouseMove(object sender, MouseEventArgs e)
     {
         if (_t)
@@ -222,6 +69,182 @@ public partial class MainWindow : Window
                 ptNew.Y + (e.GetPosition(img).Y - _ptLast.Y), 0, 0);
         }
     }
+    private void MouseUp(object sender, MouseEventArgs e)
+    {
+        _t = false;
+
+        //Ընտրված ֆիգուրի նախնական կորդինատի փոխակերպումը երկչափ զանգվածի տողի և սյան
+        int enteredPieceRow = (int)(_imgDownY + 28.5) / 57;
+        int enteredPieceCol = (int)(_imgDownX + 28.5) / 57;
+        PiecePosition enteredPiece = new PiecePosition(enteredPieceRow, enteredPieceCol);
+
+        //Մկնիկով նշված վայրի – կորդինատի փոխակերպումը երկչափ զանգվածի տողի և սյան
+        var img = (System.Windows.Controls.Image)sender;
+        int row = (int)(img.Margin.Top + 28.5) / 57;
+        int col = (int)(img.Margin.Left + 28.5) / 57;
+        row = Math.Clamp(row, 0, 7);
+        col = Math.Clamp(col, 0, 7);
+        PiecePosition imgPosition = new PiecePosition(row, col);
+
+        MoveInfo moveInfo = new MoveInfo
+            (enteredPiece, imgPosition);
+
+        // Ֆիգուրի առկայության ստուգում մկնիկով նշված վայրում(կորդինատում)
+        if (!IsMovePossible(pieceBoard, img, moveInfo))
+        {
+            img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
+            Mouse.Capture(null);
+            StackPanel.SetZIndex(img, 0);
+            return;
+        }
+
+        // Սպանված ֆիգուրայի դուրս բերումը խաղատախտակից
+        CaptureToWrap(img, moveInfo);
+
+        // Ֆիգուրի քայլ board ում
+        if (ChessRules.IsCastlingLeftPossible(pieceBoard, moveInfo))
+        {
+            // Board Update
+            pieceBoard = Game.CastlingLeft(pieceBoard, moveInfo).Item1;
+
+            // UI Update
+            LeftCastlingUI(img, moveInfo);
+            return;
+
+        }
+        if (ChessRules.IsCastlingRightPossible(pieceBoard, moveInfo))
+        {
+            // Board Update
+            pieceBoard = Game.CastlingRight(pieceBoard, moveInfo).Item1;
+            RightCastlingUI(img, moveInfo);
+            return;
+
+        }
+
+        //Ֆիգուրի քայլ Board
+        game.RegularMove(pieceBoard, moveInfo);
+        //Ֆիգուրի քայլ UI
+        img?.Margin = new Thickness(
+            col * _cellSize + (_cellSize - img.Width) / 2,
+            row * _cellSize + (_cellSize - img.Height) / 2,
+            0, 0);
+
+        //մկնիկի բաց թողում
+        Mouse.Capture(null);
+        StackPanel.SetZIndex(img, 0);
+
+        label3.Content = "M: " + img.Margin.Left.ToString() + " " + img.Margin.Top.ToString();
+    }
+
+    private bool IsMovePossible(ChessBoard pieceBoard, Image img, MoveInfo moveInfo)
+    {
+        bool samePosition = moveInfo.Target?.Row == moveInfo.Start?.Row && moveInfo?.Target?.Col == moveInfo?.Start?.Col;
+        Piece? currentPiece = pieceBoard[moveInfo.Start];
+
+        //Չթույլատրված քայլի դեպքում ֆիգուրի ետ վերադարձ իր նախնական դիրք
+        if (currentPiece is null || samePosition ||
+            !currentPiece.IsMovePossible(pieceBoard, moveInfo.Target))
+        {
+            img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
+            Mouse.Capture(null);
+            StackPanel.SetZIndex(img, 0);
+            return false;
+        }
+        return true;
+    }
+    private void CaptureToWrap(Image? img, MoveInfo moveInfo)
+    {
+        if (pieceBoard[moveInfo.Target] is not null)
+        {
+            bool isCaptured = false;
+            var imgCaptured = img;
+
+            // Ստուգում ենք ֆիգուրի վերջնական դիրքում ուրիշ ֆիգուրայի առկայությունը
+            foreach (var item in grid_figure.Children)
+            {
+                var imgTarget = (Image)item;
+                int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
+                int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
+
+                if (rowTarget == moveInfo.Target.Row && colTarget == moveInfo.Target.Col &&
+                imgTarget?.Name?.ToString()?[0] != img?.Name?.ToString()?[0])
+                {
+                    isCaptured = true;
+                    imgCaptured = imgTarget;
+                }
+            }
+            // Ուրիշ ֆիգուրայի առկայության դեպքում ջնջում ենք ֆիգուրան խաղատախտակից
+            // և ավելացնում սպանված ֆիգուրների WrapPanel ում
+            if (isCaptured)
+                AddingCaptureToWrap(imgCaptured);
+
+            // Արդեն առկա ֆիգուրի նույն գույնը ունենալու դեպքում
+            // ընտրված ֆիգուրի վերադարձը իր նախնական դիրք
+            else
+                img?.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
+        }
+    }
+    private void AddingCaptureToWrap(Image? imgCaptured)
+    {
+        grid_figure.Children.Remove(imgCaptured);
+        imgCaptured?.Margin = new Thickness(0);
+        imgCaptured?.Width = 20;
+        imgCaptured?.Height = 20;
+        imgCaptured?.IsHitTestVisible = false;
+        string? name = imgCaptured!.Name.ToString();
+        if (name[0] == 'b')
+            BlackCaptures.Children.Add(imgCaptured);
+        else
+            WhiteCaptures.Children.Add(imgCaptured);
+    }
+    
+    private void LeftCastlingUI(Image img, MoveInfo moveInfo)
+    {
+
+        img?.Margin = new Thickness(
+                moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
+                moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
+                0, 0);
+
+        foreach (var item in grid_figure.Children)
+        {
+            var imgTarget = (Image)item;
+            int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
+            int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
+            if (rowTarget == moveInfo.Target.Row && colTarget == 0)
+            {
+                imgTarget.Margin = new Thickness(imgTarget.Margin.Left + (_cellSize * 3),
+                    imgTarget.Margin.Top,
+                    0, 0);
+            }
+        }
+        Mouse.Capture(null);
+        StackPanel.SetZIndex(img, 0);
+    }
+    private void RightCastlingUI(Image img, MoveInfo moveInfo)
+    {
+
+        img?.Margin = new Thickness(
+                 moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
+                moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
+                0, 0);
+
+        foreach (var item in grid_figure.Children)
+        {
+            var imgTarget = (Image)item;
+            int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
+            int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
+            if (rowTarget == moveInfo.Target.Row && colTarget == 7)
+            {
+                imgTarget.Margin = new Thickness(imgTarget.Margin.Left - (_cellSize * 2),
+                    imgTarget.Margin.Top,
+                    0, 0);
+            }
+        }
+        Mouse.Capture(null);
+        StackPanel.SetZIndex(img, 0);
+    }
+    
 
     // ՈՒՂՂՄԱՆ ԵՆԹԱԿԱ
     /*public void UIUpdate(ChessBoard pieceBoard)

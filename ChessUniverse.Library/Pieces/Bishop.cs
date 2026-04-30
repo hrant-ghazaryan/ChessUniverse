@@ -7,6 +7,9 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new 
      => base.GetSymbol(color);
     public  override bool IsMovePossible(ChessBoard chessBoard, PiecePosition targetposition)
     {
+        if (chessBoard[targetposition]?.Color == chessBoard[Position]?.Color)
+            return false;
+
         if (Math.Abs(Position.Row - targetposition.Row) == Math.Abs(Position.Col - targetposition.Col))
         {
             List<Piece> movestotarget = new List<Piece>();
