@@ -10,6 +10,7 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
     {
         if (target is null)
             return false;
+
         if (!ChessRules.IsInside(target.Row) || !ChessRules.IsInside(target.Col))
             return false;
 

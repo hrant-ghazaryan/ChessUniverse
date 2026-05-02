@@ -84,7 +84,6 @@ public static class ChessRules
         }
         return false;
     }
-
     public static bool MoveValidation(ChessBoard? board, PiecePosition? start, PiecePosition? end,
          PieceColor? T)
     {

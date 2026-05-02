@@ -57,6 +57,7 @@ public class Game
         if (moveInfo.Start is not null && moveInfo.Target is not null)
         {
             Piece? piece = board[moveInfo.Start];
+            board[moveInfo.Target] = null;
             board[moveInfo.Target] = piece;
             piece?.HasMoved = true;
             board[moveInfo.Start] = null;

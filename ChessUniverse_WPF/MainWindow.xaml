@@ -9,6 +9,24 @@
     <Grid>
         <!-- board.png - Margin="132,45,441,0" -->
         <Image Name="board" Source="/images/board/chessboard.png" Margin="132,62,415,16"/>
+        <!-- PawnPromotion! -->
+        <Grid x:Name="WhitePromotionOverlay"  Visibility="Collapsed" Background="#80000000" Panel.ZIndex="999">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Background="White" >
+                <Image Name="wh_queen" Width="50" Height="50" Tag="Queen" Source="/images/figures/white-queen.png" MouseDown="PromotionClick"/>
+                <Image Name="wh_rook" Width="50" Height="50" Tag="Rook" Source="/images/figures/white-ship.png" MouseDown="PromotionClick"/>
+                <Image Name="wh_bishop" Width="50" Height="50" Tag="Bishop" Source="/images/figures/white-elephant.png" MouseDown="PromotionClick"/>
+                <Image Name="wh_knight" Width="50" Height="50" Tag="Knight" Source="/images/figures/white-horse.png" MouseDown="PromotionClick"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid x:Name="BlackPromotionOverlay"  Visibility="Collapsed" Background="#80000000" Panel.ZIndex="999">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Background="White" >
+                <Image Name="bl_queen" Width="50" Height="50" Tag="Queen" Source="/images/figures/black-queen.png" MouseDown="PromotionClick"/>
+                <Image Name="bl_rook" Width="50" Height="50" Tag="Rook" Source="/images/figures/black-ship.png" MouseDown="PromotionClick"/>
+                <Image Name="bl_bishop" Width="50" Height="50" Tag="Bishop" Source="/images/figures/black-elephant.png" MouseDown="PromotionClick"/>
+                <Image Name="bl_knight" Width="50" Height="50" Tag="Knight" Source="/images/figures/black-horse.png" MouseDown="PromotionClick"/>
+            </StackPanel>
+        </Grid>
 
         <Grid Name="grid_figure" Height="453" Width="453" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="224,102,0,0">
             <!-- white figure -->

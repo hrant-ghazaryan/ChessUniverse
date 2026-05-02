@@ -3,19 +3,6 @@ namespace ChessUniverse.Library.Pieces;
 
 public class Pawn : Piece
 {
-
-    private bool _isMoved;
-    public bool IsMoved
-    {
-        get => _isMoved;
-        set
-        {
-            if (Position.Row == 2 || Position.Row == 6)
-                _isMoved = false;
-            else
-                _isMoved = true;
-        }
-    }
     public Pawn(PieceColor color)
         : base(color, PieceType.Pawn, 'p', new PiecePosition())
     {
