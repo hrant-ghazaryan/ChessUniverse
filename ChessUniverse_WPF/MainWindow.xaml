@@ -75,10 +75,10 @@
         <Label Name="label1" Content="X:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,350,0,0"></Label>
         <Label Name="label2" Content="Y:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,378,0,0"></Label>
         <Label Name="label3" Content="M:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="745,317,0,0"></Label>
-        
+
         <WrapPanel Name="BlackCaptures" HorizontalAlignment="Left" Height="80" Margin="757,80,0,0" VerticalAlignment="Top" Width="179"/>
         <WrapPanel Name="WhiteCaptures" HorizontalAlignment="Left" Height="80" Margin="757,538,0,0" VerticalAlignment="Top" Width="179"/>
-        <Label Name="MoveShower" Content="White" HorizontalAlignment="Left" Height="46" Margin="808,225,0,0" VerticalAlignment="Top" Width="144" FontWeight= "Heavy" HorizontalContentAlignment="Center"
+        <Label Name="MoveShower" Content="White" HorizontalAlignment="Left" Height="46" Margin="745,340,0,0" VerticalAlignment="Top" Width="144" FontWeight= "Heavy" HorizontalContentAlignment="Center"
               VerticalContentAlignment="Center"/>
     </Grid>
 </Window>

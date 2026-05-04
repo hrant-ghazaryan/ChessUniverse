@@ -1,139 +1,84 @@
-﻿using ChessUniverse.Library.Enums;
-using ChessUniverse.Library.Pieces;
+﻿namespace ChessUniverse.Library;
 
-namespace ChessUniverse.Library;
-
-public class Game
+public static class Game
 {
-    public List<MoveInfo> moves = new List<MoveInfo>();
-    public bool Move(ref ChessBoard board, ref MoveInfo moveInfo)
-    {
-        ChessBoard newBoard = (ChessBoard)board.Clone();
-        PieceColor tempT = moveInfo.T;
-
-        if (ChessRules.MoveValidation(board, moveInfo.Start, moveInfo.Target, moveInfo.T))
-        {
-            CastlingLeft(newBoard, moveInfo);
-            CastlingRight(newBoard, moveInfo);
-            RegularMove(newBoard, moveInfo);
-        }
-        else
-        {
-            Console.WriteLine("Invalid Move:  !!!");
-            return false;
-        }
-
-        PiecePosition? TKing = ChessBoard.GetKingPosition(newBoard, moveInfo.T);
-        if (TKing is not null && newBoard[TKing] is not null)
-        {
-            if (ChessRules.IsChecked(newBoard, TKing))
-            {
-                Console.WriteLine(" Invalid Move:  Check way was opened! ");
-                return false;
-            }
-
-            else
-            {
-                board = (ChessBoard)newBoard;
-                moves?.Add(new MoveInfo(moveInfo.Start, moveInfo.Target, board[moveInfo.Start]!, board[moveInfo.Target], moveInfo.Castling));
-                moveInfo = TurnSwitcher(moveInfo);
-                PiecePosition? lastCheck = ChessBoard.GetKingPosition(board, moveInfo.T);
-                if (lastCheck is not null && ChessRules.IsCheckMate(board, lastCheck, moveInfo.Target))
-                    Console.WriteLine("        CHECKMATE!!!      ");
-                else if (lastCheck is not null && ChessRules.IsChecked(board, lastCheck))
-                    Console.WriteLine("        CHECK!!!      ");
-                return true;
-            }
-        }
-        else
-        {
-            Console.WriteLine(" Invalid Move!!! ");
-            return false;
-        }
-
-    }
-    public void RegularMove(ChessBoard board, MoveInfo moveInfo)
+    /// <summary>
+    /// Կատարում է սովորական քայլ (ոչ castling կամ հատուկ քայլեր)։
+    /// Տեղափոխում է ֆիգուրը սկզբնական դիրքից նպատակային դիրք,
+    /// թարմացնում է ֆիգուրի դիրքը և նշում է այն որպես արդեն շարժված։
+    /// </summary>
+    /// <param name="board">Շախմատի խաղատախտակի ընթացիկ վիճակը։</param>
+    /// <param name="moveInfo">Քայլի մասին տվյալներ՝ սկզբնական և նպատակային դիրքերով։</param>
+    public static void RegularMove(ChessBoard board, MoveInfo moveInfo)
     {
         if (moveInfo.Start is not null && moveInfo.Target is not null)
         {
             Piece? piece = board[moveInfo.Start];
-            board[moveInfo.Target] = null;
             board[moveInfo.Target] = piece;
             piece?.HasMoved = true;
-            board[moveInfo.Start] = null;
             piece?.Position = moveInfo.Target;
-            //PawnPromotionMove(board, moveInfo);
+            board[moveInfo.Start] = null;
         }
     }
-    public void PawnPromotionMove(ChessBoard board, MoveInfo moveInfo)
+    /// <summary>
+    /// Կատարում է ձախ կողմի castling (թագուհու կողմի castling) քայլը։
+    /// Թագավորը տեղափոխվում է 2 դաշտ ձախ, իսկ նավակը՝ թագավորի նոր դիրքից 3 դաշտ աջ։
+    /// Թարմացվում են բոլոր ֆիգուրների դիրքերը և քայլը նշվում է որպես castling։
+    /// </summary>
+    /// <param name="chessBoard">Շախմատի խաղատախտակի ընթացիկ վիճակը։</param>
+    /// <param name="moveInfo">Castling քայլի մասին տեղեկություններ՝ սկիզբ և նպատակային դիրքերով։</param>
+    /// <returns>Թարմացված խաղատախտակ castling-ից հետո, կամ նույն board-ը եթե տվյալները սխալ են։</returns>
+    public static ChessBoard? CastlingLeft(ChessBoard chessBoard, MoveInfo moveInfo)
     {
-        if (ChessRules.PawnPromotion(board, moveInfo.Target))
-        {
-            Console.Write("INSERT NEW TYPE FOR PAWN: Q | R | B | T ");
-            string? newFigure = Console.ReadLine();
-            if (board[moveInfo.Target] is Piece pawn)
-            {
-                Piece newPiece = newFigure switch
-                {
-                    "T" => new Knight(pawn.Color),
-                    "B" => new Bishop(pawn.Color),
-                    "R" => new Rook(pawn.Color),
-                    "Q" => new Queen(pawn.Color),
-                    _ => throw new Exception()
-                };
-                newPiece.Position = moveInfo.Target;
-                newPiece.Symbol = newPiece.GetSymbol(newPiece.Color);
+        if (chessBoard is null) return chessBoard;
+        if (moveInfo is null) return chessBoard;
+        if (moveInfo.Start is null) return chessBoard;
+        if (moveInfo.Target is null) return chessBoard;
 
-                board[moveInfo.Target] = newPiece;
-            }
-        }
-    }
-    private MoveInfo TurnSwitcher(MoveInfo moveInfo)
-    {
-        if (moveInfo.T == PieceColor.White)
-            moveInfo.T = PieceColor.Black;
-        else
-            moveInfo.T = PieceColor.White;
-        return moveInfo;
-    }
-    public static (ChessBoard, bool) CastlingLeft(ChessBoard chessBoard, MoveInfo moveInfo)
-    {
-        var color = chessBoard[moveInfo.Start].Color;
+        var color = chessBoard[moveInfo.Start]!.Color;
         //Թագավորի դիրքի փոփոխություն – 2 դիրք ձախ.
         chessBoard[moveInfo.Target] = chessBoard[moveInfo.Start];
         chessBoard[moveInfo.Target]?.Position = moveInfo.Target;
         chessBoard[moveInfo.Start] = null;
 
-        //Նավակի դիրքի փոփոփխություն – 3 դիրք աջ.
-        chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1] = chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2];
-        chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1]?.Position =
-            new PiecePosition { Row = moveInfo.Target.Row, Col = moveInfo.Target.Col + 1 };
-        chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 2] = null;
+        //Նավակի դիրքի փոփոփոխություն – 3 դիրք աջ.
+        chessBoard[moveInfo.Target.Row, 3] = chessBoard[moveInfo.Target.Row, 0];
+        chessBoard[moveInfo.Target.Row, 3]?.Position = new PiecePosition { Row = moveInfo.Target.Row, Col = 3 };
+        chessBoard[moveInfo.Target.Row, 0] = null;
 
         //Castling property ի փոփոխություն․
         moveInfo.Castling = (true, color);
-
-        return (chessBoard, true);
+        return chessBoard;
     }
-    public static (ChessBoard, bool) CastlingRight(ChessBoard chessBoard, MoveInfo moveInfo)
+    /// <summary>
+    /// Կատարում է աջ կողմի castling (թագավորի կողմի castling) քայլը։
+    /// Թագավորը տեղափոխվում է 2 դաշտ աջ, իսկ նավակը տեղափոխվում է թագավորի նոր դիրքից 2 դաշտ ձախ։
+    /// Թարմացվում են բոլոր ֆիգուրների դիրքերը և քայլը նշվում է որպես castling։
+    /// </summary>
+    /// <param name="chessBoard">Շախմատի խաղատախտակի ընթացիկ վիճակը։</param>
+    /// <param name="moveInfo">Castling քայլի մասին տեղեկություններ՝ սկիզբ և նպատակային դիրքերով։</param>
+    /// <returns>Թարմացված խաղատախտակ castling-ից հետո, կամ նույն board-ը եթե տվյալները սխալ են։</returns>
+    public static ChessBoard? CastlingRight(ChessBoard chessBoard, MoveInfo moveInfo)
     {
-        if (chessBoard[moveInfo.Start]?.Type != PieceType.King ||
-            (ChessRules.IsInside(moveInfo.Target.Col + 1) && chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1]?.Type != PieceType.Rook))
-            return (chessBoard, false);
+        if (chessBoard is null) return chessBoard;
+        if (moveInfo is null) return chessBoard;
+        if (moveInfo.Start is null) return chessBoard;
+        if (moveInfo.Target is null) return chessBoard;
 
-        var color = chessBoard[moveInfo.Start].Color;
-        if (ChessRules.IsCastlingRightPossible(chessBoard, moveInfo))
-        {
-            chessBoard[moveInfo.Target] = chessBoard[moveInfo.Start];
-            chessBoard[moveInfo.Target]?.Position = moveInfo.Target;
-            chessBoard[moveInfo.Start] = null;
-            chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 1] = chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1];
-            chessBoard[moveInfo.Target.Row, moveInfo.Target.Col - 1]?.Position =
-                new PiecePosition { Row = moveInfo.Target.Row, Col = moveInfo.Target.Col - 1 }; chessBoard[moveInfo.Target.Row, moveInfo.Target.Col + 1] = null;
-            moveInfo.Castling = (true, color);
-            return (chessBoard, true);
-        }
-        else
-            return (chessBoard, false);
+        var color = chessBoard[moveInfo.Start]!.Color;
+
+        //Թագավորի դիրքի փոփոխություն – 2 դիրք աջ.
+        chessBoard[moveInfo.Target] = chessBoard[moveInfo.Start];
+        chessBoard[moveInfo.Target]?.Position = moveInfo.Target;
+        chessBoard[moveInfo.Start] = null;
+
+        //Նավակի դիրքի փոփոփոխություն – 2 դիրք ձախ.
+        chessBoard[moveInfo.Target.Row, 5] = chessBoard[moveInfo.Target.Row, 7];
+        chessBoard[moveInfo.Target.Row, 5]?.Position = new PiecePosition { Row = moveInfo.Target.Row, Col = 5 };
+        chessBoard[moveInfo.Target.Row, 7] = null;
+
+        //Castling property ի փոփոխություն․
+        moveInfo.Castling = (true, color);
+        return chessBoard;
     }
 }

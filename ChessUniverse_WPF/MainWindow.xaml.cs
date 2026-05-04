@@ -22,7 +22,6 @@ public partial class MainWindow : Window
     private int _imgUpY;
 
     Image boardEnteredImage;
-    Game game = new Game();
     private bool firstBoardLoc;
     private int _cellSize = 57;
     ChessBoard pieceBoard = new ChessBoard();
@@ -184,7 +183,7 @@ public partial class MainWindow : Window
         PawnPromotionMove(tag);
         MoveUIUpdate(boardEnteredImage, _moveInfo, MoveType.RegularMove);
 
-        if (ChessRules.IsChecked(pieceBoard).Item1)
+        if (ChessRules.IsChecked(pieceBoard))
             MessageBox.Show("Check!");
 
         WhitePromotionOverlay.Visibility = Visibility.Collapsed;
@@ -192,7 +191,7 @@ public partial class MainWindow : Window
     }
     #endregion
 
-    #region MOVEUI
+    #region MOVE_UI
     /// <summary>
     /// Տեղափոխում է վերցված ֆիգուրը խաղատախտակից դեպի captures panel
     /// և հարմարեցնում է դրա տեսքն ու behavior-ը
@@ -401,6 +400,10 @@ public partial class MainWindow : Window
     /// </returns>
     public MoveResult MakeMove(ChessBoard board, MoveInfo moveInfo)
     {
+        if (moveInfo is null) return new MoveResult(board, MoveType.InvalidMove);
+        if (moveInfo.Start is null) return new MoveResult(board, MoveType.InvalidMove);
+        if (moveInfo.Target is null) return new MoveResult(board, MoveType.InvalidMove);
+
         MoveType currentMoveType;
         if (acctiveTurn != board[moveInfo.Start]?.Color)
             return new MoveResult(board, MoveType.InvalidMove);
@@ -420,28 +423,18 @@ public partial class MainWindow : Window
         if (!IsMovePossible(board, moveInfo))
             return new MoveResult(board, MoveType.InvalidMove);
 
-        ChessBoard cloneBoard = (ChessBoard)board.Clone();
+        ChessBoard? cloneBoard = (ChessBoard)board.Clone();
         if (IsPawnPromotion(cloneBoard, moveInfo))
         { ShowPromotionOverlay(boardEnteredImage, moveInfo); currentMoveType = MoveType.PawnPromotion; }
         else if (ChessRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
-        { cloneBoard = Game.CastlingLeft(cloneBoard, moveInfo).Item1; currentMoveType = MoveType.LeftCastling; }
+        { cloneBoard = Game.CastlingLeft(cloneBoard, moveInfo); currentMoveType = MoveType.LeftCastling; }
         else if (ChessRules.IsCastlingRightPossible(cloneBoard, moveInfo))
-        { cloneBoard = Game.CastlingRight(cloneBoard, moveInfo).Item1; currentMoveType = MoveType.RightCastling; }
-        else { game.RegularMove(cloneBoard, moveInfo); currentMoveType = MoveType.RegularMove; }
+        { cloneBoard = Game.CastlingRight(cloneBoard, moveInfo); currentMoveType = MoveType.RightCastling; }
+        else { Game.RegularMove(cloneBoard, moveInfo); currentMoveType = MoveType.RegularMove; }
 
         acctiveKing = ChessBoard.GetKingPosition(cloneBoard, acctiveTurn);
         checkTargetState = ChessRules.IsChecked(cloneBoard, acctiveKing, acctiveTurn);
 
-        /*if (checkStartState && checkTargetState)
-        {
-            MessageBox.Show("Invalid Move: You are in check!");
-            return new MoveResult(board, MoveType.InvalidMove);
-        }*/
-        /*else if (!checkStartState && checkTargetState)
-        {
-            MessageBox.Show("Invalid Move: Check way was opened!");
-            return new MoveResult(board, MoveType.InvalidMove);
-        }*/
         if (checkStartState && checkTargetState)
             return new MoveResult(board, MoveType.InvalidMove, BoardState.InvalidMove);
         else if (!checkStartState && checkTargetState)
@@ -449,10 +442,6 @@ public partial class MainWindow : Window
 
         PiecePosition? passiveKing = ChessBoard.GetKingPosition(cloneBoard, passiveTurn);
 
-        /*if (ChessRules.IsChecked(cloneBoard, passiveKing, passiveTurn))
-        {
-            mateState = IsCheckMate(cloneBoard, passiveTurn);
-        }*/
         if (ChessRules.IsChecked(cloneBoard, passiveKing, passiveTurn))
         {
             if (IsCheckMate(cloneBoard, passiveTurn))

@@ -11,7 +11,7 @@ public class ChessBoard : ICloneable
     public ChessBoard(Piece[,] newBoard)
         => _squares = newBoard;
     public Piece? this[PiecePosition position]
-    { 
+    {
         get
         {
             if (position.Row < 0 || position.Row > 7 ||
@@ -46,10 +46,10 @@ public class ChessBoard : ICloneable
             int col = file - 'A';
             int row = 7 - (rank - '1');
 
-            if (row < 0 || row > 7 
-                || col < 0 || col > 7 ) 
+            if (row < 0 || row > 7
+                || col < 0 || col > 7)
                 return null;
-            return _squares[row,col];
+            return _squares[row, col];
         }
     }
 
@@ -59,8 +59,8 @@ public class ChessBoard : ICloneable
         _squares[0, 0] = new Rook(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 0 } };
         _squares[0, 1] = new Knight(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 1 } };
         _squares[0, 2] = new Bishop(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 2 } };
-        _squares[0, 3] = new Queen(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 3} };
-        _squares[0, 4] = new King(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 4} };
+        _squares[0, 3] = new Queen(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 3 } };
+        _squares[0, 4] = new King(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 4 } };
         _squares[0, 5] = new Bishop(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 5 } };
         _squares[0, 6] = new Knight(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 6 } };
         _squares[0, 7] = new Rook(PieceColor.Black) { Position = new PiecePosition { Row = 0, Col = 7 } };
@@ -72,11 +72,11 @@ public class ChessBoard : ICloneable
         _squares[7, 0] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 0 } }; //A1
         _squares[7, 1] = new Knight(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 1 } };
         _squares[7, 2] = new Bishop(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 2 } };
-        _squares[7, 3] = new Queen(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 3} };
-        _squares[7, 4] = new King(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 4} };
+        _squares[7, 3] = new Queen(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 3 } };
+        _squares[7, 4] = new King(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 4 } };
         _squares[7, 5] = new Bishop(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 5 } };
         _squares[7, 6] = new Knight(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 6 } };
-        _squares[7, 7] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 7} };
+        _squares[7, 7] = new Rook(PieceColor.White) { Position = new PiecePosition { Row = 7, Col = 7 } };
 
     }
 
@@ -97,7 +97,8 @@ public class ChessBoard : ICloneable
     }
     public static List<PiecePosition> GetAllPiecePositions(ChessBoard board, PieceColor color)
     {
-        List<PiecePosition> positions = new List<PiecePosition>();
+        List<PiecePosition> positions = new();
+
         for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
@@ -113,9 +114,9 @@ public class ChessBoard : ICloneable
     {
         ChessBoard newBoard = new ChessBoard();
 
-        for (int i = 0;i < 8; i++)
+        for (int i = 0; i < 8; i++)
         {
-            for(int j = 0;j < 8; j++)
+            for (int j = 0; j < 8; j++)
             {
                 var piece = _squares[i, j];
                 if (piece != null)

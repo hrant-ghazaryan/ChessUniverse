@@ -9,23 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Images\Board\board.png" />
-    <None Remove="Images\Board\chessboard.png" />
-    <None Remove="Images\Figures\black-elephant.png" />
-    <None Remove="Images\Figures\black-horse.png" />
-    <None Remove="Images\Figures\black-king.png" />
-    <None Remove="Images\Figures\black-queen.png" />
-    <None Remove="Images\Figures\black-ship.png" />
-    <None Remove="Images\Figures\black-soldier.png" />
-    <None Remove="Images\Figures\white-elephant.png" />
-    <None Remove="Images\Figures\white-horse.png" />
-    <None Remove="Images\Figures\white-king.png" />
-    <None Remove="Images\Figures\white-queen.png" />
-    <None Remove="Images\Figures\white-ship.png" />
-    <None Remove="Images\Figures\white-soldier.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ChessUniverse.Library\ChessUniverse.Library.csproj" />
   </ItemGroup>
 

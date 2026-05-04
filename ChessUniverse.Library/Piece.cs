@@ -24,17 +24,6 @@ public abstract class Piece(PieceColor color, PieceType type, char symbol, Piece
     public abstract bool IsMovePossible(ChessBoard chessBoard, PiecePosition target);
     public abstract bool CanMove(ChessBoard chessBoard, PiecePosition target);
     public abstract (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard chessBoard);
-    public static ChessBoard SwitchPositions(ChessBoard board, PiecePosition startPosition, PiecePosition targetPosition)
-    {
-        if (startPosition is not null && targetPosition is not null 
-            &&  board[startPosition] is not null)
-        {
-            board[targetPosition] = board[startPosition];
-            board[targetPosition]?.Position = targetPosition;
-            board[startPosition] = null;
-        }
-        return board;
-    }
     public abstract object Clone();
 };
 

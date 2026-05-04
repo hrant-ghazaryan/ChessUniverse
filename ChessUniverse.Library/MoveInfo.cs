@@ -6,10 +6,11 @@ public class MoveInfo
 {
     public PiecePosition? Start { get; set; }
     public PiecePosition? Target { get; set; }
-    public (bool, PieceColor) Castling { get; set; }
+    public (bool, PieceColor)? Castling { get; set; }
     public Piece? MovedPiece { get; set; }
     public Piece? CapturedPiece { get; set; }
-    public PieceColor T { get; set; }
+    public PieceColor Turn { get; set; }
+
     public MoveInfo() { }
     public MoveInfo(MoveInfo original)
     {
@@ -18,7 +19,7 @@ public class MoveInfo
         Castling = original.Castling;
         MovedPiece = (Piece?)original.MovedPiece?.Clone();
         CapturedPiece = (Piece?)original.CapturedPiece?.Clone();
-        T = original.T;
+        Turn = original.Turn;
     }
     public MoveInfo(PiecePosition start, PiecePosition target)
     {
@@ -29,7 +30,7 @@ public class MoveInfo
     {
         Start = start;
         Target = target;
-        T = turn;
+        Turn = turn;
     }
     public MoveInfo(PiecePosition start, PiecePosition target, Piece movedPiece, Piece? capturedFigure, (bool, PieceColor) castling)
     {

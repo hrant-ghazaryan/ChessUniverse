@@ -33,7 +33,7 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
             for (int j = 0; j < 8; j++)
             {
                 PiecePosition targetposition = new PiecePosition(i, j);
-                if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]?.Color))
+                if (ChessRules.MoveValidation(board, Position, targetposition, board[Position].Color))
                     possibleMoves.Add(targetposition);
             }
         }
