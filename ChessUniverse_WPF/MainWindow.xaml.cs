@@ -193,6 +193,11 @@ public partial class MainWindow : Window
     #endregion
 
     #region MOVEUI
+    /// <summary>
+    /// Տեղափոխում է վերցված ֆիգուրը խաղատախտակից դեպի captures panel
+    /// և հարմարեցնում է դրա տեսքն ու behavior-ը
+    /// </summary>
+    /// <param name="imgCaptured">Վերցված ֆիգուրի պատկերը</param>
     private void AddingCaptureToWrap(Image? imgCaptured)
     {
         grid_figure.Children.Remove(imgCaptured);
@@ -206,7 +211,13 @@ public partial class MainWindow : Window
         else
             WhiteCaptures.Children.Add(imgCaptured);
     }
-
+    /// <summary>
+    /// Իրականացնում է capture-ի UI թարմացումը՝
+    /// հակառակ ֆիգուրը տեղափոխելով WrapPanel,
+    /// իսկ սխալ քայլի դեպքում վերադարձնելով ֆիգուրը սկզբնական դիրք
+    /// </summary>
+    /// <param name="img">Տեղափոխվող ֆիգուրի պատկերը</param>
+    /// <param name="moveInfo">Քայլի տվյալները (նպատակային դիրքը ներառյալ)</param>
     private void CaptureToWrap(Image? img, MoveInfo moveInfo)
     {
         if (pieceBoard[moveInfo.Target] is not null)
@@ -239,8 +250,16 @@ public partial class MainWindow : Window
                 img?.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
         }
     }
+    /// <summary>
+    /// Թարմացնում է UI-ը ձախ ռոկիրովկայի ժամանակ՝
+    /// տեղափոխելով թագավորին դեպի նպատակային դիրք և նավին համապատասխան դիրք
+    /// </summary>
+    /// <param name="img">Տեղափոխվող թագավորի պատկերը</param>
+    /// <param name="moveInfo">Քայլի տվյալները (նպատակային դիրքը ներառյալ)</param>
     private void LeftCastlingUI(Image img, MoveInfo moveInfo)
     {
+        if (moveInfo is null) return;
+        if (moveInfo.Target is null) return;
 
         img?.Margin = new Thickness(
                 moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
@@ -262,6 +281,13 @@ public partial class MainWindow : Window
         Mouse.Capture(null);
         StackPanel.SetZIndex(img, 0);
     }
+    /// <summary>
+    /// Թարմացնում է UI-ը աջ ռոկիրովկայի ժամանակ՝
+    /// տեղափոխելով թագավորի պատկերը դեպի նպատակային դիրք
+    /// և համապատասխան նավի (rook) պատկերը նոր դիրք
+    /// </summary>
+    /// <param name="img">Տեղափոխվող թագավորի պատկերը</param>
+    /// <param name="moveInfo">Քայլի տվյալները, ներառյալ նպատակային դիրքը</param>
     private void RightCastlingUI(Image img, MoveInfo moveInfo)
     {
 
@@ -285,6 +311,14 @@ public partial class MainWindow : Window
         Mouse.Capture(null);
         StackPanel.SetZIndex(img, 0);
     }
+    /// <summary>
+    /// Կառավարում է խաղատախտակի UI-ի թարմացումը՝
+    /// ըստ քայլի տեսակի՝ կատարելով ֆիգուրի տեղաշարժ,
+    /// capture-ի մշակումը և հատուկ քայլերի (ռոկիրովկա, promotion) արտացոլումը
+    /// </summary>
+    /// /// <param name="img">Տեղափոխվող ֆիգուրի պատկերը</param>
+    /// <param name="moveInfo">Քայլի տվյալները (սկիզբ և նպատակային դիրք)</param>
+    /// <param name="moveType">Քայլի տեսակը (MoveType)</param>
     private void MoveUIUpdate(Image img, MoveInfo moveInfo, MoveType moveType)
     {
         if (img == null) return;
@@ -318,6 +352,12 @@ public partial class MainWindow : Window
                 break;
         }
     }
+    /// <summary>
+    /// Թարմացնում է խաղի վիճակի UI արտացոլումը՝ ըստ MoveResult-ի,
+    /// ցուցադրում է համապատասխան հաղորդագրություններ (շախ, մատ)
+    /// և մատի դեպքում փակում է պատուհանը
+    /// </summary>
+    /// <param name="moveResult">Քայլի արդյունքը, որը պարունակում է BoardState-ը</param>
     private void BoardStateUpdate(MoveResult moveResult)
     {
         switch (moveResult.BoardState)
@@ -431,95 +471,23 @@ public partial class MainWindow : Window
     /// <returns>
     /// Հակառակ գույնը (եթե White է՝ կվերադարձնի Black, և հակառակը)
     /// </returns>
+    /// <summary>
+    /// Ստուգում է արդյոք տրված գույնի խաղացողը գտնվում է մատի (checkmate) մեջ՝
+    /// փորձելով նրա բոլոր հնարավոր քայլերը և ստուգելով,
+    /// արդյոք կա գոնե մեկ քայլ, որի արդյունքում թագավորը դուրս է գալիս շախից
+    /// </summary>
+    /// <param name="board">Խաղատախտակի ընթացիկ վիճակը</param>
+    /// <param name="color">Խաղացողի գույնը, որի համար կատարվում է ստուգումը</param>
+    /// <returns>
+    /// true՝ եթե մատ է (ոչ մի թույլատրելի քայլ չի փրկում շախից),
+    /// false՝ եթե կա գոնե մեկ անվտանգ քայլ
+    /// </returns>
     PieceColor MoveChanger(PieceColor acctiveTurn)
     {
         if (acctiveTurn == PieceColor.White)
             return PieceColor.Black;
         return PieceColor.White;
     }
-    /*public static bool IsCheckMate(ChessBoard board, PiecePosition kingposition, PiecePosition attacker)
-    {
-        if (kingposition is null || board[kingposition] is null) return false;
-        if (attacker is null || board[attacker] is null) return false;
-
-        var piece = board[kingposition];
-        var pieceColor = piece!.Color;
-
-        if (piece!.Type != PieceType.King) return false;
-
-        bool kingSafeMoves = piece!.GetPossibleMoves(board).Item2;
-        List<PiecePosition> attackermoves = new List<PiecePosition>();
-
-        //1
-        if (attacker.Row < kingposition.Row && attacker.Col < kingposition.Col)
-        {
-            for (int i = 0; i < Math.Abs(kingposition.Row - attacker.Row); i++)
-                attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col + i });
-        }
-        //2
-        else if (attacker.Row < kingposition.Row && attacker.Col == kingposition.Col)
-        {
-            for (int i = 0; i < kingposition.Row - attacker.Row; i++)
-                attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col });
-        }
-        //3
-        else if (attacker.Row < kingposition.Row && attacker.Col > kingposition.Col)
-        {
-            for (int i = 0; i < kingposition.Row - attacker.Row; i++)
-                attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col - i });
-        }
-        //4
-        else if (attacker.Row == kingposition.Row && attacker.Col < kingposition.Col)
-        {
-            for (int j = 0; j < kingposition.Col - attacker.Col; j++)
-                attackermoves.Add(new PiecePosition { Row = attacker.Row, Col = attacker.Col + j });
-        }
-        //5
-        else if (attacker.Row == kingposition.Row && attacker.Col > kingposition.Col)
-        {
-            for (int j = 0; j < attacker.Col - kingposition.Col; j++)
-                attackermoves.Add(new PiecePosition { Row = attacker.Row, Col = attacker.Col - j });
-        }
-        //6
-        else if (attacker.Row > kingposition.Row && attacker.Col < kingposition.Col)
-        {
-            for (int i = 0; i < attacker.Row - kingposition.Row; i++)
-                attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col + i });
-        }
-        //7
-        else if (attacker.Row > kingposition.Row && attacker.Col == kingposition.Col)
-        {
-            for (int i = 0; i < attacker.Row - kingposition.Row; i++)
-                attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col });
-        }
-        //8
-        else if (attacker.Row > kingposition.Row && attacker.Col > kingposition.Col)
-        {
-            for (int i = 0; i < attacker.Row - kingposition.Row; i++)
-                attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col - i });
-        }
-
-        ChessBoard copyBoard = (ChessBoard)board.Clone();
-
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                var currentPiece = board[i, j];
-                if (currentPiece is null)
-                    continue;
-                if (currentPiece.Color == pieceColor && attackermoves.Count != 0)
-                {
-                    foreach (var move in attackermoves)
-                    {
-                        if (currentPiece!.IsMovePossible(copyBoard, move))
-                            return false;
-                    }
-                }
-            }
-        }
-        return !kingSafeMoves;
-    }*/
     public static bool IsCheckMate(ChessBoard board, PieceColor color)
     {
         var kingBoard = ChessBoard.GetKingPosition(board, color);
