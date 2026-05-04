@@ -46,4 +46,19 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
             Position = new PiecePosition(this.Position.Row, this.Position.Col)
         };
     }
+
+    public override bool CanMove(ChessBoard chessBoard, PiecePosition target)
+    {
+        if (target is null)
+            return false;
+
+        if (!ChessRules.IsInside(target.Row) || !ChessRules.IsInside(target.Col))
+            return false;
+
+        int dRow = Math.Abs(Position.Row - target.Row);
+        int dCol = Math.Abs(Position.Col - target.Col);
+
+        return (dRow == 1 && dCol == 2) || (dRow == 2 && dCol == 1);
+
+    }
 }

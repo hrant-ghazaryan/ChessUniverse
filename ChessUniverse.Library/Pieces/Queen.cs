@@ -11,102 +11,14 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
         if (chessBoard[targetposition]?.Color == chessBoard[Position]?.Color)
             return false;
 
-        if (Position.Row == targetposition.Row || Position.Col == targetposition.Col)
-        {
-            if (Position.Row == targetposition.Row && Position.Col > targetposition.Col)
-            {
-                for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                {
-                    if (chessBoard[Position.Row, Position.Col - j] != null)
-                        return false;
-                }
-            }
-            if (Position.Row == targetposition.Row && Position.Col < targetposition.Col)
-            {
-                for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                {
-                    if (chessBoard[Position.Row, Position.Col + j] != null)
-                        return false;
-                }
-            }
-            if (Position.Row > targetposition.Row && Position.Col == targetposition.Col)
-            {
-                for (int j = 1; j < Math.Abs(Position.Row - targetposition.Row); j++)
-                {
-                    if (chessBoard[Position.Row - j, Position.Col] != null)
-                        return false;
-                }
-            }
-            if (Position.Row < targetposition.Row && Position.Col == targetposition.Col)
-            {
-                for (int j = 1; j < Math.Abs(Position.Row - targetposition.Row); j++)
-                {
-                    if (chessBoard[Position.Row + j, Position.Col] != null)
-                        return false;
-                }
-            }
+        Rook rook = new Rook(Color) { Position = this.Position };
+        if (rook.IsMovePossible(chessBoard, targetposition))
             return true;
-        }
-        if (Math.Abs(Position.Row - targetposition.Row) == Math.Abs(Position.Col - targetposition.Col))
-        {
-            if (Position.Row < targetposition.Row && Position.Col > targetposition.Col)
-            {
-                for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-                {
-                    for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                    {
-                        if (i == j)
-                        {
-                            if (chessBoard[Position.Row + i, Position.Col - j] != null)
-                                return false;
-                        }
-                    }
-                }
-            }
-            if (Position.Row < targetposition.Row && Position.Col < targetposition.Col)
-            {
-                for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-                {
-                    for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                    {
-                        if (i == j)
-                        {
-                            if (chessBoard[Position.Row + i, Position.Col + j] != null)
-                                return false;
-                        }
-                    }
-                }
-            }
-            if (Position.Row > targetposition.Row && Position.Col < targetposition.Col)
-            {
-                for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-                {
-                    for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                    {
-                        if (i == j)
-                        {
-                            if (chessBoard[Position.Row - i, Position.Col + j] != null)
-                                return false;
-                        }
-                    }
-                }
-            }
-            if (Position.Row > targetposition.Row && Position.Col > targetposition.Col)
-            {
-                for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-                {
-                    for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                    {
-                        if (i == j)
-                        {
-                            if (chessBoard[Position.Row - i, Position.Col - j] != null)
-                                return false;
-                        }
-                    }
-                }
-            }
+
+        Bishop bishop = new Bishop(Color) { Position = this.Position };
+        if (bishop.IsMovePossible(chessBoard, targetposition))
             return true;
-        }
+
         return false;
     }
     public override (List<PiecePosition>,bool) GetPossibleMoves(ChessBoard board)
@@ -132,5 +44,20 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
         {
             Position = new PiecePosition(this.Position.Row, this.Position.Col)
         };
+    }
+
+    public override bool CanMove(ChessBoard chessBoard, PiecePosition target)
+    {
+        if (target is null)
+            return false;
+        Rook rook = new Rook(Color) { Position = this.Position };
+        if (rook.CanMove(chessBoard, target))
+            return true;
+
+        Bishop bishop = new Bishop(Color) { Position = this.Position };
+        if (bishop.CanMove(chessBoard, target))
+            return true;
+
+        return false;
     }
 }

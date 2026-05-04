@@ -5,85 +5,49 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new 
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public  override bool IsMovePossible(ChessBoard chessBoard, PiecePosition targetposition)
+    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition targetposition)
     {
         if (chessBoard[targetposition]?.Color == chessBoard[Position]?.Color)
             return false;
+        if (Math.Abs(Position.Row - targetposition.Row) != Math.Abs(Position.Col - targetposition.Col))
+            return false;
 
-        if (Math.Abs(Position.Row - targetposition.Row) == Math.Abs(Position.Col - targetposition.Col))
+        if (Position.Row < targetposition.Row && Position.Col > targetposition.Col)
         {
-            List<Piece> movestotarget = new List<Piece>();
-            if (Position.Row < targetposition.Row && Position.Col > targetposition.Col)
+            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
             {
-                for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-                {
-                    for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                    {
-                        if (i == j)
-                        {
-                            if (chessBoard[Position.Row + i, Position.Col - j] == null) { }
-                            if (chessBoard[Position.Row + i, Position.Col - j] != null)
-                                return false;
-                        }
-                    }
-                }
-            }
-            if (Position.Row < targetposition.Row && Position.Col < targetposition.Col)
-            {
-                for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-                {
-                    for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                    {
-                        if (i == j)
-                        {
-                            if (chessBoard[Position.Row + i, Position.Col + j] == null) { }
-                            if (chessBoard[Position.Row + i, Position.Col + j] != null)
-                                return false;
-                        }
-                    }
-                }
-            }
-            if (Position.Row > targetposition.Row && Position.Col < targetposition.Col)
-            {
-                for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-                {
-                    for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                    {
-                        if (i == j) 
-                        {
-                            if (chessBoard[Position.Row - i, Position.Col + j] == null) { }
-                            if (chessBoard[Position.Row - i, Position.Col + j] != null)
-                                return false;
-                        }
-                    }
-                }
-            }
-            if (Position.Row > targetposition.Row && Position.Col > targetposition.Col)
-            {
-                for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-                {
-                    for (int j = 1; j < Math.Abs(Position.Col - targetposition.Col); j++)
-                    {
-                        if (i == j)
-                        {
-                            if (chessBoard[Position.Row - i, Position.Col - j] == null) { }
-                            if (chessBoard[Position.Row - i, Position.Col - j] != null)
-                                return false;
-                        }
-                    }
-                }
-            }
-            foreach (var item in movestotarget)
-            {
-                if (item == null) { }
-                if (item != null)
+                if (chessBoard[Position.Row + i, Position.Col - i] != null)
                     return false;
             }
-            return true;
         }
-        return false;
+        if (Position.Row < targetposition.Row && Position.Col < targetposition.Col)
+        {
+            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
+            {
+                if (chessBoard[Position.Row + i, Position.Col + i] != null)
+                    return false;
+            }
+        }
+        if (Position.Row > targetposition.Row && Position.Col < targetposition.Col)
+        {
+            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
+            {
+                if (chessBoard[Position.Row - i, Position.Col + i] != null)
+                    return false;
+            }
+        }
+        if (Position.Row > targetposition.Row && Position.Col > targetposition.Col)
+        {
+            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
+            {
+                if (chessBoard[Position.Row - i, Position.Col - i] != null)
+                    return false;
+            }
+        }
+
+        return true;
     }
-    public override (List<PiecePosition>,bool) GetPossibleMoves(ChessBoard board)
+    public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
     {
         List<PiecePosition> possibleMoves = new List<PiecePosition>();
         for (int i = 0; i < 8; i++)
@@ -106,6 +70,49 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new 
         {
             Position = new PiecePosition(this.Position.Row, this.Position.Col)
         };
+    }
+
+    public override bool CanMove(ChessBoard chessBoard, PiecePosition targetposition)
+    {
+        if (targetposition is null)
+            return false;
+        if (Math.Abs(Position.Row - targetposition.Row) != Math.Abs(Position.Col - targetposition.Col))
+            return false;
+
+        if (Position.Row < targetposition.Row && Position.Col > targetposition.Col)
+        {
+            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
+            {
+                if (chessBoard[Position.Row + i, Position.Col - i] != null)
+                    return false;
+            }
+        }
+        if (Position.Row < targetposition.Row && Position.Col < targetposition.Col)
+        {
+            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
+            {
+                if (chessBoard[Position.Row + i, Position.Col + i] != null)
+                    return false;
+            }
+        }
+        if (Position.Row > targetposition.Row && Position.Col < targetposition.Col)
+        {
+            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
+            {
+                if (chessBoard[Position.Row - i, Position.Col + i] != null)
+                    return false;
+            }
+        }
+        if (Position.Row > targetposition.Row && Position.Col > targetposition.Col)
+        {
+            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
+            {
+                if (chessBoard[Position.Row - i, Position.Col - i] != null)
+                    return false;
+            }
+        }
+
+        return true;
     }
 }
 

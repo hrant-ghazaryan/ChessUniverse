@@ -5,7 +5,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Xml.Linq;
 
 namespace ChessUniverse_WPF;
 
@@ -99,6 +98,7 @@ public partial class MainWindow : Window
         pieceBoard = moveDetails.Board;
         currentMoveType = moveDetails.MoveType;
         MoveUIUpdate(img, moveInfo, currentMoveType);
+        BoardStateUpdate(moveDetails);
 
         Mouse.Capture(null);
         StackPanel.SetZIndex(img, 0);
@@ -285,12 +285,12 @@ public partial class MainWindow : Window
         Mouse.Capture(null);
         StackPanel.SetZIndex(img, 0);
     }
-    public void MoveUIUpdate(Image img, MoveInfo moveInfo, MoveType moveType)
+    private void MoveUIUpdate(Image img, MoveInfo moveInfo, MoveType moveType)
     {
         if (img == null) return;
         if (moveInfo is null) return;
         if (moveInfo.Target is null) return;
-
+        MoveShower.Content = acctiveTurn.ToString();
         switch (moveType)
         {
             case MoveType.InvalidMove:
@@ -315,6 +315,20 @@ public partial class MainWindow : Window
                 moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
                 moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
                 0, 0);
+                break;
+        }
+    }
+    private void BoardStateUpdate(MoveResult moveResult)
+    {
+        switch (moveResult.BoardState)
+        {
+            case BoardState.CheckMate:
+                MessageBox.Show("CHECKMATE");
+                MessageBox.Show($"{acctiveTurn.ToString().ToUpper()} WIN");
+                Close();
+                break;
+            case BoardState.Check:
+                MessageBox.Show("CHECK");
                 break;
         }
     }
@@ -350,25 +364,23 @@ public partial class MainWindow : Window
         MoveType currentMoveType;
         if (acctiveTurn != board[moveInfo.Start]?.Color)
             return new MoveResult(board, MoveType.InvalidMove);
-        //1
+
         bool checkStartState = false;
         bool checkTargetState = false;
+
         PieceColor passiveTurn;
         if (acctiveTurn == PieceColor.White)
             passiveTurn = PieceColor.Black;
         else
             passiveTurn = PieceColor.White;
 
-        //3
         PiecePosition? acctiveKing = ChessBoard.GetKingPosition(board, acctiveTurn);
         checkStartState = ChessRules.IsChecked(board, acctiveKing, acctiveTurn);
-        //4
-        ChessBoard cloneBoard = (ChessBoard)board.Clone();
-        //5
+
         if (!IsMovePossible(board, moveInfo))
             return new MoveResult(board, MoveType.InvalidMove);
 
-        //6
+        ChessBoard cloneBoard = (ChessBoard)board.Clone();
         if (IsPawnPromotion(cloneBoard, moveInfo))
         { ShowPromotionOverlay(boardEnteredImage, moveInfo); currentMoveType = MoveType.PawnPromotion; }
         else if (ChessRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
@@ -380,23 +392,37 @@ public partial class MainWindow : Window
         acctiveKing = ChessBoard.GetKingPosition(cloneBoard, acctiveTurn);
         checkTargetState = ChessRules.IsChecked(cloneBoard, acctiveKing, acctiveTurn);
 
-        //8
-        if (checkStartState && checkTargetState)
+        /*if (checkStartState && checkTargetState)
         {
             MessageBox.Show("Invalid Move: You are in check!");
             return new MoveResult(board, MoveType.InvalidMove);
-        }
-        else if (!checkStartState && checkTargetState)
+        }*/
+        /*else if (!checkStartState && checkTargetState)
         {
             MessageBox.Show("Invalid Move: Check way was opened!");
             return new MoveResult(board, MoveType.InvalidMove);
-        }
+        }*/
+        if (checkStartState && checkTargetState)
+            return new MoveResult(board, MoveType.InvalidMove, BoardState.InvalidMove);
+        else if (!checkStartState && checkTargetState)
+            return new MoveResult(board, MoveType.InvalidMove, BoardState.InvalidMove);
+
         PiecePosition? passiveKing = ChessBoard.GetKingPosition(cloneBoard, passiveTurn);
-        //10
+
+        /*if (ChessRules.IsChecked(cloneBoard, passiveKing, passiveTurn))
+        {
+            mateState = IsCheckMate(cloneBoard, passiveTurn);
+        }*/
         if (ChessRules.IsChecked(cloneBoard, passiveKing, passiveTurn))
-            MessageBox.Show("Check!");
+        {
+            if (IsCheckMate(cloneBoard, passiveTurn))
+                return new MoveResult(cloneBoard, currentMoveType, BoardState.CheckMate);
+            acctiveTurn = MoveChanger(acctiveTurn);
+            return new MoveResult(cloneBoard, currentMoveType, BoardState.Check);
+        }
+
         acctiveTurn = MoveChanger(acctiveTurn);
-        return new MoveResult(cloneBoard, currentMoveType);
+        return new MoveResult(cloneBoard, currentMoveType, BoardState.Ongoing);
     }
     /// <summary>
     /// Փոխում է հերթը՝ վերադարձնելով հակառակ գույնի խաղացողին
@@ -410,6 +436,129 @@ public partial class MainWindow : Window
         if (acctiveTurn == PieceColor.White)
             return PieceColor.Black;
         return PieceColor.White;
+    }
+    /*public static bool IsCheckMate(ChessBoard board, PiecePosition kingposition, PiecePosition attacker)
+    {
+        if (kingposition is null || board[kingposition] is null) return false;
+        if (attacker is null || board[attacker] is null) return false;
+
+        var piece = board[kingposition];
+        var pieceColor = piece!.Color;
+
+        if (piece!.Type != PieceType.King) return false;
+
+        bool kingSafeMoves = piece!.GetPossibleMoves(board).Item2;
+        List<PiecePosition> attackermoves = new List<PiecePosition>();
+
+        //1
+        if (attacker.Row < kingposition.Row && attacker.Col < kingposition.Col)
+        {
+            for (int i = 0; i < Math.Abs(kingposition.Row - attacker.Row); i++)
+                attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col + i });
+        }
+        //2
+        else if (attacker.Row < kingposition.Row && attacker.Col == kingposition.Col)
+        {
+            for (int i = 0; i < kingposition.Row - attacker.Row; i++)
+                attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col });
+        }
+        //3
+        else if (attacker.Row < kingposition.Row && attacker.Col > kingposition.Col)
+        {
+            for (int i = 0; i < kingposition.Row - attacker.Row; i++)
+                attackermoves.Add(new PiecePosition { Row = attacker.Row + i, Col = attacker.Col - i });
+        }
+        //4
+        else if (attacker.Row == kingposition.Row && attacker.Col < kingposition.Col)
+        {
+            for (int j = 0; j < kingposition.Col - attacker.Col; j++)
+                attackermoves.Add(new PiecePosition { Row = attacker.Row, Col = attacker.Col + j });
+        }
+        //5
+        else if (attacker.Row == kingposition.Row && attacker.Col > kingposition.Col)
+        {
+            for (int j = 0; j < attacker.Col - kingposition.Col; j++)
+                attackermoves.Add(new PiecePosition { Row = attacker.Row, Col = attacker.Col - j });
+        }
+        //6
+        else if (attacker.Row > kingposition.Row && attacker.Col < kingposition.Col)
+        {
+            for (int i = 0; i < attacker.Row - kingposition.Row; i++)
+                attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col + i });
+        }
+        //7
+        else if (attacker.Row > kingposition.Row && attacker.Col == kingposition.Col)
+        {
+            for (int i = 0; i < attacker.Row - kingposition.Row; i++)
+                attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col });
+        }
+        //8
+        else if (attacker.Row > kingposition.Row && attacker.Col > kingposition.Col)
+        {
+            for (int i = 0; i < attacker.Row - kingposition.Row; i++)
+                attackermoves.Add(new PiecePosition { Row = attacker.Row - i, Col = attacker.Col - i });
+        }
+
+        ChessBoard copyBoard = (ChessBoard)board.Clone();
+
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                var currentPiece = board[i, j];
+                if (currentPiece is null)
+                    continue;
+                if (currentPiece.Color == pieceColor && attackermoves.Count != 0)
+                {
+                    foreach (var move in attackermoves)
+                    {
+                        if (currentPiece!.IsMovePossible(copyBoard, move))
+                            return false;
+                    }
+                }
+            }
+        }
+        return !kingSafeMoves;
+    }*/
+    public static bool IsCheckMate(ChessBoard board, PieceColor color)
+    {
+        var kingBoard = ChessBoard.GetKingPosition(board, color);
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                var piece = board[i, j];
+                if (piece == null || piece.Color != color)
+                    continue;
+
+                List<PiecePosition> moves = piece.GetPossibleMoves(board).Item1;
+
+                foreach (var move in moves)
+                {
+                    var clone = (ChessBoard)board.Clone();
+
+                    clone[move] = piece;
+                    clone[move]!.Position = move;
+                    clone[i, j] = null;
+
+                    var kingAfter = ChessBoard.GetKingPosition(clone, color);
+
+                    if (!ChessRules.IsChecked(clone, kingAfter, color))
+                    {
+                        clone[i, j] = piece;
+                        clone[i, j]!.Position = new PiecePosition(i, j);
+                        clone[move] = null;
+                        clone = (ChessBoard)board.Clone();
+                        return false;
+                    }
+                    clone[i, j] = piece;
+                    clone[i, j]!.Position = new PiecePosition(i, j);
+                    clone[move] = null;
+                }
+            }
+        }
+
+        return true;
     }
     #endregion
 

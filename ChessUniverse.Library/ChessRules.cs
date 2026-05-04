@@ -122,6 +122,7 @@ public static class ChessRules
             //1
             if (attacker.Row < kingposition.Row && attacker.Col < kingposition.Col)
             {
+                attackermoves.Add(attacker);
                 for (int i = 1; i < Math.Abs(kingposition.Row - attacker.Row); i++)
                 {
                     for (int j = 1; j < Math.Abs(kingposition.Col - attacker.Col); j++)
@@ -191,8 +192,7 @@ public static class ChessRules
                     }
                 }
             }
-            ChessBoard newBoard = new ChessBoard();
-            newBoard = (ChessBoard)board.Clone();
+            ChessBoard newBoard = (ChessBoard)board.Clone();
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)

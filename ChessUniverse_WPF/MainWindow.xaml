@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ChessUniverse_WPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="650" Width="1200" WindowStartupLocation="CenterScreen">
-    <Grid>
+    <Grid Name="MainGrid">
         <!-- board.png - Margin="132,45,441,0" -->
         <Image Name="board" Source="/images/board/chessboard.png" Margin="132,62,415,16"/>
         <!-- PawnPromotion! -->
@@ -78,5 +78,7 @@
         
         <WrapPanel Name="BlackCaptures" HorizontalAlignment="Left" Height="80" Margin="757,80,0,0" VerticalAlignment="Top" Width="179"/>
         <WrapPanel Name="WhiteCaptures" HorizontalAlignment="Left" Height="80" Margin="757,538,0,0" VerticalAlignment="Top" Width="179"/>
+        <Label Name="MoveShower" Content="White" HorizontalAlignment="Left" Height="46" Margin="808,225,0,0" VerticalAlignment="Top" Width="144" FontWeight= "Heavy" HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"/>
     </Grid>
 </Window>
