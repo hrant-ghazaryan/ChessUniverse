@@ -14,24 +14,35 @@ public partial class MainWindow : Window
     private bool _t;
 
     //Մկնիկի սեղմման ժամանակ կորդինատների ֆիքսում
+    private System.Windows.Point _ptLast = new System.Windows.Point();
     private int _imgDownX;
     private int _imgDownY;
-
-    //Մկնիկի թողման պահին կորդինատների ֆիքսում
-    private int _imgUpX;
-    private int _imgUpY;
-
-    Image boardEnteredImage;
-    private bool firstBoardLoc;
     private int _cellSize = 57;
-    ChessBoard pieceBoard = new ChessBoard();
+
+    private bool firstBoardLoc;
+    private bool audioPlayed;
+
+    ChessBoard pieceBoard = new ChessBoard(); 
+    Image boardEnteredImage;
     PieceColor acctiveTurn;
     MoveInfo _moveInfo;
-    private System.Windows.Point _ptLast = new System.Windows.Point();
+    MoveResult currentMove;
+
+    Stack<MoveResult> boardPrevious = new Stack<MoveResult>();
+    Stack<MoveResult> boardNext = new Stack<MoveResult>();
 
     public MainWindow()
     {
         InitializeComponent();
+        SoundManager.Load("start", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\game-start.mp3");
+        SoundManager.Load("move", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\move-self.mp3");
+        SoundManager.Load("promotion", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\promote.mp3");
+        SoundManager.Load("castle", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\castle.mp3");
+        SoundManager.Load("capture", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\capture.mp3");
+        SoundManager.Load("invalidMove", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\illegal.mp3");
+        SoundManager.Load("check", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\move-check.mp3");
+        SoundManager.Load("checkMate", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\game-end.mp3");
+        SoundManager.Play("start");
     }
 
     #region EVENTS
@@ -51,8 +62,10 @@ public partial class MainWindow : Window
         _imgDownX = (int)img.Margin.Left;
         _imgDownY = (int)img.Margin.Top;
 
+
         if (!firstBoardLoc)
         {
+            boardPrevious.Push(new MoveResult(pieceBoard, MoveType.RegularMove, BoardState.Ongoing, acctiveTurn));
             BoardLocParsal(pieceBoard);
             firstBoardLoc = true;
         }
@@ -75,6 +88,7 @@ public partial class MainWindow : Window
     private void MouseUp(object sender, MouseEventArgs e)
     {
         _t = false;
+        audioPlayed = false;
         MoveType currentMoveType;
 
         //Ընտրված ֆիգուրի նախնական կորդինատի փոխակերպումը երկչափ զանգվածի տողի և սյան
@@ -96,9 +110,10 @@ public partial class MainWindow : Window
         MoveResult moveDetails = MakeMove(pieceBoard, moveInfo);
         pieceBoard = moveDetails.Board;
         currentMoveType = moveDetails.MoveType;
-        MoveUIUpdate(img, moveInfo, currentMoveType);
         BoardStateUpdate(moveDetails);
-
+        MoveUIUpdate(img, moveInfo, currentMoveType);
+        if (currentMoveType != MoveType.InvalidMove)
+        { moveDetails.Turn = acctiveTurn; boardPrevious.Push(moveDetails); }
         Mouse.Capture(null);
         StackPanel.SetZIndex(img, 0);
 
@@ -189,6 +204,16 @@ public partial class MainWindow : Window
         WhitePromotionOverlay.Visibility = Visibility.Collapsed;
         BlackPromotionOverlay.Visibility = Visibility.Collapsed;
     }
+    private void PreviousClick(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("IN PROCESS");
+        /*if (boardPrevious.Count == 0) return;
+        currentMove = boardPrevious.Pop();
+        MoveResult temp = boardPrevious.Pop();
+        boardNext.Push(temp);
+        pieceBoard = temp.Board;
+        acctiveTurn = temp.Turn;*/
+    }
     #endregion
 
     #region MOVE_UI
@@ -199,6 +224,7 @@ public partial class MainWindow : Window
     /// <param name="imgCaptured">Վերցված ֆիգուրի պատկերը</param>
     private void AddingCaptureToWrap(Image? imgCaptured)
     {
+        if (!audioPlayed) { SoundManager.Play("capture"); audioPlayed = true; }
         grid_figure.Children.Remove(imgCaptured);
         imgCaptured?.Margin = new Thickness(0);
         imgCaptured?.Width = 20;
@@ -241,7 +267,10 @@ public partial class MainWindow : Window
             // Ուրիշ ֆիգուրայի առկայության դեպքում ջնջում ենք ֆիգուրան խաղատախտակից
             // և ավելացնում սպանված ֆիգուրների WrapPanel ում
             if (isCaptured)
+            {
+                if (!audioPlayed) { SoundManager.Play("capture"); audioPlayed = true; }
                 AddingCaptureToWrap(imgCaptured);
+            }
 
             // Արդեն առկա ֆիգուրի նույն գույնը ունենալու դեպքում
             // ընտրված ֆիգուրի վերադարձը իր նախնական դիրք
@@ -260,6 +289,7 @@ public partial class MainWindow : Window
         if (moveInfo is null) return;
         if (moveInfo.Target is null) return;
 
+        if (!audioPlayed) { SoundManager.Play("castle"); audioPlayed = true; }
         img?.Margin = new Thickness(
                 moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
                 moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
@@ -289,11 +319,14 @@ public partial class MainWindow : Window
     /// <param name="moveInfo">Քայլի տվյալները, ներառյալ նպատակային դիրքը</param>
     private void RightCastlingUI(Image img, MoveInfo moveInfo)
     {
+        if (moveInfo is null) return;
+        if (moveInfo.Target is null) return;
 
         img?.Margin = new Thickness(
                  moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
                 moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
                 0, 0);
+        if (!audioPlayed) { SoundManager.Play("castle"); audioPlayed = true; }
 
         foreach (var item in grid_figure.Children)
         {
@@ -327,10 +360,12 @@ public partial class MainWindow : Window
         switch (moveType)
         {
             case MoveType.InvalidMove:
+                if (!audioPlayed) { SoundManager.Play("invalidMove");  audioPlayed = true; }
                 img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
                 break;
             case MoveType.RegularMove:
                 CaptureToWrap(img, moveInfo);
+                if (!audioPlayed) { SoundManager.Play("move"); audioPlayed = true; }
                 img?.Margin = new Thickness(
             moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
             moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
@@ -344,6 +379,7 @@ public partial class MainWindow : Window
                 break;
             case MoveType.PawnPromotion:
                 CaptureToWrap(img, moveInfo);
+                if (!audioPlayed) { SoundManager.Play("promotion"); audioPlayed = true; }
                 img?.Margin = new Thickness(
                 moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
                 moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
@@ -362,15 +398,18 @@ public partial class MainWindow : Window
         switch (moveResult.BoardState)
         {
             case BoardState.CheckMate:
+                if (!audioPlayed) { SoundManager.Play("checkMate"); audioPlayed = true; }
                 MessageBox.Show("CHECKMATE");
                 MessageBox.Show($"{acctiveTurn.ToString().ToUpper()} WIN");
                 Close();
                 break;
             case BoardState.Check:
+                if (!audioPlayed) { SoundManager.Play("check"); audioPlayed = true; }
                 MessageBox.Show("CHECK");
                 break;
         }
     }
+
     #endregion
 
     #region MOVE_LOGIC
@@ -382,7 +421,11 @@ public partial class MainWindow : Window
     /// <returns> true, եթե քայլը թույլատրելի է, հակառակ դեպքում false</returns>
     private bool IsMovePossible(ChessBoard pieceBoard, MoveInfo moveInfo)
     {
-        bool samePosition = moveInfo.Target?.Row == moveInfo.Start?.Row && moveInfo?.Target?.Col == moveInfo?.Start?.Col;
+        if (moveInfo is null) return false;
+        if (moveInfo.Start is null) return false;
+        if (moveInfo.Target is null) return false;
+
+        bool samePosition = moveInfo.Target.Row == moveInfo.Start.Row && moveInfo?.Target.Col == moveInfo!.Start.Col;
         Piece? currentPiece = pieceBoard[moveInfo.Start];
 
         return currentPiece is not null && !samePosition &&
@@ -660,4 +703,6 @@ public partial class MainWindow : Window
 
         }
     }
+
+    
 }

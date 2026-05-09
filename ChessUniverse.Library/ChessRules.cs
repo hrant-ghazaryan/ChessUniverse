@@ -107,19 +107,20 @@ public static class ChessRules
         if (board[start] is null) return false;
 
         Piece? piece = board[start];
-        if (turn == piece?.Color) return false;
+        if (turn != piece?.Color) return false;
 
-        Piece? endPiece = board[end];
+        /*Piece? endPiece = board[end];
         if (endPiece == null || piece?.Color != endPiece.Color)
         {
             if (piece!.IsMovePossible(board, end))
                 return true;
-        }
+        }*/
+        if (piece!.IsMovePossible(board, end))
+            return true;
         return false;
     }
     public static bool IsStaleMate(ChessBoard board, PieceColor T)
     {
-
         List<PiecePosition> allTPieces = ChessBoard.GetAllPiecePositions(board, T);
         int pieceCount = allTPieces.Count;
         foreach (var item in allTPieces)
@@ -128,8 +129,6 @@ public static class ChessRules
                 return false;
         }
         return true;
-
-
     }
     public static bool IsCastlingLeftPossible(ChessBoard chessBoard, MoveInfo moveInfo)
     {
@@ -190,7 +189,8 @@ public static class ChessRules
         if (moveInfo.Target is null) return false;
 
         if (chessBoard[moveInfo.Start]?.Type != PieceType.King ||
-            (IsInside(moveInfo.Target.Col + 1) && chessBoard[moveInfo.Target.Row, 7]?.Type != PieceType.Rook))
+            chessBoard[moveInfo.Target.Row, 7]?.Type != PieceType.Rook ||
+            moveInfo.Target.Col != 6)
             return false;
 
         if (chessBoard[moveInfo.Start.Row, moveInfo.Start.Col]?.HasMoved != false
