@@ -2,6 +2,7 @@
 using ChessUniverse.Library.Enums;
 using ChessUniverse.Library.Pieces;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -43,6 +44,7 @@ public partial class MainWindow : Window
         SoundManager.Load("check", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\move-check.mp3");
         SoundManager.Load("checkMate", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\game-end.mp3");
         SoundManager.Play("start");
+        this.ResizeMode = ResizeMode.CanMinimize;
     }
 
     #region EVENTS
