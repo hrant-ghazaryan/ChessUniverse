@@ -46,7 +46,6 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
             Position = new PiecePosition(this.Position.Row, this.Position.Col)
         };
     }
-
     public override bool CanMove(ChessBoard chessBoard, PiecePosition target)
     {
         if (target is null)

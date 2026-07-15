@@ -17,8 +17,8 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
 
         return (dRow <= 1 && dCol <= 1 && !(dRow == 0 && dCol == 0) &&
               ChessRules.IsInside(target.Row) && ChessRules.IsInside(target.Col))
-              || ChessRules.IsCastlingLeftPossible(chessBoard, moveInfo)
-              || ChessRules.IsCastlingRightPossible(chessBoard, moveInfo);
+              || CastlingRules.IsCastlingLeftPossible(chessBoard, moveInfo)
+              || CastlingRules.IsCastlingRightPossible(chessBoard, moveInfo);
     }
     /*public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
     {

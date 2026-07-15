@@ -28,26 +28,54 @@ public static class Game
     /// <param name="chessBoard">Շախմատի խաղատախտակի ընթացիկ վիճակը։</param>
     /// <param name="moveInfo">Castling քայլի մասին տեղեկություններ՝ սկիզբ և նպատակային դիրքերով։</param>
     /// <returns>Թարմացված խաղատախտակ castling-ից հետո, կամ նույն board-ը եթե տվյալները սխալ են։</returns>
-    public static ChessBoard? CastlingLeft(ChessBoard chessBoard, MoveInfo moveInfo)
+    /*public static ChessBoard? CastlingLeft(ChessBoard chessBoard, MoveInfo moveInfo)
     {
-        if (chessBoard is null) return chessBoard;
-        if (moveInfo is null) return chessBoard;
-        if (moveInfo.Start is null) return chessBoard;
-        if (moveInfo.Target is null) return chessBoard;
+        if (!CastlingRules.ValidateCastlingParameters(chessBoard, moveInfo))
+            return chessBoard;
 
-        var color = chessBoard[moveInfo.Start]!.Color;
+        var startPosition = moveInfo.Start!;
+        var targetPosition = moveInfo.Target!;
+        var color = chessBoard[startPosition]!.Color;
+
+        CastlingRookMove rookPositions = CastlingRules.GetCastlingRookMove(moveInfo);
+        var rookStartPosition = rookPositions.StartPosition!;
+        var rookTargetPosition = rookPositions.TargetPosition!;
+
         //Թագավորի դիրքի փոփոխություն – 2 դիրք ձախ.
-        chessBoard[moveInfo.Target] = chessBoard[moveInfo.Start];
-        chessBoard[moveInfo.Target]?.Position = moveInfo.Target;
-        chessBoard[moveInfo.Start] = null;
+        chessBoard[targetPosition] = chessBoard[startPosition];
+        chessBoard[targetPosition]?.Position = targetPosition;
+        chessBoard[startPosition] = null;
 
         //Նավակի դիրքի փոփոփոխություն – 3 դիրք աջ.
-        chessBoard[moveInfo.Target.Row, 3] = chessBoard[moveInfo.Target.Row, 0];
-        chessBoard[moveInfo.Target.Row, 3]?.Position = new PiecePosition { Row = moveInfo.Target.Row, Col = 3 };
-        chessBoard[moveInfo.Target.Row, 0] = null;
+        chessBoard[rookTargetPosition] = chessBoard[rookStartPosition];
+        chessBoard[rookTargetPosition]?.Position = rookTargetPosition;
+        chessBoard[rookStartPosition] = null;
+
+        chessBoard[targetPosition.Row, 3] = chessBoard[targetPosition.Row, 0];
+        chessBoard[targetPosition.Row, 3]?.Position = new PiecePosition { Row = targetPosition.Row, Col = 3 };
+        chessBoard[targetPosition.Row, 0] = null;
 
         //Castling property ի փոփոխություն․
         moveInfo.Castling = (true, color);
+        return chessBoard;
+    }*/
+    public static ChessBoard? Castling(ChessBoard chessBoard, MoveInfo moveInfo)
+    {
+        if (!CastlingRules.ValidateCastlingParameters(chessBoard, moveInfo))
+            return chessBoard;
+
+        var startPosition = moveInfo.Start!;
+        var targetPosition = moveInfo.Target!;
+
+        var color = chessBoard[startPosition]!.Color;
+
+        var rookMove = CastlingRules.GetCastlingRookMove(moveInfo);
+
+        MoveKingForCastling(chessBoard, startPosition, targetPosition);
+        MoveRookForCastling(chessBoard, rookMove);
+
+        moveInfo.Castling = (true, color);
+
         return chessBoard;
     }
     /// <summary>
@@ -58,27 +86,43 @@ public static class Game
     /// <param name="chessBoard">Շախմատի խաղատախտակի ընթացիկ վիճակը։</param>
     /// <param name="moveInfo">Castling քայլի մասին տեղեկություններ՝ սկիզբ և նպատակային դիրքերով։</param>
     /// <returns>Թարմացված խաղատախտակ castling-ից հետո, կամ նույն board-ը եթե տվյալները սխալ են։</returns>
-    public static ChessBoard? CastlingRight(ChessBoard chessBoard, MoveInfo moveInfo)
+    /*public static ChessBoard? CastlingRight(ChessBoard chessBoard, MoveInfo moveInfo)
     {
-        if (chessBoard is null) return chessBoard;
-        if (moveInfo is null) return chessBoard;
-        if (moveInfo.Start is null) return chessBoard;
-        if (moveInfo.Target is null) return chessBoard;
+        if (!CastlingRules.ValidateCastlingParameters(chessBoard, moveInfo))
+            return chessBoard;
 
-        var color = chessBoard[moveInfo.Start]!.Color;
+        var startPosition = moveInfo.Start!;
+        var targetPosition = moveInfo.Target!;
+        var color = chessBoard[startPosition]!.Color;
+
 
         //Թագավորի դիրքի փոփոխություն – 2 դիրք աջ.
-        chessBoard[moveInfo.Target] = chessBoard[moveInfo.Start];
-        chessBoard[moveInfo.Target]?.Position = moveInfo.Target;
-        chessBoard[moveInfo.Start] = null;
+        chessBoard[targetPosition] = chessBoard[startPosition];
+        chessBoard[targetPosition]?.Position = targetPosition;
+        chessBoard[startPosition] = null;
 
         //Նավակի դիրքի փոփոփոխություն – 2 դիրք ձախ.
-        chessBoard[moveInfo.Target.Row, 5] = chessBoard[moveInfo.Target.Row, 7];
-        chessBoard[moveInfo.Target.Row, 5]?.Position = new PiecePosition { Row = moveInfo.Target.Row, Col = 5 };
-        chessBoard[moveInfo.Target.Row, 7] = null;
+        chessBoard[targetPosition.Row, 5] = chessBoard[targetPosition.Row, 7];
+        chessBoard[targetPosition.Row, 5]?.Position = new PiecePosition { Row = targetPosition.Row, Col = 5 };
+        chessBoard[targetPosition.Row, 7] = null;
 
         //Castling property ի փոփոխություն․
         moveInfo.Castling = (true, color);
         return chessBoard;
+    }*/
+    public static void MoveKingForCastling(ChessBoard chessBoard, PiecePosition startPosition, PiecePosition targetPosition)
+    {
+        chessBoard[targetPosition] = chessBoard[startPosition];
+        chessBoard[targetPosition]?.Position = targetPosition;
+        chessBoard[startPosition] = null;
+    }
+    public static void MoveRookForCastling(ChessBoard chessBoard, CastlingRookMove rookPositions)
+    {
+        var rookStartPosition = rookPositions.StartPosition!;
+        var rookTargetPosition = rookPositions.TargetPosition!;
+
+        chessBoard[rookTargetPosition] = chessBoard[rookStartPosition];
+        chessBoard[rookTargetPosition]?.Position = rookTargetPosition;
+        chessBoard[rookStartPosition] = null;
     }
 }

@@ -471,10 +471,10 @@ public partial class MainWindow : Window
         ChessBoard? cloneBoard = (ChessBoard)board.Clone();
         if (IsPawnPromotion(cloneBoard, moveInfo))
         { ShowPromotionOverlay(boardEnteredImage, moveInfo); currentMoveType = MoveType.PawnPromotion; }
-        else if (ChessRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
-        { cloneBoard = Game.CastlingLeft(cloneBoard, moveInfo); currentMoveType = MoveType.LeftCastling; }
-        else if (ChessRules.IsCastlingRightPossible(cloneBoard, moveInfo))
-        { cloneBoard = Game.CastlingRight(cloneBoard, moveInfo); currentMoveType = MoveType.RightCastling; }
+        else if (CastlingRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
+        { cloneBoard = Game.Castling(cloneBoard, moveInfo); currentMoveType = MoveType.LeftCastling; }
+        else if (CastlingRules.IsCastlingRightPossible(cloneBoard, moveInfo))
+        { cloneBoard = Game.Castling(cloneBoard, moveInfo); currentMoveType = MoveType.RightCastling; }
         else { Game.RegularMove(cloneBoard, moveInfo); currentMoveType = MoveType.RegularMove; }
 
         acctiveKing = ChessBoard.GetKingPosition(cloneBoard, acctiveTurn);
@@ -517,11 +517,9 @@ public partial class MainWindow : Window
     /// false՝ եթե կա գոնե մեկ անվտանգ քայլ
     /// </returns>
     PieceColor MoveChanger(PieceColor acctiveTurn)
-    {
-        if (acctiveTurn == PieceColor.White)
-            return PieceColor.Black;
-        return PieceColor.White;
-    }
+        => acctiveTurn is PieceColor.White
+        ? PieceColor.Black
+        : PieceColor.White;
     public static bool IsCheckMate(ChessBoard board, PieceColor color)
     {
         var kingBoard = ChessBoard.GetKingPosition(board, color);
@@ -530,32 +528,32 @@ public partial class MainWindow : Window
             for (int j = 0; j < 8; j++)
             {
                 var piece = board[i, j];
-                if (piece == null || piece.Color != color)
+                if (piece is null || piece.Color != color)
                     continue;
 
                 List<PiecePosition> moves = piece.GetPossibleMoves(board).Item1;
 
                 foreach (var move in moves)
                 {
-                    var clone = (ChessBoard)board.Clone();
+                    var cloneBoard = (ChessBoard)board.Clone();
 
-                    clone[move] = piece;
-                    clone[move]!.Position = move;
-                    clone[i, j] = null;
+                    cloneBoard[move] = piece;
+                    cloneBoard[move]!.Position = move;
+                    cloneBoard[i, j] = null;
 
-                    var kingAfter = ChessBoard.GetKingPosition(clone, color);
+                    var kingAfter = ChessBoard.GetKingPosition(cloneBoard, color);
 
-                    if (!ChessRules.IsChecked(clone, kingAfter, color))
+                    if (!ChessRules.IsChecked(cloneBoard, kingAfter, color))
                     {
-                        clone[i, j] = piece;
-                        clone[i, j]!.Position = new PiecePosition(i, j);
-                        clone[move] = null;
-                        clone = (ChessBoard)board.Clone();
+                        cloneBoard[i, j] = piece;
+                        cloneBoard[i, j]!.Position = new PiecePosition(i, j);
+                        cloneBoard[move] = null;
+                        cloneBoard = (ChessBoard)board.Clone();
                         return false;
                     }
-                    clone[i, j] = piece;
-                    clone[i, j]!.Position = new PiecePosition(i, j);
-                    clone[move] = null;
+                    cloneBoard[i, j] = piece;
+                    cloneBoard[i, j]!.Position = new PiecePosition(i, j);
+                    cloneBoard[move] = null;
                 }
             }
         }
