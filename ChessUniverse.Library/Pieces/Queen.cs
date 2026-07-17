@@ -6,17 +6,17 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition targetposition)
+    public override bool CanMove(ChessBoard chessBoard, PiecePosition targetposition)
     {
         if (chessBoard[targetposition]?.Color == chessBoard[Position]?.Color)
             return false;
 
         Rook rook = new Rook(Color) { Position = this.Position };
-        if (rook.IsMovePossible(chessBoard, targetposition))
+        if (rook.CanMove(chessBoard, targetposition))
             return true;
 
         Bishop bishop = new Bishop(Color) { Position = this.Position };
-        if (bishop.IsMovePossible(chessBoard, targetposition))
+        if (bishop.CanMove(chessBoard, targetposition))
             return true;
 
         return false;
@@ -39,25 +39,9 @@ public class Queen(PieceColor color) : Piece(color, PieceType.Queen, 'q', new Pi
             return (possibleMoves, false);
     }
     public override Piece Clone()
-    {
-        return new Queen(this.Color)
+        => new Queen(this.Color)
         {
-            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+            Position = new PiecePosition(this.Position.Row, this.Position.Col),
+            HasMoved = this.HasMoved
         };
-    }
-
-    public override bool CanMove(ChessBoard chessBoard, PiecePosition target)
-    {
-        if (target is null)
-            return false;
-        Rook rook = new Rook(Color) { Position = this.Position };
-        if (rook.CanMove(chessBoard, target))
-            return true;
-
-        Bishop bishop = new Bishop(Color) { Position = this.Position };
-        if (bishop.CanMove(chessBoard, target))
-            return true;
-
-        return false;
-    }
 }

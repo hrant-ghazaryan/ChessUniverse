@@ -5,7 +5,7 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition target)
+    public override bool CanMove(ChessBoard chessBoard, PiecePosition target)
     {
         MoveInfo moveInfo = new MoveInfo(Position, target);
 
@@ -75,29 +75,16 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
             {
                 var kingPosition = new PiecePosition(Position.Row + dRow[i], Position.Col + dCol[i]);
                 var piece = copyBoard[Position];
-                if (piece!.IsMovePossible(copyBoard,kingPosition))
+                if (piece!.CanMove(copyBoard,kingPosition))
                     possibleMoves.Add(kingPosition);
             }
         }
         return (possibleMoves, possibleMoves.Count > 0);
     }
     public override Piece Clone()
-    {
-        return new King(this.Color)
+        => new King(this.Color)
         {
-            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+            Position = new PiecePosition(this.Position.Row, this.Position.Col),
+            HasMoved = this.HasMoved
         };
-    }
-    public override bool CanMove(ChessBoard chessBoard, PiecePosition target)
-    {
-        if (target is null)
-            return false;
-        MoveInfo moveInfo = new MoveInfo(Position, target);
-
-        int dRow = Math.Abs(Position.Row - target.Row);
-        int dCol = Math.Abs(Position.Col - target.Col);
-
-        return dRow <= 1 && dCol <= 1 && !(dRow == 0 && dCol == 0) &&
-              ChessRules.IsInside(target.Row) && ChessRules.IsInside(target.Col);
-    }
 }

@@ -6,7 +6,7 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition? target)
+    public override bool CanMove(ChessBoard chessBoard, PiecePosition? target)
     {
         if (target is null)
             return false;
@@ -40,24 +40,9 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
         return (possibleMoves, possibleMoves.Count > 0);
     }
     public override Piece Clone()
-    {
-        return new Knight(this.Color)
+        => new Knight(this.Color)
         {
-            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+            Position = new PiecePosition(this.Position.Row, this.Position.Col),
+            HasMoved = this.HasMoved
         };
-    }
-    public override bool CanMove(ChessBoard chessBoard, PiecePosition target)
-    {
-        if (target is null)
-            return false;
-
-        if (!ChessRules.IsInside(target.Row) || !ChessRules.IsInside(target.Col))
-            return false;
-
-        int dRow = Math.Abs(Position.Row - target.Row);
-        int dCol = Math.Abs(Position.Col - target.Col);
-
-        return (dRow == 1 && dCol == 2) || (dRow == 2 && dCol == 1);
-
-    }
 }

@@ -26,10 +26,10 @@ public static class ChessRules
                 if (piece is null) continue;
 
                 if (piece?.Color == PieceColor.White
-                    && piece.IsMovePossible(chessBoard, BlackKing))
+                    && piece.CanMove(chessBoard, BlackKing))
                     return true;
                 if (piece?.Color == PieceColor.Black
-                    && piece.IsMovePossible(chessBoard, WhiteKing))
+                    && piece.CanMove(chessBoard, WhiteKing))
                     return true;
             }
         }
@@ -48,10 +48,10 @@ public static class ChessRules
                 if (piece is not null)
                 {
                     if (piece?.Color == PieceColor.White && pieceparam?.Color == PieceColor.Black
-                    && piece.IsMovePossible(chessBoard, activeKingPosition))
+                    && piece.CanMove(chessBoard, activeKingPosition))
                         return true;
                     if (piece?.Color == PieceColor.Black && pieceparam?.Color == PieceColor.White
-                    && piece.IsMovePossible(chessBoard, activeKingPosition))
+                    && piece.CanMove(chessBoard, activeKingPosition))
                         return true;
                 }
             }
@@ -72,7 +72,7 @@ public static class ChessRules
                 if (piece is not null)
                 {
                     if (piece?.Color != activeTurn
-                    && piece!.IsMovePossible(chessBoard, activeKingPosition))
+                    && piece!.CanMove(chessBoard, activeKingPosition))
                         return true;
                 }
             }
@@ -115,7 +115,7 @@ public static class ChessRules
             if (piece!.IsMovePossible(board, end))
                 return true;
         }*/
-        if (piece!.IsMovePossible(board, end))
+        if (piece!.CanMove(board, end))
             return true;
         return false;
     }

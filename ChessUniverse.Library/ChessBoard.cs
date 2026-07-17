@@ -118,8 +118,7 @@ public class ChessBoard : ICloneable
         {
             for (int j = 0; j < 8; j++)
             {
-                var piece = _squares[i, j];
-                if (piece != null)
+                if (_squares[i,j] is Piece piece)
                     newBoard[i, j] = (Piece)piece.Clone();
             }
         }

@@ -20,8 +20,7 @@ public abstract class Piece(PieceColor color, PieceType type, char symbol, Piece
         }
         else
             return Symbol;
-    }
-    public abstract bool IsMovePossible(ChessBoard chessBoard, PiecePosition target);
+    }   
     public abstract bool CanMove(ChessBoard chessBoard, PiecePosition target);
     public abstract (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard chessBoard);
     public abstract object Clone();

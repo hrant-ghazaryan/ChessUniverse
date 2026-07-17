@@ -114,6 +114,7 @@ public static class Game
     {
         chessBoard[targetPosition] = chessBoard[startPosition];
         chessBoard[targetPosition]?.Position = targetPosition;
+        chessBoard[targetPosition]?.HasMoved = true;
         chessBoard[startPosition] = null;
     }
     public static void MoveRookForCastling(ChessBoard chessBoard, CastlingRookMove rookPositions)
@@ -123,6 +124,7 @@ public static class Game
 
         chessBoard[rookTargetPosition] = chessBoard[rookStartPosition];
         chessBoard[rookTargetPosition]?.Position = rookTargetPosition;
+        chessBoard[rookTargetPosition]?.HasMoved = true;
         chessBoard[rookStartPosition] = null;
     }
 }

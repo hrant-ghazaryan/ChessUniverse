@@ -431,7 +431,7 @@ public partial class MainWindow : Window
         Piece? currentPiece = pieceBoard[moveInfo.Start];
 
         return currentPiece is not null && !samePosition &&
-            currentPiece!.IsMovePossible(pieceBoard, moveInfo.Target);
+            currentPiece!.CanMove(pieceBoard, moveInfo.Target);
     }
     /// <summary>
     /// Փորձում է կատարել տրված քայլը՝ վավերացնելով այն և վերադարձնելով արդյունքը

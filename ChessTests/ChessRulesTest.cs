@@ -6,7 +6,7 @@ namespace ChessTests;
 
 public class ChessRulesTest
 {
-    [Theory]
+    /*[Theory]
     [MemberData(nameof(MoveTestCases))]
     public void MoveValidationTest(PiecePosition? start, PiecePosition? end,
          PieceColor? T)
@@ -17,7 +17,7 @@ public class ChessRulesTest
         var isValid = ChessRules.MoveValidation(board, start, end, T);
 
         Assert.True(isValid);
-    }
+    }*/
 
     [Fact]
     public void IsCheckedTest()

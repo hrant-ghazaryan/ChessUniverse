@@ -5,7 +5,7 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new 
 {
     public override char GetSymbol(PieceColor color)
      => base.GetSymbol(color);
-    public override bool IsMovePossible(ChessBoard chessBoard, PiecePosition targetposition)
+    public override bool CanMove(ChessBoard chessBoard, PiecePosition targetposition)
     {
         if (chessBoard[targetposition]?.Color == chessBoard[Position]?.Color)
             return false;
@@ -65,54 +65,10 @@ public class Bishop(PieceColor color) : Piece(color, PieceType.Bishop, 'b', new 
             return (possibleMoves, false);
     }
     public override Piece Clone()
-    {
-        return new Bishop(this.Color)
+        => new Bishop(this.Color)
         {
-            Position = new PiecePosition(this.Position.Row, this.Position.Col)
+            Position = new PiecePosition(this.Position.Row, this.Position.Col),
+            HasMoved = this.HasMoved
         };
-    }
-
-    public override bool CanMove(ChessBoard chessBoard, PiecePosition targetposition)
-    {
-        if (targetposition is null)
-            return false;
-        if (Math.Abs(Position.Row - targetposition.Row) != Math.Abs(Position.Col - targetposition.Col))
-            return false;
-
-        if (Position.Row < targetposition.Row && Position.Col > targetposition.Col)
-        {
-            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-            {
-                if (chessBoard[Position.Row + i, Position.Col - i] != null)
-                    return false;
-            }
-        }
-        if (Position.Row < targetposition.Row && Position.Col < targetposition.Col)
-        {
-            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-            {
-                if (chessBoard[Position.Row + i, Position.Col + i] != null)
-                    return false;
-            }
-        }
-        if (Position.Row > targetposition.Row && Position.Col < targetposition.Col)
-        {
-            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-            {
-                if (chessBoard[Position.Row - i, Position.Col + i] != null)
-                    return false;
-            }
-        }
-        if (Position.Row > targetposition.Row && Position.Col > targetposition.Col)
-        {
-            for (int i = 1; i < Math.Abs(Position.Row - targetposition.Row); i++)
-            {
-                if (chessBoard[Position.Row - i, Position.Col - i] != null)
-                    return false;
-            }
-        }
-
-        return true;
-    }
 }
 
