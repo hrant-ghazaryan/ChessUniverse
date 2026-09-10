@@ -409,6 +409,10 @@ public partial class MainWindow : Window
                 if (!audioPlayed) { SoundManager.Play("check"); audioPlayed = true; }
                 MessageBox.Show("CHECK");
                 break;
+            case BoardState.StaleMate:
+                MessageBox.Show("STALEMATE — DRAW");
+                Close();
+                break;
         }
     }
 
@@ -489,11 +493,14 @@ public partial class MainWindow : Window
 
         if (ChessRules.IsChecked(cloneBoard, passiveKing, passiveTurn))
         {
-            if (IsCheckMate(cloneBoard, passiveTurn))
+            if (ChessRules.IsCheckmate(cloneBoard, passiveTurn))
                 return new MoveResult(cloneBoard, currentMoveType, BoardState.CheckMate);
             acctiveTurn = MoveChanger(acctiveTurn);
             return new MoveResult(cloneBoard, currentMoveType, BoardState.Check);
         }
+
+        if (ChessRules.IsStaleMate(cloneBoard, passiveTurn))
+            return new MoveResult(cloneBoard, currentMoveType, BoardState.StaleMate);
 
         acctiveTurn = MoveChanger(acctiveTurn);
         return new MoveResult(cloneBoard, currentMoveType, BoardState.Ongoing);

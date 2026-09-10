@@ -56,4 +56,31 @@ public class ChessRulesTest
         new object[]{ new PiecePosition(0,4) , new PiecePosition(0,5) , PieceColor.Black },
         new object[]{ new PiecePosition(1,0) , new PiecePosition(3,0) , PieceColor.Black }
     };
+
+    [Fact]
+    public void IsCheckmate_ReturnsTrue_WhenKingIsCheckedAndHasNoLegalMoves()
+    {
+        Piece?[,] checkmateBoard = new Piece?[8, 8];
+
+        checkmateBoard[0, 7] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 7)
+        };
+
+        checkmateBoard[1, 6] = new Queen(PieceColor.White)
+        {
+            Position = new PiecePosition(1, 6)
+        };
+
+        checkmateBoard[2, 6] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(2, 6)
+        };
+
+        ChessBoard board = new ChessBoard(checkmateBoard);
+
+        bool isCheckmate = ChessRules.IsCheckmate(board, PieceColor.Black);
+
+        Assert.True(isCheckmate);
+    }
 }

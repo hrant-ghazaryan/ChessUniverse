@@ -119,15 +119,63 @@ public static class ChessRules
             return true;
         return false;
     }
-    public static bool IsStaleMate(ChessBoard board, PieceColor T)
+
+    public static bool IsStaleMate(ChessBoard board, PieceColor color)
     {
-        List<PiecePosition> allTPieces = ChessBoard.GetAllPiecePositions(board, T);
-        int pieceCount = allTPieces.Count;
-        foreach (var item in allTPieces)
-        {
-            if (board[item]?.GetPossibleMoves(board).Item2 == true)
-                return false;
-        }
-        return true;
+        PiecePosition? kingPosition = ChessBoard.GetKingPosition(board, color);
+
+        // Շախի մեջ գտնվող կողմը «պատ» չունի. այն կարող է ունենալ checkmate։
+        if (kingPosition is null || IsChecked(board, kingPosition, color))
+            return false;
+
+        return !HasAnyLegalMove(board, color);
     }
+
+    public static bool IsCheckmate(ChessBoard board, PieceColor color)
+    {
+        PiecePosition? kingPosition = ChessBoard.GetKingPosition(board, color);
+
+        return kingPosition is not null &&
+               IsChecked(board, kingPosition, color) &&
+               !HasAnyLegalMove(board, color);
+    }
+
+    private static bool HasAnyLegalMove(ChessBoard board, PieceColor color)
+    {
+        for (int row = 0; row < 8; row++)
+        {
+            for (int col = 0; col < 8; col++)
+            {
+                var start = new PiecePosition(row, col);
+                Piece? piece = board[start];
+
+                if (piece is null || piece.Color != color)
+                    continue;
+
+                for (int targetRow = 0; targetRow < 8; targetRow++)
+                {
+                    for (int targetCol = 0; targetCol < 8; targetCol++)
+                    {
+                        var target = new PiecePosition(targetRow, targetCol);
+
+                        if (!piece.CanMove(board, target))
+                            continue;
+
+                        ChessBoard boardAfterMove = (ChessBoard)board.Clone();
+                        Game.RegularMove(boardAfterMove, new MoveInfo(start, target));
+
+                        PiecePosition? kingAfterMove =
+                            ChessBoard.GetKingPosition(boardAfterMove, color);
+
+                        if (kingAfterMove is not null &&
+                            !IsChecked(boardAfterMove, kingAfterMove, color))
+                            return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+    
 }
