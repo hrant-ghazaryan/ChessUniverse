@@ -59,7 +59,7 @@ public static class Game
         moveInfo.Castling = (true, color);
         return chessBoard;
     }*/
-    public static ChessBoard? Castling(ChessBoard chessBoard, MoveInfo moveInfo)
+    public static ChessBoard Castling(ChessBoard chessBoard, MoveInfo moveInfo)
     {
         if (!CastlingRules.ValidateCastlingParameters(chessBoard, moveInfo))
             return chessBoard;

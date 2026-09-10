@@ -24,11 +24,10 @@ public partial class MainWindow : Window
     private bool firstBoardLoc;
     private bool audioPlayed;
 
-    ChessBoard pieceBoard = new ChessBoard(); 
-    Image boardEnteredImage;
-    PieceColor acctiveTurn;
-    MoveInfo _moveInfo;
-    MoveResult currentMove;
+    ChessBoard pieceBoard = new ChessBoard();
+    private Image? boardEnteredImage;
+    private PieceColor acctiveTurn;
+    private MoveInfo? _moveInfo;
 
     Stack<MoveResult> boardPrevious = new Stack<MoveResult>();
     Stack<MoveResult> boardNext = new Stack<MoveResult>();
@@ -126,7 +125,12 @@ public partial class MainWindow : Window
     }
     private void PromotionClick(object sender, EventArgs e)
     {
-        var selectedImg = (Image)sender;
+        if (sender is not Image selectedImg || _moveInfo is null
+            || boardEnteredImage is null)
+            return;
+
+        Image promotionImage = boardEnteredImage;
+        MoveInfo promotionMove = _moveInfo;
 
         string? tag = selectedImg.Tag.ToString();
         string? name = selectedImg.Name.ToString();
@@ -201,7 +205,7 @@ public partial class MainWindow : Window
                 break;
         }*/
         PawnPromotionMove(tag);
-        MoveUIUpdate(boardEnteredImage, _moveInfo, MoveType.RegularMove);
+        MoveUIUpdate(promotionImage, promotionMove, MoveType.RegularMove);
 
         if (ChessRules.IsChecked(pieceBoard))
             MessageBox.Show("Check!");
@@ -229,7 +233,12 @@ public partial class MainWindow : Window
     /// <param name="imgCaptured">Վերցված ֆիգուրի պատկերը</param>
     private void AddingCaptureToWrap(Image? imgCaptured)
     {
-        if (!audioPlayed) { SoundManager.Play("capture"); audioPlayed = true; }
+        if (imgCaptured is null)
+            return;
+
+        if (!audioPlayed) 
+            SoundManager.Play("capture"); audioPlayed = true; 
+
         grid_figure.Children.Remove(imgCaptured);
         imgCaptured?.Margin = new Thickness(0);
         imgCaptured?.Width = 20;
@@ -250,6 +259,9 @@ public partial class MainWindow : Window
     /// <param name="moveInfo">Քայլի տվյալները (նպատակային դիրքը ներառյալ)</param>
     private void CaptureToWrap(Image? img, MoveInfo moveInfo)
     {
+        if (moveInfo.Target is null)
+            return;
+
         if (pieceBoard[moveInfo.Target] is not null)
         {
             bool isCaptured = false;
@@ -475,7 +487,7 @@ public partial class MainWindow : Window
         if (!IsMovePossible(board, moveInfo))
             return new MoveResult(board, MoveType.InvalidMove);
 
-        ChessBoard? cloneBoard = (ChessBoard)board.Clone();
+        ChessBoard cloneBoard = (ChessBoard)board.Clone();
         if (IsPawnPromotion(cloneBoard, moveInfo))
         { ShowPromotionOverlay(boardEnteredImage, moveInfo); currentMoveType = MoveType.PawnPromotion; }
         else if (CastlingRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
@@ -599,17 +611,18 @@ public partial class MainWindow : Window
     /// <param name="board">Խաղատախտակի ընթացիկ վիճակը</param>
     /// <param name="img">Ընտրված ֆիգուրի պատկերը</param>
     /// <param name="moveInfo">Քայլի սկզբնական և վերջնական դիրքերը</param>
-    public void ShowPromotionOverlay(Image img, MoveInfo moveInfo)
+    public void ShowPromotionOverlay(Image? img, MoveInfo moveInfo)
     {
-        if (moveInfo.Target is null) return;
-        if (moveInfo.Start is null) return;
+        if (img is null || moveInfo.Start is null ||
+         moveInfo.Target is null)
+            return;
 
-        string name = img.Name.ToString();
+        string name = img.Name;
         if (name[0] == 'w')
             WhitePromotionOverlay.Visibility = Visibility.Visible;
         else
             BlackPromotionOverlay.Visibility = Visibility.Visible;
-        img = boardEnteredImage;
+        boardEnteredImage = img;
         _moveInfo = moveInfo;
     }
     /// <summary>
@@ -620,8 +633,11 @@ public partial class MainWindow : Window
     /// <returns>
     /// Թարմացված պատկերը, որը պետք է արտացոլվի UI-ում
     /// </returns>
-    public Image PawnPromotionMove(string? tagSelectedImage)
+    public void PawnPromotionMove(string? tagSelectedImage)
     {
+        if (boardEnteredImage is null || _moveInfo is null)
+            return;
+
         string name = boardEnteredImage.Name.ToString();
         PieceColor newColor = PieceColor.White;
         if (name[0] == 'b')
@@ -637,7 +653,6 @@ public partial class MainWindow : Window
         };
 
         PawnPromotionMove(pieceBoard, _moveInfo, newPiece);
-        return boardEnteredImage;
     }
     /// <summary>
     /// Կատարում է pawn promotion-ի լոգիկան՝ փոխարինելով pawn-ը ընտրված ֆիգուրով
