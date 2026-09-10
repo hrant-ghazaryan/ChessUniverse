@@ -51,7 +51,7 @@ public partial class MainWindow : Window
     }
 
     #region EVENTS
-    private void MouseDown(object sender, MouseEventArgs e)
+    private void OnPieceMouseDown(object sender, MouseEventArgs e)
     {
         _t = true;
         var img = (System.Windows.Controls.Image)sender;
@@ -76,7 +76,7 @@ public partial class MainWindow : Window
         }
 
     }
-    private void MouseMove(object sender, MouseEventArgs e)
+    private void OnPieceMouseMove(object sender, MouseEventArgs e)
     {
         if (_t)
         {
@@ -90,7 +90,7 @@ public partial class MainWindow : Window
                 ptNew.Y + (e.GetPosition(img).Y - _ptLast.Y), 0, 0);
         }
     }
-    private void MouseUp(object sender, MouseEventArgs e)
+    private void OnPieceMouseUp(object sender, MouseEventArgs e)
     {
         _t = false;
         audioPlayed = false;
