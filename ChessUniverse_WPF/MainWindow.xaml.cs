@@ -1,6 +1,7 @@
 ﻿using ChessUniverse.Library;
 using ChessUniverse.Library.Enums;
 using ChessUniverse.Library.Pieces;
+using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -31,19 +32,21 @@ public partial class MainWindow : Window
 
     Stack<MoveResult> boardPrevious = new Stack<MoveResult>();
     Stack<MoveResult> boardNext = new Stack<MoveResult>();
-
+    private static string GetSoundPath(string fileName)
+    {
+        return Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
+    }
     public MainWindow()
     {
         InitializeComponent();
-        SoundManager.Load("start", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\game-start.mp3");
-        SoundManager.Load("move", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\move-self.mp3");
-        SoundManager.Load("promotion", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\promote.mp3");
-        SoundManager.Load("castle", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\castle.mp3");
-        SoundManager.Load("capture", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\capture.mp3");
-        SoundManager.Load("invalidMove", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\illegal.mp3");
-        SoundManager.Load("check", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\move-check.mp3");
-        SoundManager.Load("checkMate", @"C:\Users\Hrant\source\repos\ChessUniverse\ChessUniverse.Library\Sounds\game-end.mp3");
-        SoundManager.Play("start");
+        SoundManager.Load("start", GetSoundPath("game-start.mp3"));
+        SoundManager.Load("move", GetSoundPath("move-self.mp3"));
+        SoundManager.Load("promotion", GetSoundPath("promote.mp3"));
+        SoundManager.Load("castle", GetSoundPath("castle.mp3"));
+        SoundManager.Load("capture", GetSoundPath("capture.mp3"));
+        SoundManager.Load("invalidMove", GetSoundPath("illegal.mp3"));
+        SoundManager.Load("check", GetSoundPath("move-check.mp3"));
+        SoundManager.Load("checkMate", GetSoundPath("game-end.mp3"));
         this.ResizeMode = ResizeMode.CanMinimize;
     }
 
