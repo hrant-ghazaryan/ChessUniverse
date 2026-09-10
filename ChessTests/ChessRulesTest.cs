@@ -125,4 +125,88 @@ public class ChessRulesTest
 
         Assert.False(canCastle);
     }
+
+    [Fact]
+    public void Castling_MovesWhiteKingAndRook_ForKingSideCastling()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        King whiteKing = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        Rook whiteRook = new Rook(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 7)
+        };
+
+        pieces[7, 4] = whiteKing;
+        pieces[7, 7] = whiteRook;
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4)
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+        MoveInfo moveInfo = new MoveInfo(
+            new PiecePosition(7, 4),
+            new PiecePosition(7, 6));
+
+        ChessBoard result = Game.Castling(board, moveInfo);
+
+        Assert.Same(whiteKing, result[7, 6]);
+        Assert.Same(whiteRook, result[7, 5]);
+
+        Assert.Null(result[7, 4]);
+        Assert.Null(result[7, 7]);
+
+        Assert.True(whiteKing.HasMoved);
+        Assert.True(whiteRook.HasMoved);
+        Assert.Equal(new PiecePosition(7, 6), whiteKing.Position);
+        Assert.Equal(new PiecePosition(7, 5), whiteRook.Position);
+    }
+
+    [Fact]
+    public void Castling_MovesWhiteKingAndRook_ForQueenSideCastling()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        King whiteKing = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        Rook whiteRook = new Rook(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 0)
+        };
+
+        pieces[7, 4] = whiteKing;
+        pieces[7, 0] = whiteRook;
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4)
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+        MoveInfo moveInfo = new MoveInfo(
+            new PiecePosition(7, 4),
+            new PiecePosition(7, 2));
+
+        ChessBoard result = Game.Castling(board, moveInfo);
+
+        Assert.Same(whiteKing, result[7, 2]);
+        Assert.Same(whiteRook, result[7, 3]);
+
+        Assert.Null(result[7, 4]);
+        Assert.Null(result[7, 0]);
+
+        Assert.True(whiteKing.HasMoved);
+        Assert.True(whiteRook.HasMoved);
+        Assert.Equal(new PiecePosition(7, 2), whiteKing.Position);
+        Assert.Equal(new PiecePosition(7, 3), whiteRook.Position);
+    }
 }

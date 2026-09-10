@@ -1,6 +1,6 @@
 namespace ChessUniverse.Library;
 
-public class PiecePosition
+public class PiecePosition : IEquatable<PiecePosition>
 {
     public int Row { get; set; }
     public int Col { get; set; }
@@ -25,4 +25,14 @@ public class PiecePosition
 
         return $"{file}{rank}";
     }
+
+    public bool Equals(PiecePosition? other)
+        => other is not null &&
+            this.Row == other.Row && this.Col == other.Col;
+
+    public override bool Equals(object? obj)
+        => Equals(obj as PiecePosition);
+
+    public override int GetHashCode()
+        => HashCode.Combine(Row, Col);
 }
