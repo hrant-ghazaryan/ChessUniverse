@@ -3,7 +3,6 @@ using ChessUniverse.Library.Enums;
 using ChessUniverse.Library.Pieces;
 using System.IO;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -32,9 +31,7 @@ public partial class MainWindow : Window
     Stack<MoveResult> boardPrevious = new Stack<MoveResult>();
     Stack<MoveResult> boardNext = new Stack<MoveResult>();
     private static string GetSoundPath(string fileName)
-    {
-        return Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
-    }
+        => Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
     public MainWindow()
     {
         InitializeComponent();
@@ -728,6 +725,4 @@ public partial class MainWindow : Window
 
         }
     }
-
-    
 }

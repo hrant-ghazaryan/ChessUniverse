@@ -29,7 +29,7 @@ public class ChessRulesTest
         ChessBoard board = new ChessBoard(checkBoard);
 
 
-        var checkChecker = ChessRules.IsChecked(board, new PiecePosition(0,4));
+        var checkChecker = ChessRules.IsChecked(board, new PiecePosition(0, 4));
         Assert.True(checkChecker);
     }
 
@@ -44,7 +44,7 @@ public class ChessRulesTest
 
         var isStalemateChecker = ChessRules.IsStaleMate(board, PieceColor.Black);
         Assert.True(isStalemateChecker);
-        
+
     }
 
     public static IEnumerable<object[]> MoveTestCases => new List<object[]>
@@ -62,25 +62,67 @@ public class ChessRulesTest
     {
         Piece?[,] checkmateBoard = new Piece?[8, 8];
 
-        checkmateBoard[0, 7] = new King(PieceColor.Black)
-        {
-            Position = new PiecePosition(0, 7)
-        };
-
-        checkmateBoard[1, 6] = new Queen(PieceColor.White)
-        {
-            Position = new PiecePosition(1, 6)
-        };
-
-        checkmateBoard[2, 6] = new King(PieceColor.White)
-        {
-            Position = new PiecePosition(2, 6)
-        };
+        checkmateBoard[0, 7] = new King(PieceColor.Black) { Position = new PiecePosition(0, 7) };
+        checkmateBoard[1, 6] = new Queen(PieceColor.White) { Position = new PiecePosition(1, 6) };
+        checkmateBoard[2, 6] = new King(PieceColor.White) { Position = new PiecePosition(2, 6) };
 
         ChessBoard board = new ChessBoard(checkmateBoard);
 
         bool isCheckmate = ChessRules.IsCheckmate(board, PieceColor.Black);
 
         Assert.True(isCheckmate);
+    }
+
+    [Fact]
+    public void IsCastlingLeftPossible_ReturnsTrue_WhenAllRulesAreSatisfied()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[7, 4] = new King(PieceColor.White) { Position = new PiecePosition(7, 4) };
+        pieces[7, 0] = new Rook(PieceColor.White) { Position = new PiecePosition(7, 0) };
+        pieces[0, 4] = new King(PieceColor.Black) { Position = new PiecePosition(0, 4) };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool canCastle = CastlingRules.IsCastlingLeftPossible(
+            board, new MoveInfo(new PiecePosition(7, 4), new PiecePosition(7, 2)));
+
+        Assert.True(canCastle);
+    }
+
+    [Fact]
+    public void IsCastlingLeftPossible_ReturnsFalse_WhenBSquareIsOccupied()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[7, 4] = new King(PieceColor.White) { Position = new PiecePosition(7, 4) };
+        pieces[7, 0] = new Rook(PieceColor.White) { Position = new PiecePosition(7, 0) };
+        pieces[7, 1] = new Knight(PieceColor.White) { Position = new PiecePosition(7, 1) };
+        pieces[0, 4] = new King(PieceColor.Black) { Position = new PiecePosition(0, 4) };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool canCastle = CastlingRules.IsCastlingLeftPossible(
+            board, new MoveInfo(new PiecePosition(7, 4), new PiecePosition(7, 2)));
+
+        Assert.False(canCastle);
+    }
+
+    [Fact]
+    public void IsCastlingLeftPossible_ReturnsFalse_WhenKingPassesThroughCheck()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[7, 4] = new King(PieceColor.White) { Position = new PiecePosition(7, 4) };
+        pieces[7, 0] = new Rook(PieceColor.White) { Position = new PiecePosition(7, 0) };
+        pieces[0, 4] = new King(PieceColor.Black) { Position = new PiecePosition(0, 4) };
+        pieces[0, 3] = new Rook(PieceColor.Black) { Position = new PiecePosition(0, 3) };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool canCastle = CastlingRules.IsCastlingLeftPossible(
+            board, new MoveInfo(new PiecePosition(7, 4), new PiecePosition(7, 2)));
+
+        Assert.False(canCastle);
     }
 }
