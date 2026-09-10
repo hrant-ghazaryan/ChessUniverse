@@ -7,11 +7,13 @@ public static class SoundManager
     private static readonly Dictionary<string, string> cache = new();
 
     public static void Load(string key, string path)
-        => cache.Add(key, path);
+        => cache[key] = path;
 
     public static void Play(string key)
     {
-        if (!cache.ContainsKey(key)) return;
+        if (!cache.TryGetValue(key, out string? path) ||
+        !File.Exists(path))
+            return;
 
         Task.Run(() =>
         {
