@@ -5,6 +5,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace ChessUniverse_WPF;
@@ -20,7 +21,6 @@ public partial class MainWindow : Window
     private int _imgDownY;
     private int _cellSize = 57;
 
-    private bool firstBoardLoc;
     private bool audioPlayed;
 
     ChessBoard pieceBoard = new ChessBoard();
@@ -34,9 +34,71 @@ public partial class MainWindow : Window
 
     private static string GetSoundPath(string fileName)
         => Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
+    private void RenderBoard(ChessBoard board)
+    {
+        grid_figure.Children.Clear();
+
+        for (int row = 0; row < 8; row++)
+        {
+            for (int col = 0; col < 8; col++)
+            {
+                Piece? piece = board[row, col];
+
+                if (piece is not null)
+                    grid_figure.Children.Add(CreatePieceImage(piece));
+            }
+        }
+    }
+
+    private Image CreatePieceImage(Piece piece)
+    {
+        string color = piece.Color == PieceColor.White ? "white" : "black";
+        string namePrefix = piece.Color == PieceColor.White ? "w" : "b";
+
+        var (fileName, tag, width, height) = piece.Type switch
+        {
+            PieceType.Pawn => ("soldier", "pawn", 35d, 50d),
+            PieceType.Rook => ("ship", "rook", 45d, 50d),
+            PieceType.Knight => ("horse", "knight", 50d, 50d),
+            PieceType.Bishop => ("elephant", "bishop", 43d, 50d),
+            PieceType.Queen => ("queen", "queen", 50d, 42d),
+            PieceType.King => ("king", "king", 50d, 45d),
+            _ => throw new InvalidOperationException(
+                $"Unknown piece type: {piece.Type}")
+        };
+
+        Image image = new Image
+        {
+            Name = $"{namePrefix}_piece_{piece.Position.Row}_{piece.Position.Col}",
+            Tag = tag,
+            Source = new BitmapImage(new Uri(
+                $"/images/figures/{color}-{fileName}.png",
+                UriKind.Relative)),
+            Width = width,
+            Height = height,
+            Stretch = Stretch.Fill,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(
+                piece.Position.Col * _cellSize + (_cellSize - width) / 2,
+                piece.Position.Row * _cellSize + (_cellSize - height) / 2,
+                0,
+                0)
+        };
+
+        image.MouseDown += OnPieceMouseDown;
+        image.MouseMove += OnPieceMouseMove;
+        image.MouseUp += OnPieceMouseUp;
+
+        return image;
+    }
     public MainWindow()
     {
         InitializeComponent();
+
+        pieceBoard.SetStartPosition();
+        RenderBoard(pieceBoard);
+
         SoundManager.Load("start", GetSoundPath("game-start.mp3"));
         SoundManager.Load("move", GetSoundPath("move-self.mp3"));
         SoundManager.Load("promotion", GetSoundPath("promote.mp3"));
@@ -64,14 +126,6 @@ public partial class MainWindow : Window
 
         _imgDownX = (int)img.Margin.Left;
         _imgDownY = (int)img.Margin.Top;
-
-
-        if (!firstBoardLoc)
-        {
-            boardPrevious.Push(new MoveResult(pieceBoard, MoveType.RegularMove, BoardState.Ongoing, acctiveTurn));
-            BoardLocParsal(pieceBoard);
-            firstBoardLoc = true;
-        }
     }
     private void OnPieceMouseMove(object sender, MouseEventArgs e)
     {
@@ -114,6 +168,11 @@ public partial class MainWindow : Window
         currentMoveType = moveDetails.MoveType;
         BoardStateUpdate(moveDetails);
         MoveUIUpdate(img, moveInfo, currentMoveType);
+
+        if (currentMoveType != MoveType.InvalidMove &&
+            currentMoveType != MoveType.PawnPromotion)
+            RenderBoard(pieceBoard);
+
         if (currentMoveType != MoveType.InvalidMove)
         {
             _previousMove = new MoveInfo(moveInfo);
@@ -209,6 +268,7 @@ public partial class MainWindow : Window
         }*/
         PawnPromotionMove(tag);
         MoveUIUpdate(promotionImage, promotionMove, MoveType.RegularMove);
+        RenderBoard(pieceBoard);
 
         if (ChessRules.IsChecked(pieceBoard))
             MessageBox.Show("Check!");
@@ -764,7 +824,8 @@ public partial class MainWindow : Window
     }*/
     #endregion
 
-    public void BoardLocParsal(ChessBoard boardPiece)
+    // My
+    /*public void BoardLocParsal(ChessBoard boardPiece)
     {
         var images = grid_figure.Children.OfType<Image>().ToList();
         for (int i = 0; i < images.Count; i++)
@@ -813,5 +874,5 @@ public partial class MainWindow : Window
                 boardPiece[row, col] = new King(PieceColor.Black) { Position = new PiecePosition(row, col) };
 
         }
-    }
+    }*/
 }
