@@ -1,6 +1,5 @@
 ﻿using ChessUniverse.Library;
 using ChessUniverse.Library.Enums;
-using ChessUniverse.Library.Pieces;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -137,7 +136,11 @@ public partial class MainWindow : Window
         RenderBoard(pieceBoard);
         RenderCapturedPieces();
     }
-
+    private void UpdateHistoryButtons()
+    {
+        Previous.IsEnabled = _previousSnapshots.Count > 0;
+        Next.IsEnabled = _nextSnapshots.Count > 0;
+    }
     private Image CreatePieceImage(Piece piece)
     {
         string color = piece.Color == PieceColor.White ? "white" : "black";
@@ -194,7 +197,7 @@ public partial class MainWindow : Window
         SoundManager.Load("invalidMove", GetSoundPath("illegal.mp3"));
         SoundManager.Load("check", GetSoundPath("move-check.mp3"));
         SoundManager.Load("checkMate", GetSoundPath("game-end.mp3"));
-        this.ResizeMode = ResizeMode.CanMinimize;
+        //this.ResizeMode = ResizeMode.CanMinimize;
     }
 
     #region EVENTS
@@ -276,6 +279,7 @@ public partial class MainWindow : Window
 
             _previousSnapshots.Push(snapshotBeforeMove);
             _nextSnapshots.Clear();
+            UpdateHistoryButtons();
 
             _previousMove = new MoveInfo(moveInfo);
         }
@@ -386,6 +390,9 @@ public partial class MainWindow : Window
 
         GameSnapshot previousSnapshot = _previousSnapshots.Pop();
         RestoreSnapshot(previousSnapshot);
+
+        SoundManager.Play("move");
+        UpdateHistoryButtons();
     }
     private void NewGameClick(object sender, RoutedEventArgs e)
     {
@@ -655,6 +662,7 @@ public partial class MainWindow : Window
         MoveShower.Content = acctiveTurn.ToString();
 
         RenderBoard(pieceBoard);
+        UpdateHistoryButtons();
     }
 
     #endregion
@@ -929,7 +937,6 @@ public partial class MainWindow : Window
         // Իսկ փոխակերպման կանոնը կատարվում է Library-ում։
         Game.PromotePawn(pieceBoard, target, promotionType.Value);
     }
-
     private void Button_Click(object sender, RoutedEventArgs e)
     {
         if (_nextSnapshots.Count == 0)
@@ -941,6 +948,8 @@ public partial class MainWindow : Window
         GameSnapshot nextSnapshot = _nextSnapshots.Pop();
         RestoreSnapshot(nextSnapshot);
 
+        SoundManager.Play("move");
+        UpdateHistoryButtons();
     }
 
     /// <summary>
