@@ -690,4 +690,33 @@ public class ChessRulesTest
         Assert.Equal(PieceColor.Black, snapshotCapturedPiece.Color);
         Assert.False(snapshotCapturedPiece.HasMoved);
     }
+
+    [Fact]
+    public void MoveValidation_ReturnsFalse_WhenMoveWouldCaptureKing()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Rook whiteRook = new Rook(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4) // e1
+        };
+
+        King blackKing = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4) // e8
+        };
+
+        pieces[7, 4] = whiteRook;
+        pieces[0, 4] = blackKing;
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool isValid = ChessRules.MoveValidation(
+            board,
+            new PiecePosition(7, 4),
+            new PiecePosition(0, 4),
+            PieceColor.White);
+
+        Assert.False(isValid);
+    }
 }

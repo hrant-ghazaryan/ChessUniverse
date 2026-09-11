@@ -109,15 +109,12 @@ public static class ChessRules
         Piece? piece = board[start];
         if (turn != piece?.Color) return false;
 
-        /*Piece? endPiece = board[end];
-        if (endPiece == null || piece?.Color != endPiece.Color)
-        {
-            if (piece!.IsMovePossible(board, end))
-                return true;
-        }*/
-        if (piece!.CanMove(board, end))
-            return true;
-        return false;
+        Piece? targetPiece = board[end];
+
+        if (targetPiece?.Type == PieceType.King)
+            return false;
+
+        return piece!.CanMove(board, end);
     }
 
     public static bool IsStaleMate(ChessBoard board, PieceColor color)

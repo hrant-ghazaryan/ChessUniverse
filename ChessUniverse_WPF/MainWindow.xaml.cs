@@ -680,8 +680,15 @@ public partial class MainWindow : Window
         if (moveInfo.Start is null) return false;
         if (moveInfo.Target is null) return false;
 
-        bool samePosition = moveInfo.Target.Row == moveInfo.Start.Row && moveInfo?.Target.Col == moveInfo!.Start.Col;
+        bool samePosition = 
+            moveInfo.Target.Row == moveInfo.Start.Row && 
+            moveInfo?.Target.Col == moveInfo!.Start.Col;
+
         Piece? currentPiece = pieceBoard[moveInfo.Start];
+        Piece? targetPiece = pieceBoard[moveInfo.Target];
+
+        if (targetPiece?.Type == PieceType.King)
+            return false;
 
         return currentPiece is not null && !samePosition &&
             currentPiece!.CanMove(pieceBoard, moveInfo.Target);
@@ -937,7 +944,7 @@ public partial class MainWindow : Window
         // Իսկ փոխակերպման կանոնը կատարվում է Library-ում։
         Game.PromotePawn(pieceBoard, target, promotionType.Value);
     }
-    private void Button_Click(object sender, RoutedEventArgs e)
+    private void NextClick(object sender, RoutedEventArgs e)
     {
         if (_nextSnapshots.Count == 0)
             return;
