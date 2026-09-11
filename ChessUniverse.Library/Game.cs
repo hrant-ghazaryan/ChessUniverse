@@ -64,6 +64,13 @@ public static class Game
     }*/
     public static ChessBoard Castling(ChessBoard chessBoard, MoveInfo moveInfo)
     {
+        bool canCastle =
+            CastlingRules.IsCastlingLeftPossible(chessBoard, moveInfo) ||
+            CastlingRules.IsCastlingRightPossible(chessBoard, moveInfo);
+
+        if (!canCastle)
+            return chessBoard;
+
         if (!CastlingRules.ValidateCastlingParameters(chessBoard, moveInfo))
             return chessBoard;
 

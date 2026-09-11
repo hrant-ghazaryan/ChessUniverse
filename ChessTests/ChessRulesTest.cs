@@ -508,4 +508,35 @@ public class ChessRulesTest
         Assert.Same(whitePawn, board[3, 4]);
         Assert.Same(blackPawn, board[3, 3]);
     }
+
+    [Fact]
+    public void Castling_DoesNotMoveKing_WhenCastlingIsIllegal()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        King whiteKing = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4) // e1
+        };
+
+        pieces[7, 4] = whiteKing;
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4) // e8
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        MoveInfo moveInfo = new MoveInfo(
+            new PiecePosition(7, 4), // e1
+            new PiecePosition(7, 6)); // g1
+
+        ChessBoard result = Game.Castling(board, moveInfo);
+
+        Assert.Same(board, result);
+        Assert.Same(whiteKing, result[7, 4]);
+        Assert.Null(result[7, 6]);
+        Assert.False(whiteKing.HasMoved);
+    }
 }
