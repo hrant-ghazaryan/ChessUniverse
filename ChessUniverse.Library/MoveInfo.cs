@@ -14,8 +14,12 @@ public class MoveInfo
     public MoveInfo() { }
     public MoveInfo(MoveInfo original)
     {
-        Start = original.Start;
-        Target = original.Target;
+        Start = original.Start is null
+            ? null
+            : new PiecePosition(original.Start.Row, original.Start.Col);
+        Target = original.Target is null
+            ? null
+            : new PiecePosition(original.Target.Row, original.Target.Col);
         Castling = original.Castling;
         MovedPiece = (Piece?)original.MovedPiece?.Clone();
         CapturedPiece = (Piece?)original.CapturedPiece?.Clone();
