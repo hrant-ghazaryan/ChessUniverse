@@ -27,9 +27,11 @@ public partial class MainWindow : Window
     private Image? boardEnteredImage;
     private PieceColor acctiveTurn;
     private MoveInfo? _moveInfo;
+    private MoveInfo? _previousMove;
 
     Stack<MoveResult> boardPrevious = new Stack<MoveResult>();
     Stack<MoveResult> boardNext = new Stack<MoveResult>();
+
     private static string GetSoundPath(string fileName)
         => Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
     public MainWindow()
@@ -70,7 +72,6 @@ public partial class MainWindow : Window
             BoardLocParsal(pieceBoard);
             firstBoardLoc = true;
         }
-
     }
     private void OnPieceMouseMove(object sender, MouseEventArgs e)
     {
@@ -114,7 +115,12 @@ public partial class MainWindow : Window
         BoardStateUpdate(moveDetails);
         MoveUIUpdate(img, moveInfo, currentMoveType);
         if (currentMoveType != MoveType.InvalidMove)
-        { moveDetails.Turn = acctiveTurn; boardPrevious.Push(moveDetails); }
+        {
+            _previousMove = new MoveInfo(moveInfo);
+
+            moveDetails.Turn = acctiveTurn;
+            boardPrevious.Push(moveDetails);
+        }
         Mouse.Capture(null);
         StackPanel.SetZIndex(img, 0);
 
@@ -233,8 +239,8 @@ public partial class MainWindow : Window
         if (imgCaptured is null)
             return;
 
-        if (!audioPlayed) 
-            SoundManager.Play("capture"); audioPlayed = true; 
+        if (!audioPlayed)
+            SoundManager.Play("capture"); audioPlayed = true;
 
         grid_figure.Children.Remove(imgCaptured);
         imgCaptured?.Margin = new Thickness(0);
@@ -291,6 +297,36 @@ public partial class MainWindow : Window
             else
                 img?.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
         }
+    }
+    private void EnPassantCaptureToWrap(Image movedImage, MoveInfo moveInfo)
+    {
+        if (moveInfo.Start is null || moveInfo.Target is null)
+            return;
+
+        int capturedPawnRow = moveInfo.Start.Row;
+        int capturedPawnCol = moveInfo.Target.Col;
+
+        Image? capturedImage = grid_figure.Children
+            .OfType<Image>()
+            .FirstOrDefault(image =>
+            {
+                int row = (int)(image.Margin.Top + 28.5) / _cellSize;
+                int col = (int)(image.Margin.Left + 28.5) / _cellSize;
+
+                return image != movedImage &&
+                       row == capturedPawnRow &&
+                       col == capturedPawnCol &&
+                       image.Name[0] != movedImage.Name[0];
+            });
+
+        if (capturedImage is not null)
+            AddingCaptureToWrap(capturedImage);
+
+        movedImage.Margin = new Thickness(
+            moveInfo.Target.Col * _cellSize + (_cellSize - movedImage.Width) / 2,
+            moveInfo.Target.Row * _cellSize + (_cellSize - movedImage.Height) / 2,
+            0,
+            0);
     }
     /// <summary>
     /// Թարմացնում է UI-ը ձախ ռոկիրովկայի ժամանակ՝
@@ -374,7 +410,7 @@ public partial class MainWindow : Window
         switch (moveType)
         {
             case MoveType.InvalidMove:
-                if (!audioPlayed) { SoundManager.Play("invalidMove");  audioPlayed = true; }
+                if (!audioPlayed) { SoundManager.Play("invalidMove"); audioPlayed = true; }
                 img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
                 break;
             case MoveType.RegularMove:
@@ -398,6 +434,9 @@ public partial class MainWindow : Window
                 moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
                 moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
                 0, 0);
+                break;
+            case MoveType.EnPassant:
+                EnPassantCaptureToWrap(img, moveInfo);
                 break;
         }
     }
@@ -485,13 +524,38 @@ public partial class MainWindow : Window
             return new MoveResult(board, MoveType.InvalidMove);
 
         ChessBoard cloneBoard = (ChessBoard)board.Clone();
-        if (IsPawnPromotion(cloneBoard, moveInfo))
-        { ShowPromotionOverlay(boardEnteredImage, moveInfo); currentMoveType = MoveType.PawnPromotion; }
-        else if (CastlingRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
-        { cloneBoard = Game.Castling(cloneBoard, moveInfo); currentMoveType = MoveType.LeftCastling; }
-        else if (CastlingRules.IsCastlingRightPossible(cloneBoard, moveInfo))
-        { cloneBoard = Game.Castling(cloneBoard, moveInfo); currentMoveType = MoveType.RightCastling; }
-        else { Game.RegularMove(cloneBoard, moveInfo); currentMoveType = MoveType.RegularMove; }
+
+        if (_previousMove is not null &&
+            ChessRules.TryEnPassant(cloneBoard, moveInfo, _previousMove))
+        {
+            currentMoveType = MoveType.EnPassant;
+        }
+        else
+        {
+            if (!IsMovePossible(board, moveInfo))
+                return new MoveResult(board, MoveType.InvalidMove);
+
+            if (IsPawnPromotion(cloneBoard, moveInfo))
+            {
+                ShowPromotionOverlay(boardEnteredImage, moveInfo);
+                currentMoveType = MoveType.PawnPromotion;
+            }
+            else if (CastlingRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
+            {
+                cloneBoard = Game.Castling(cloneBoard, moveInfo);
+                currentMoveType = MoveType.LeftCastling;
+            }
+            else if (CastlingRules.IsCastlingRightPossible(cloneBoard, moveInfo))
+            {
+                cloneBoard = Game.Castling(cloneBoard, moveInfo);
+                currentMoveType = MoveType.RightCastling;
+            }
+            else
+            {
+                Game.RegularMove(cloneBoard, moveInfo);
+                currentMoveType = MoveType.RegularMove;
+            }
+        }
 
         acctiveKing = ChessBoard.GetKingPosition(cloneBoard, acctiveTurn);
         checkTargetState = ChessRules.IsChecked(cloneBoard, acctiveKing, acctiveTurn);

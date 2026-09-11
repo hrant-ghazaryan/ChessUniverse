@@ -177,5 +177,86 @@ public static class ChessRules
 
         return false;
     }
-    
+    public static bool TryEnPassant(
+    ChessBoard board,
+    MoveInfo moveInfo,
+    MoveInfo previousMove)
+    {
+        if (board is null ||
+            moveInfo?.Start is null ||
+            moveInfo.Target is null ||
+            previousMove?.Start is null ||
+            previousMove.Target is null)
+        {
+            return false;
+        }
+
+        PiecePosition start = moveInfo.Start;
+        PiecePosition target = moveInfo.Target;
+        PiecePosition previousStart = previousMove.Start;
+        PiecePosition previousTarget = previousMove.Target;
+
+        Piece? pawn = board[start];
+
+        if (pawn is null || pawn.Type != PieceType.Pawn)
+            return false;
+
+        int direction = pawn.Color == PieceColor.White ? -1 : 1;
+
+        // Զինվորը պետք է մեկ վանդակ անկյունագծով գնա դեպի դատարկ վանդակ։
+        if (target.Row != start.Row + direction ||
+            Math.Abs(target.Col - start.Col) != 1 ||
+            board[target] is not null)
+        {
+            return false;
+        }
+
+        // Վերցվող զինվորը պետք է գտնվի կողքի վանդակում։
+        Piece? capturedPawn = board[start.Row, target.Col];
+
+        if (capturedPawn is null ||
+            capturedPawn.Type != PieceType.Pawn ||
+            capturedPawn.Color == pawn.Color)
+        {
+            return false;
+        }
+
+        // Նախորդ քայլը պարտադիր պետք է լինի հենց այս զինվորի
+        // սկզբնական շարքից կատարված երկու վանդականոց քայլը։
+        int capturedPawnStartRow =
+            capturedPawn.Color == PieceColor.White ? 6 : 1;
+
+        if (previousStart.Row != capturedPawnStartRow ||
+            previousStart.Col != target.Col ||
+            previousTarget.Row != start.Row ||
+            previousTarget.Col != target.Col ||
+            Math.Abs(previousTarget.Row - previousStart.Row) != 2)
+        {
+            return false;
+        }
+
+        // Նախ clone-ի վրա ստուգում ենք՝ քայլը սեփական թագավորին
+        // շախի տակ չի՞ թողնում։
+        ChessBoard boardAfterMove = (ChessBoard)board.Clone();
+
+        Game.RegularMove(boardAfterMove, moveInfo);
+        boardAfterMove[start.Row, target.Col] = null;
+
+        PiecePosition? kingPosition =
+            ChessBoard.GetKingPosition(boardAfterMove, pawn.Color);
+
+        if (kingPosition is null ||
+            ChessRules.IsChecked(boardAfterMove, kingPosition, pawn.Color))
+        {
+            return false;
+        }
+
+        // Միայն բոլոր ստուգումներից հետո փոխում ենք իրական տախտակը։
+        Game.RegularMove(board, moveInfo);
+        board[start.Row, target.Col] = null;
+
+        return true;
+    }
+
+
 }

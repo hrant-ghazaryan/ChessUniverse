@@ -6,5 +6,6 @@ public enum MoveType
     RegularMove,
     LeftCastling,
     RightCastling,
-    PawnPromotion
+    PawnPromotion,
+    EnPassant
 }
