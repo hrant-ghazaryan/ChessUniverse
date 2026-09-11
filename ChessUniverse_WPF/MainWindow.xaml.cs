@@ -96,8 +96,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        pieceBoard.SetStartPosition();
-        RenderBoard(pieceBoard);
+        StartNewGame();
 
         SoundManager.Load("start", GetSoundPath("game-start.mp3"));
         SoundManager.Load("move", GetSoundPath("move-self.mp3"));
@@ -285,6 +284,11 @@ public partial class MainWindow : Window
         boardNext.Push(temp);
         pieceBoard = temp.Board;
         acctiveTurn = temp.Turn;*/
+    }
+    private void NewGameClick(object sender, RoutedEventArgs e)
+    {
+        StartNewGame();
+        SoundManager.Play("start");
     }
     #endregion
 
@@ -525,6 +529,29 @@ public partial class MainWindow : Window
                 Close();
                 break;
         }
+    }
+    private void StartNewGame()
+    {
+        pieceBoard = new ChessBoard();
+        pieceBoard.SetStartPosition();
+
+        acctiveTurn = PieceColor.White;
+        _previousMove = null;
+        _moveInfo = null;
+        boardEnteredImage = null;
+
+        boardPrevious.Clear();
+        boardNext.Clear();
+
+        WhiteCaptures.Children.Clear();
+        BlackCaptures.Children.Clear();
+
+        WhitePromotionOverlay.Visibility = Visibility.Collapsed;
+        BlackPromotionOverlay.Visibility = Visibility.Collapsed;
+
+        MoveShower.Content = acctiveTurn.ToString();
+
+        RenderBoard(pieceBoard);
     }
 
     #endregion

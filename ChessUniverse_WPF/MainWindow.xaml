@@ -44,6 +44,13 @@
         <WrapPanel Name="WhiteCaptures" HorizontalAlignment="Left" Height="80" Margin="757,538,0,0" VerticalAlignment="Top" Width="179"/>
         <Button Name="Previous" Content="PREVIOUS" HorizontalAlignment="Left" Height="60" Margin="745,450,0,0" VerticalAlignment="Top" Width="119" Click="PreviousClick"/>
         <Button Content="NEXT" HorizontalAlignment="Left" Height="61" Margin="869,450,0,0" VerticalAlignment="Top" Width="119"/>
+        <Button Content="NEW GAME"
+        Width="119"
+        Height="40"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="745,350,0,0"
+        Click="NewGameClick" />
         <Label x:Name="MoveShower" Content="White" HorizontalAlignment="Left" Height="46" Margin="869,396,0,0" VerticalAlignment="Top" Width="119" FontWeight= "Heavy" HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center" FontSize="30"/>
         <Label Content="Turn" HorizontalAlignment="Left" Height="46" Margin="745,396,0,0" VerticalAlignment="Top" Width="119" FontWeight= "Heavy" HorizontalContentAlignment="Center"
