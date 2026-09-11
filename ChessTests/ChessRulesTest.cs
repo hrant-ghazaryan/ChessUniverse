@@ -406,4 +406,106 @@ public class ChessRulesTest
         Assert.True(whitePawn.HasMoved);
         Assert.Equal(new PiecePosition(2, 3), whitePawn.Position);
     }
+
+    [Fact]
+    public void TryEnPassant_CapturesWhitePawn_ForBlackPawn()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Pawn blackPawn = new Pawn(PieceColor.Black)
+        {
+            Position = new PiecePosition(4, 5) // f4
+        };
+
+        Pawn whitePawn = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(4, 4) // e4
+        };
+
+        pieces[4, 5] = blackPawn;
+        pieces[4, 4] = whitePawn;
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4)
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        MoveInfo previousMove = new MoveInfo(
+            new PiecePosition(6, 4), // e2
+            new PiecePosition(4, 4)); // e4
+
+        MoveInfo enPassantMove = new MoveInfo(
+            new PiecePosition(4, 5), // f4
+            new PiecePosition(5, 4)); // e3
+
+        bool wasCaptured = ChessRules.TryEnPassant(
+            board,
+            enPassantMove,
+            previousMove);
+
+        Assert.True(wasCaptured);
+        Assert.Same(blackPawn, board[5, 4]);
+        Assert.Null(board[4, 5]);
+        Assert.Null(board[4, 4]);
+    }
+
+    [Fact]
+    public void TryEnPassant_ReturnsFalse_WhenMoveExposesOwnKingToCheck()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Pawn whitePawn = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(3, 4) // e5
+        };
+
+        Pawn blackPawn = new Pawn(PieceColor.Black)
+        {
+            Position = new PiecePosition(3, 3) // d5
+        };
+
+        pieces[3, 4] = whitePawn;
+        pieces[3, 3] = blackPawn;
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4) // e1
+        };
+
+        pieces[0, 0] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 0)
+        };
+
+        pieces[0, 4] = new Rook(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4) // e8
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        MoveInfo previousMove = new MoveInfo(
+            new PiecePosition(1, 3), // d7
+            new PiecePosition(3, 3)); // d5
+
+        MoveInfo enPassantMove = new MoveInfo(
+            new PiecePosition(3, 4), // e5
+            new PiecePosition(2, 3)); // d6
+
+        bool wasCaptured = ChessRules.TryEnPassant(
+            board,
+            enPassantMove,
+            previousMove);
+
+        Assert.False(wasCaptured);
+        Assert.Same(whitePawn, board[3, 4]);
+        Assert.Same(blackPawn, board[3, 3]);
+    }
 }

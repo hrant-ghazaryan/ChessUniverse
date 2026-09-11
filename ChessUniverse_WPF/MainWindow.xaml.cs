@@ -520,9 +520,6 @@ public partial class MainWindow : Window
         PiecePosition? acctiveKing = ChessBoard.GetKingPosition(board, acctiveTurn);
         checkStartState = ChessRules.IsChecked(board, acctiveKing, acctiveTurn);
 
-        if (!IsMovePossible(board, moveInfo))
-            return new MoveResult(board, MoveType.InvalidMove);
-
         ChessBoard cloneBoard = (ChessBoard)board.Clone();
 
         if (_previousMove is not null &&
