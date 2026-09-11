@@ -639,4 +639,55 @@ public class ChessRulesTest
 
         Assert.False(pawn.CanMove(board, new PiecePosition(2, 3)));
     }
+
+    [Fact]
+    public void GameSnapshot_CreatesIndependentCopyOfGameState()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Rook whiteRook = new Rook(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 0)
+        };
+
+        pieces[7, 0] = whiteRook;
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        MoveInfo previousMove = new MoveInfo(
+            new PiecePosition(6, 4),
+            new PiecePosition(4, 4),
+            PieceColor.White);
+
+        Pawn capturedBlackPawn = new Pawn(PieceColor.Black)
+        {
+            Position = new PiecePosition(4, 4)
+        };
+
+        List<Piece> capturedPieces = new()
+    {
+        capturedBlackPawn
+    };
+
+        GameSnapshot snapshot = new GameSnapshot(
+            board,
+            PieceColor.Black,
+            previousMove,
+            capturedPieces);
+
+        board[7, 0] = null;
+        previousMove.Start!.Row = 5;
+        capturedBlackPawn.HasMoved = true;
+
+        Assert.IsType<Rook>(snapshot.Board[7, 0]);
+        Assert.Equal(PieceColor.Black, snapshot.ActiveTurn);
+
+        Assert.NotNull(snapshot.PreviousMove);
+        Assert.Equal(new PiecePosition(6, 4), snapshot.PreviousMove.Start);
+
+        Piece snapshotCapturedPiece = Assert.Single(snapshot.CapturedPieces);
+        Assert.IsType<Pawn>(snapshotCapturedPiece);
+        Assert.Equal(PieceColor.Black, snapshotCapturedPiece.Color);
+        Assert.False(snapshotCapturedPiece.HasMoved);
+    }
 }

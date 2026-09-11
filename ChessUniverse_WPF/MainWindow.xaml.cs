@@ -29,8 +29,32 @@ public partial class MainWindow : Window
     private MoveInfo? _moveInfo;
     private MoveInfo? _previousMove;
 
-    Stack<MoveResult> boardPrevious = new Stack<MoveResult>();
-    Stack<MoveResult> boardNext = new Stack<MoveResult>();
+    private readonly Stack<GameSnapshot> _previousSnapshots = new();
+    private readonly Stack<GameSnapshot> _nextSnapshots = new();
+
+    private readonly List<Piece> _capturedPieces = new();
+
+    private GameSnapshot CreateSnapshot()
+    {
+        return new GameSnapshot(
+            pieceBoard,
+            acctiveTurn,
+            _previousMove,
+            _capturedPieces);
+    }
+    private static Piece? GetCapturedPiece(
+        ChessBoard board,
+        MoveInfo moveInfo,
+        MoveType moveType)
+    {
+        if (moveInfo.Start is null || moveInfo.Target is null)
+            return null;
+
+        if (moveType == MoveType.EnPassant)
+            return board[moveInfo.Start.Row, moveInfo.Target.Col];
+
+        return board[moveInfo.Target];
+    }
 
     private static string GetSoundPath(string fileName)
         => Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
@@ -48,6 +72,70 @@ public partial class MainWindow : Window
                     grid_figure.Children.Add(CreatePieceImage(piece));
             }
         }
+    }
+    private void RenderCapturedPieces()
+    {
+        WhiteCaptures.Children.Clear();
+        BlackCaptures.Children.Clear();
+
+        foreach (Piece piece in _capturedPieces)
+        {
+            string color = piece.Color == PieceColor.White ? "white" : "black";
+
+            string fileName = piece.Type switch
+            {
+                PieceType.Pawn => "soldier",
+                PieceType.Rook => "ship",
+                PieceType.Knight => "horse",
+                PieceType.Bishop => "elephant",
+                PieceType.Queen => "queen",
+                PieceType.King => "king",
+                _ => throw new InvalidOperationException(
+                    $"Unknown piece type: {piece.Type}")
+            };
+
+            Image capturedImage = new Image
+            {
+                Source = new BitmapImage(new Uri(
+                    $"/images/figures/{color}-{fileName}.png",
+                    UriKind.Relative)),
+                Width = 20,
+                Height = 20,
+                Stretch = Stretch.Fill,
+                IsHitTestVisible = false,
+                Margin = new Thickness(0)
+            };
+
+            if (piece.Color == PieceColor.Black)
+                BlackCaptures.Children.Add(capturedImage);
+            else
+                WhiteCaptures.Children.Add(capturedImage);
+        }
+    }
+    private void RestoreSnapshot(GameSnapshot snapshot)
+    {
+        pieceBoard = (ChessBoard)snapshot.Board.Clone();
+        acctiveTurn = snapshot.ActiveTurn;
+
+        _previousMove = snapshot.PreviousMove is null
+            ? null
+            : new MoveInfo(snapshot.PreviousMove);
+
+        _capturedPieces.Clear();
+
+        foreach (Piece piece in snapshot.CapturedPieces)
+            _capturedPieces.Add((Piece)piece.Clone());
+
+        WhitePromotionOverlay.Visibility = Visibility.Collapsed;
+        BlackPromotionOverlay.Visibility = Visibility.Collapsed;
+
+        boardEnteredImage = null;
+        _moveInfo = null;
+
+        MoveShower.Content = acctiveTurn.ToString();
+
+        RenderBoard(pieceBoard);
+        RenderCapturedPieces();
     }
 
     private Image CreatePieceImage(Piece piece)
@@ -162,9 +250,13 @@ public partial class MainWindow : Window
         MoveInfo moveInfo = new MoveInfo
             (enteredPiece, imgPosition);
 
+        GameSnapshot snapshotBeforeMove = CreateSnapshot();
+        ChessBoard boardBeforeMove = pieceBoard;
+
         MoveResult moveDetails = MakeMove(pieceBoard, moveInfo);
         pieceBoard = moveDetails.Board;
         currentMoveType = moveDetails.MoveType;
+
         BoardStateUpdate(moveDetails);
         MoveUIUpdate(img, moveInfo, currentMoveType);
 
@@ -174,11 +266,20 @@ public partial class MainWindow : Window
 
         if (currentMoveType != MoveType.InvalidMove)
         {
-            _previousMove = new MoveInfo(moveInfo);
+            Piece? capturedPiece = GetCapturedPiece(
+                boardBeforeMove,
+                moveInfo,
+                currentMoveType);
 
-            moveDetails.Turn = acctiveTurn;
-            boardPrevious.Push(moveDetails);
+            if (capturedPiece is not null)
+                _capturedPieces.Add((Piece)capturedPiece.Clone());
+
+            _previousSnapshots.Push(snapshotBeforeMove);
+            _nextSnapshots.Clear();
+
+            _previousMove = new MoveInfo(moveInfo);
         }
+
         Mouse.Capture(null);
         StackPanel.SetZIndex(img, 0);
 
@@ -277,13 +378,14 @@ public partial class MainWindow : Window
     }
     private void PreviousClick(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("IN PROCESS");
-        /*if (boardPrevious.Count == 0) return;
-        currentMove = boardPrevious.Pop();
-        MoveResult temp = boardPrevious.Pop();
-        boardNext.Push(temp);
-        pieceBoard = temp.Board;
-        acctiveTurn = temp.Turn;*/
+        if (_previousSnapshots.Count == 0)
+            return;
+
+        GameSnapshot currentSnapshot = CreateSnapshot();
+        _nextSnapshots.Push(currentSnapshot);
+
+        GameSnapshot previousSnapshot = _previousSnapshots.Pop();
+        RestoreSnapshot(previousSnapshot);
     }
     private void NewGameClick(object sender, RoutedEventArgs e)
     {
@@ -540,8 +642,9 @@ public partial class MainWindow : Window
         _moveInfo = null;
         boardEnteredImage = null;
 
-        boardPrevious.Clear();
-        boardNext.Clear();
+        _previousSnapshots.Clear();
+        _nextSnapshots.Clear();
+        _capturedPieces.Clear();
 
         WhiteCaptures.Children.Clear();
         BlackCaptures.Children.Clear();
@@ -826,6 +929,20 @@ public partial class MainWindow : Window
         // Իսկ փոխակերպման կանոնը կատարվում է Library-ում։
         Game.PromotePawn(pieceBoard, target, promotionType.Value);
     }
+
+    private void Button_Click(object sender, RoutedEventArgs e)
+    {
+        if (_nextSnapshots.Count == 0)
+            return;
+
+        GameSnapshot currentSnapshot = CreateSnapshot();
+        _previousSnapshots.Push(currentSnapshot);
+
+        GameSnapshot nextSnapshot = _nextSnapshots.Pop();
+        RestoreSnapshot(nextSnapshot);
+
+    }
+
     /// <summary>
     /// Կատարում է pawn promotion-ի լոգիկան՝ փոխարինելով pawn-ը ընտրված ֆիգուրով
     /// և թարմացնելով խաղատախտակի վիճակը
