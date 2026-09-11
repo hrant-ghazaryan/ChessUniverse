@@ -209,4 +209,101 @@ public class ChessRulesTest
         Assert.Equal(new PiecePosition(7, 2), whiteKing.Position);
         Assert.Equal(new PiecePosition(7, 3), whiteRook.Position);
     }
+
+    [Fact]
+    public void PromotePawn_ReplacesWhitePawnWithQueen_OnLastRank()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[0, 0] = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(0, 0)
+        };
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4)
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool promoted = Game.PromotePawn(
+            board,
+            new PiecePosition(0, 0),
+            PieceType.Queen);
+
+        Piece? promotedPiece = board[0, 0];
+
+        Assert.True(promoted);
+        Assert.NotNull(promotedPiece);
+        Assert.IsType<Queen>(promotedPiece);
+        Assert.Equal(PieceColor.White, promotedPiece.Color);
+        Assert.Equal(new PiecePosition(0, 0), promotedPiece.Position);
+        Assert.True(promotedPiece.HasMoved);
+    }
+
+    [Fact]
+    public void PromotePawn_ReplacesBlackPawnWithKnight_OnLastRank()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[7, 7] = new Pawn(PieceColor.Black)
+        {
+            Position = new PiecePosition(7, 7)
+        };
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4)
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool promoted = Game.PromotePawn(
+            board,
+            new PiecePosition(7, 7),
+            PieceType.Knight);
+
+        Piece? promotedPiece = board[7, 7];
+
+        Assert.True(promoted);
+        Assert.NotNull(promotedPiece);
+        Assert.IsType<Knight>(promotedPiece);
+        Assert.Equal(PieceColor.Black, promotedPiece.Color);
+        Assert.Equal(new PiecePosition(7, 7), promotedPiece.Position);
+        Assert.True(promotedPiece.HasMoved);
+    }
+
+    [Fact]
+    public void PromotePawn_ReturnsFalse_WhenPawnIsNotOnLastRank()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Pawn whitePawn = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(3, 3)
+        };
+
+        pieces[3, 3] = whitePawn;
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool promoted = Game.PromotePawn(
+            board,
+            new PiecePosition(3, 3),
+            PieceType.Queen);
+
+        Assert.False(promoted);
+        Assert.Same(whitePawn, board[3, 3]);
+    }
 }

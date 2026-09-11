@@ -630,7 +630,8 @@ public partial class MainWindow : Window
     /// <returns>
     /// Թարմացված պատկերը, որը պետք է արտացոլվի UI-ում
     /// </returns>
-    public void PawnPromotionMove(string? tagSelectedImage)
+    // My
+    /*public void PawnPromotionMove(string? tagSelectedImage)
     {
         if (boardEnteredImage is null || _moveInfo is null)
             return;
@@ -650,6 +651,32 @@ public partial class MainWindow : Window
         };
 
         PawnPromotionMove(pieceBoard, _moveInfo, newPiece);
+    }*/
+    public void PawnPromotionMove(string? tagSelectedImage)
+    {
+        if (_moveInfo is null || _moveInfo.Target is null)
+            return;
+
+        MoveInfo moveInfo = _moveInfo;
+        PiecePosition target = moveInfo.Target;
+
+        PieceType? promotionType = tagSelectedImage switch
+        {
+            "Queen" => PieceType.Queen,
+            "Rook" => PieceType.Rook,
+            "Knight" => PieceType.Knight,
+            "Bishop" => PieceType.Bishop,
+            _ => null
+        };
+
+        if (promotionType is null)
+            return;
+
+        // Զինվորը նախ տեղափոխվում է վերջին շարք։
+        Game.RegularMove(pieceBoard, moveInfo);
+
+        // Իսկ փոխակերպման կանոնը կատարվում է Library-ում։
+        Game.PromotePawn(pieceBoard, target, promotionType.Value);
     }
     /// <summary>
     /// Կատարում է pawn promotion-ի լոգիկան՝ փոխարինելով pawn-ը ընտրված ֆիգուրով
@@ -658,7 +685,8 @@ public partial class MainWindow : Window
     /// <param name="board">Խաղատախտակը, որի վրա կատարվում է փոփոխությունը</param>
     /// <param name="moveInfo">Քայլի սկզբնական և վերջնական դիրքերը</param>
     /// <param name="selectedPiece">Նոր ֆիգուրը, որով փոխարինվում է pawn-ը</param>
-    public void PawnPromotionMove(ChessBoard board, MoveInfo moveInfo, Piece? selectedPiece)
+    // My
+    /*public void PawnPromotionMove(ChessBoard board, MoveInfo moveInfo, Piece? selectedPiece)
     {
         if (selectedPiece is null)
             return;
@@ -672,7 +700,7 @@ public partial class MainWindow : Window
         piece?.HasMoved = true;
         board[moveInfo.Start] = null;
         selectedPiece?.Position = moveInfo.Target;
-    }
+    }*/
     #endregion
 
     public void BoardLocParsal(ChessBoard boardPiece)
