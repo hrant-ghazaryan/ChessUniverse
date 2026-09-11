@@ -12,6 +12,9 @@ public class Pawn : Piece
      => base.GetSymbol(color);
     public override bool CanMove(ChessBoard chessBoard, PiecePosition target)
     {
+        if (target is null)
+            return false;
+
         if (chessBoard[target]?.Color == chessBoard[Position]?.Color)
             return false;
 
@@ -20,21 +23,29 @@ public class Pawn : Piece
             if (Position.Row - target.Row == 1 && Math.Abs(Position.Col - target.Col) == 1
                 && chessBoard[target] != null)
                 return true;
-            if (Position.Row - target?.Row == 1 && Position.Col == target?.Col && chessBoard[target] == null)
+            if (Position.Row - target.Row == 1 && Position.Col == target.Col && chessBoard[target] == null)
                 return true;
-            else if (Position.Row == 6 && Position.Row - target?.Row == 2 &&  Position.Col == target?.Col 
-                && chessBoard[5,Position.Col] is null && chessBoard[4, Position.Col] is null)
+            else if (Position.Row == 6 &&
+                    !HasMoved &&
+                    Position.Row - target.Row == 2 &&
+                    Position.Col == target.Col &&
+                    chessBoard[5, Position.Col] is null &&
+                    chessBoard[4, Position.Col] is null)
                 return true;
         }
         if (Color == PieceColor.Black)
         {
-            if (target!.Row - Position.Row == 1 && Math.Abs(target!.Col - Position.Col) == 1
+            if (target.Row - Position.Row == 1 && Math.Abs(target.Col - Position.Col) == 1
                 && chessBoard[target] != null)
                 return true;
-            if (target?.Row - Position.Row == 1 && Position.Col == target?.Col && chessBoard[target] == null)
+            if (target.Row - Position.Row == 1 && Position.Col == target.Col && chessBoard[target] == null)
                 return true;
-            else if (Position.Row == 1 && target?.Row - Position.Row == 2 && Position.Col == target?.Col
-                && chessBoard[2,Position.Col] is null && chessBoard[3, Position.Col] is null)
+            else if (Position.Row == 1 &&
+                    !HasMoved &&
+                    target.Row - Position.Row == 2 &&
+                    Position.Col == target.Col &&
+                    chessBoard[2, Position.Col] is null &&
+                    chessBoard[3, Position.Col] is null)
                 return true;
         }
         return false;

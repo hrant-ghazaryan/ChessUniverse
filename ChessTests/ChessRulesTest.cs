@@ -539,4 +539,104 @@ public class ChessRulesTest
         Assert.Null(result[7, 6]);
         Assert.False(whiteKing.HasMoved);
     }
+
+    [Fact]
+    public void MoveInfoCopy_CreatesIndependentStartAndTargetPositions()
+    {
+        MoveInfo original = new MoveInfo(
+            new PiecePosition(6, 4), // e2
+            new PiecePosition(4, 4), // e4
+            PieceColor.White);
+
+        MoveInfo copy = new MoveInfo(original);
+
+        original.Start!.Row = 5;
+        original.Target!.Col = 3;
+
+        Assert.Equal(new PiecePosition(6, 4), copy.Start);
+        Assert.Equal(new PiecePosition(4, 4), copy.Target);
+
+        Assert.NotSame(original.Start, copy.Start);
+        Assert.NotSame(original.Target, copy.Target);
+
+        Assert.Equal(PieceColor.White, copy.Turn);
+    }
+
+    [Fact]
+    public void Pawn_CannotMoveTwoSquares_WhenItHasMovedBefore()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Pawn whitePawn = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(6, 4), // e2
+            HasMoved = true
+        };
+
+        pieces[6, 4] = whitePawn;
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool canMoveTwoSquares = whitePawn.CanMove(
+            board,
+            new PiecePosition(4, 4)); // e4
+
+        Assert.False(canMoveTwoSquares);
+    }
+
+    [Fact]
+    public void Pawn_CannotMoveTwoSquares_WhenBlackPawnHasMovedBefore()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Pawn blackPawn = new Pawn(PieceColor.Black)
+        {
+            Position = new PiecePosition(1, 4), // e7
+            HasMoved = true
+        };
+
+        pieces[1, 4] = blackPawn;
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool canMoveTwoSquares = blackPawn.CanMove(
+            board,
+            new PiecePosition(3, 4)); // e5
+
+        Assert.False(canMoveTwoSquares);
+    }
+
+    [Fact]
+    public void WhitePawn_CannotMoveBackward()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Pawn pawn = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(4, 4)
+        };
+
+        pieces[4, 4] = pawn;
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        Assert.False(pawn.CanMove(board, new PiecePosition(5, 4)));
+    }
+
+    [Fact]
+    public void BlackPawn_CannotMoveBackward()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        Pawn pawn = new Pawn(PieceColor.Black)
+        {
+            Position = new PiecePosition(3, 3)
+        };
+
+        pieces[3, 3] = pawn;
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        Assert.False(pawn.CanMove(board, new PiecePosition(2, 3)));
+    }
 }
