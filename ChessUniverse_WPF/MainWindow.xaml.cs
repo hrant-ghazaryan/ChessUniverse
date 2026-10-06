@@ -22,38 +22,14 @@ public partial class MainWindow : Window
 
     private bool audioPlayed;
 
-    ChessBoard pieceBoard = new ChessBoard();
     private Image? boardEnteredImage;
-    private PieceColor acctiveTurn;
     private MoveInfo? _moveInfo;
-    private MoveInfo? _previousMove;
 
-    private readonly Stack<GameSnapshot> _previousSnapshots = new();
-    private readonly Stack<GameSnapshot> _nextSnapshots = new();
+    private readonly ChessGame _game = new();
 
-    private readonly List<Piece> _capturedPieces = new();
-
-    private GameSnapshot CreateSnapshot()
-    {
-        return new GameSnapshot(
-            pieceBoard,
-            acctiveTurn,
-            _previousMove,
-            _capturedPieces);
-    }
-    private static Piece? GetCapturedPiece(
-        ChessBoard board,
-        MoveInfo moveInfo,
-        MoveType moveType)
-    {
-        if (moveInfo.Start is null || moveInfo.Target is null)
-            return null;
-
-        if (moveType == MoveType.EnPassant)
-            return board[moveInfo.Start.Row, moveInfo.Target.Col];
-
-        return board[moveInfo.Target];
-    }
+    private ChessBoard pieceBoard => _game.Board;
+    private PieceColor acctiveTurn => _game.ActiveTurn;
+    private MoveInfo? _previousMove => _game.PreviousMove;
 
     private static string GetSoundPath(string fileName)
         => Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
@@ -77,7 +53,7 @@ public partial class MainWindow : Window
         WhiteCaptures.Children.Clear();
         BlackCaptures.Children.Clear();
 
-        foreach (Piece piece in _capturedPieces)
+        foreach (Piece piece in _game.CapturedPieces)
         {
             string color = piece.Color == PieceColor.White ? "white" : "black";
 
@@ -111,35 +87,10 @@ public partial class MainWindow : Window
                 WhiteCaptures.Children.Add(capturedImage);
         }
     }
-    private void RestoreSnapshot(GameSnapshot snapshot)
-    {
-        pieceBoard = (ChessBoard)snapshot.Board.Clone();
-        acctiveTurn = snapshot.ActiveTurn;
-
-        _previousMove = snapshot.PreviousMove is null
-            ? null
-            : new MoveInfo(snapshot.PreviousMove);
-
-        _capturedPieces.Clear();
-
-        foreach (Piece piece in snapshot.CapturedPieces)
-            _capturedPieces.Add((Piece)piece.Clone());
-
-        WhitePromotionOverlay.Visibility = Visibility.Collapsed;
-        BlackPromotionOverlay.Visibility = Visibility.Collapsed;
-
-        boardEnteredImage = null;
-        _moveInfo = null;
-
-        MoveShower.Content = acctiveTurn.ToString();
-
-        RenderBoard(pieceBoard);
-        RenderCapturedPieces();
-    }
     private void UpdateHistoryButtons()
     {
-        Previous.IsEnabled = _previousSnapshots.Count > 0;
-        Next.IsEnabled = _nextSnapshots.Count > 0;
+        Previous.IsEnabled = _game.CanUndo;
+        Next.IsEnabled = _game.CanRedo;
     }
     private Image CreatePieceImage(Piece piece)
     {
@@ -197,7 +148,7 @@ public partial class MainWindow : Window
         SoundManager.Load("invalidMove", GetSoundPath("illegal.mp3"));
         SoundManager.Load("check", GetSoundPath("move-check.mp3"));
         SoundManager.Load("checkMate", GetSoundPath("game-end.mp3"));
-        //this.ResizeMode = ResizeMode.CanMinimize;
+        this.ResizeMode = ResizeMode.CanMinimize;
     }
 
     #region EVENTS
@@ -253,35 +204,27 @@ public partial class MainWindow : Window
         MoveInfo moveInfo = new MoveInfo
             (enteredPiece, imgPosition);
 
-        GameSnapshot snapshotBeforeMove = CreateSnapshot();
-        ChessBoard boardBeforeMove = pieceBoard;
-
-        MoveResult moveDetails = MakeMove(pieceBoard, moveInfo);
-        pieceBoard = moveDetails.Board;
+        MoveResult moveDetails = _game.TryMove(moveInfo);
         currentMoveType = moveDetails.MoveType;
 
-        BoardStateUpdate(moveDetails);
-        MoveUIUpdate(img, moveInfo, currentMoveType);
-
-        if (currentMoveType != MoveType.InvalidMove &&
-            currentMoveType != MoveType.PawnPromotion)
-            RenderBoard(pieceBoard);
-
-        if (currentMoveType != MoveType.InvalidMove)
+        if (currentMoveType == MoveType.PawnPromotion)
         {
-            Piece? capturedPiece = GetCapturedPiece(
-                boardBeforeMove,
-                moveInfo,
-                currentMoveType);
 
-            if (capturedPiece is not null)
-                _capturedPieces.Add((Piece)capturedPiece.Clone());
+            ShowPromotionOverlay(img, moveInfo);
+            MoveUIUpdate(img, moveInfo, currentMoveType);
+        }
+        else
+        {
+            BoardStateUpdate(moveDetails);
+            MoveUIUpdate(img, moveInfo, currentMoveType);
 
-            _previousSnapshots.Push(snapshotBeforeMove);
-            _nextSnapshots.Clear();
-            UpdateHistoryButtons();
+            if (currentMoveType != MoveType.InvalidMove)
+            {
+                UpdateHistoryButtons();
 
-            _previousMove = new MoveInfo(moveInfo);
+                RenderBoard(pieceBoard);
+                RenderCapturedPieces();
+            }
         }
 
         Mouse.Capture(null);
@@ -291,108 +234,57 @@ public partial class MainWindow : Window
     }
     private void PromotionClick(object sender, EventArgs e)
     {
-        if (sender is not Image selectedImg || _moveInfo is null
-            || boardEnteredImage is null)
+        if (sender is not Image selectedImg)
             return;
 
-        Image promotionImage = boardEnteredImage;
-        MoveInfo promotionMove = _moveInfo;
+        string? tag = selectedImg.Tag?.ToString();
 
-        string? tag = selectedImg.Tag.ToString();
-        string? name = selectedImg.Name.ToString();
-        string color = name[0] == 'w' ? "white" : "black";
-
-        var (file, width, height) = tag switch
+        PieceType? promotionType = tag switch
         {
-            "Knight" => ("horse", 50, 50),
-            "Bishop" => ("elephant", 43, 50),
-            "Rook" => ("ship", 45, 50),
-            "Queen" => ("queen", 50, 42),
-            _ => (null, 0, 0)
+            "Queen" => PieceType.Queen,
+            "Rook" => PieceType.Rook,
+            "Bishop" => PieceType.Bishop,
+            "Knight" => PieceType.Knight,
+            _ => null
         };
 
-        if (file is not null)
-        {
-            boardEnteredImage.Source = new BitmapImage(
-                new Uri($"/images/figures/{color}-{file}.png", UriKind.Relative));
+        if (promotionType is null)
+            return;
 
-            boardEnteredImage.Width = width;
-            boardEnteredImage.Height = height;
-        }
-        /*switch (tag, name[0])
-        {
-            case ("Knight", 'w'):
-                boardEnteredImage.Source = new BitmapImage(
-                    new Uri($"/images/figures/white-horse.png", UriKind.Relative));
-                boardEnteredImage.Width = 50;
-                boardEnteredImage.Height = 50;
-                break;
-            case ("Bishop", 'w'):
-                boardEnteredImage.Source = new BitmapImage(
-                    new Uri($"/images/figures/white-elephant.png", UriKind.Relative));
-                boardEnteredImage.Width = 43;
-                boardEnteredImage.Height = 50;
-                break;
-            case ("Rook", 'w'):
-                boardEnteredImage.Source = new BitmapImage(
-                    new Uri($"/images/figures/white-ship.png", UriKind.Relative));
-                boardEnteredImage.Width = 45;
-                boardEnteredImage.Height = 50;
-                break;
-            case ("Queen", 'w'):
-                boardEnteredImage.Source = new BitmapImage(
-                    new Uri($"/images/figures/white-queen.png", UriKind.Relative));
-                boardEnteredImage.Width = 50;
-                boardEnteredImage.Height = 42;
-                break;
-            case ("Knight", 'b'):
-                boardEnteredImage.Source = new BitmapImage(
-                    new Uri($"/images/figures/black-horse.png", UriKind.Relative));
-                boardEnteredImage.Width = 50;
-                boardEnteredImage.Height = 50;
-                break;
-            case ("Bishop", 'b'):
-                boardEnteredImage.Source = new BitmapImage(
-                    new Uri($"/images/figures/black-elephant.png", UriKind.Relative));
-                boardEnteredImage.Width = 43;
-                boardEnteredImage.Height = 50;
-                break;
-            case ("Rook", 'b'):
-                boardEnteredImage.Source = new BitmapImage(
-                    new Uri($"/images/figures/black-ship.png", UriKind.Relative));
-                boardEnteredImage.Width = 45;
-                boardEnteredImage.Height = 50;
-                break;
-            case ("Queen", 'b'):
-                boardEnteredImage.Source = new BitmapImage(
-                    new Uri($"/images/figures/black-queen.png", UriKind.Relative));
-                boardEnteredImage.Width = 50;
-                boardEnteredImage.Height = 42;
-                break;
-        }*/
-        PawnPromotionMove(tag);
-        MoveUIUpdate(promotionImage, promotionMove, MoveType.RegularMove);
-        RenderBoard(pieceBoard);
+        MoveResult result = _game.PromotePawn(promotionType.Value);
 
-        if (ChessRules.IsChecked(pieceBoard))
-            MessageBox.Show("Check!");
+        if (result.MoveType == MoveType.InvalidMove)
+            return;
+
+        _moveInfo = null;
+        boardEnteredImage = null;
 
         WhitePromotionOverlay.Visibility = Visibility.Collapsed;
         BlackPromotionOverlay.Visibility = Visibility.Collapsed;
+
+        RenderBoard(pieceBoard);
+        RenderCapturedPieces();
+
+        MoveShower.Content = acctiveTurn.ToString();
+
+        BoardStateUpdate(result);
+        UpdateHistoryButtons();
     }
     private void PreviousClick(object sender, RoutedEventArgs e)
     {
-        if (_previousSnapshots.Count == 0)
+        if (!_game.Undo())
             return;
 
-        GameSnapshot currentSnapshot = CreateSnapshot();
-        _nextSnapshots.Push(currentSnapshot);
-
-        GameSnapshot previousSnapshot = _previousSnapshots.Pop();
-        RestoreSnapshot(previousSnapshot);
-
+        RefreshGameUI();
         SoundManager.Play("move");
-        UpdateHistoryButtons();
+    }
+    private void NextClick(object sender, RoutedEventArgs e)
+    {
+        if (!_game.Redo())
+            return;
+
+        RefreshGameUI();
+        SoundManager.Play("move");
     }
     private void NewGameClick(object sender, RoutedEventArgs e)
     {
@@ -639,19 +531,27 @@ public partial class MainWindow : Window
                 break;
         }
     }
+    private void RefreshGameUI()
+    {
+        WhitePromotionOverlay.Visibility = Visibility.Collapsed;
+        BlackPromotionOverlay.Visibility = Visibility.Collapsed;
+
+        boardEnteredImage = null;
+        _moveInfo = null;
+
+        MoveShower.Content = acctiveTurn.ToString();
+
+        RenderBoard(pieceBoard);
+        RenderCapturedPieces();
+
+        UpdateHistoryButtons();
+    }
     private void StartNewGame()
     {
-        pieceBoard = new ChessBoard();
-        pieceBoard.SetStartPosition();
+        _game.StartNewGame();
 
-        acctiveTurn = PieceColor.White;
-        _previousMove = null;
         _moveInfo = null;
         boardEnteredImage = null;
-
-        _previousSnapshots.Clear();
-        _nextSnapshots.Clear();
-        _capturedPieces.Clear();
 
         WhiteCaptures.Children.Clear();
         BlackCaptures.Children.Clear();
@@ -662,211 +562,12 @@ public partial class MainWindow : Window
         MoveShower.Content = acctiveTurn.ToString();
 
         RenderBoard(pieceBoard);
+
         UpdateHistoryButtons();
-    }
-
-    #endregion
-
-    #region MOVE_LOGIC
-    /// <summary>
-    ///  Ստուգում է արդյոք քայլը վավեր է տվյալ ֆիգուրի համար
-    /// </summary>
-    /// <param name="pieceBoard">Խաղատախտակի ընթացիկ վիճակը</param>
-    /// <param name="moveInfo">Քայլի սկզբնական և վերջնական դիրքերը</param>
-    /// <returns> true, եթե քայլը թույլատրելի է, հակառակ դեպքում false</returns>
-    private bool IsMovePossible(ChessBoard pieceBoard, MoveInfo moveInfo)
-    {
-        if (moveInfo is null) return false;
-        if (moveInfo.Start is null) return false;
-        if (moveInfo.Target is null) return false;
-
-        bool samePosition = 
-            moveInfo.Target.Row == moveInfo.Start.Row && 
-            moveInfo?.Target.Col == moveInfo!.Start.Col;
-
-        Piece? currentPiece = pieceBoard[moveInfo.Start];
-        Piece? targetPiece = pieceBoard[moveInfo.Target];
-
-        if (targetPiece?.Type == PieceType.King)
-            return false;
-
-        return currentPiece is not null && !samePosition &&
-            currentPiece!.CanMove(pieceBoard, moveInfo.Target);
-    }
-    /// <summary>
-    /// Փորձում է կատարել տրված քայլը՝ վավերացնելով այն և վերադարձնելով արդյունքը
-    /// (առանց UI ազդեցության)
-    /// </summary>
-    /// <param name="board">Խաղատախտակի ընթացիկ վիճակը</param>
-    /// <param name="moveInfo">Քայլի սկզբնական և վերջնական դիրքերը</param>
-    /// <returns>
-    /// MoveResult, որը պարունակում է նոր խաղատախտակը և քայլի տեսակը
-    /// (RegularMove, Castling, PawnPromotion կամ InvalidMove)
-    /// </returns>
-    public MoveResult MakeMove(ChessBoard board, MoveInfo moveInfo)
-    {
-        if (moveInfo is null) return new MoveResult(board, MoveType.InvalidMove);
-        if (moveInfo.Start is null) return new MoveResult(board, MoveType.InvalidMove);
-        if (moveInfo.Target is null) return new MoveResult(board, MoveType.InvalidMove);
-
-        MoveType currentMoveType;
-        if (acctiveTurn != board[moveInfo.Start]?.Color)
-            return new MoveResult(board, MoveType.InvalidMove);
-
-        bool checkStartState = false;
-        bool checkTargetState = false;
-
-        PieceColor passiveTurn;
-        if (acctiveTurn == PieceColor.White)
-            passiveTurn = PieceColor.Black;
-        else
-            passiveTurn = PieceColor.White;
-
-        PiecePosition? acctiveKing = ChessBoard.GetKingPosition(board, acctiveTurn);
-        checkStartState = ChessRules.IsChecked(board, acctiveKing, acctiveTurn);
-
-        ChessBoard cloneBoard = (ChessBoard)board.Clone();
-
-        if (_previousMove is not null &&
-            ChessRules.TryEnPassant(cloneBoard, moveInfo, _previousMove))
-        {
-            currentMoveType = MoveType.EnPassant;
-        }
-        else
-        {
-            if (!IsMovePossible(board, moveInfo))
-                return new MoveResult(board, MoveType.InvalidMove);
-
-            if (IsPawnPromotion(cloneBoard, moveInfo))
-            {
-                ShowPromotionOverlay(boardEnteredImage, moveInfo);
-                currentMoveType = MoveType.PawnPromotion;
-            }
-            else if (CastlingRules.IsCastlingLeftPossible(cloneBoard, moveInfo))
-            {
-                cloneBoard = Game.Castling(cloneBoard, moveInfo);
-                currentMoveType = MoveType.LeftCastling;
-            }
-            else if (CastlingRules.IsCastlingRightPossible(cloneBoard, moveInfo))
-            {
-                cloneBoard = Game.Castling(cloneBoard, moveInfo);
-                currentMoveType = MoveType.RightCastling;
-            }
-            else
-            {
-                Game.RegularMove(cloneBoard, moveInfo);
-                currentMoveType = MoveType.RegularMove;
-            }
-        }
-
-        acctiveKing = ChessBoard.GetKingPosition(cloneBoard, acctiveTurn);
-        checkTargetState = ChessRules.IsChecked(cloneBoard, acctiveKing, acctiveTurn);
-
-        if (checkStartState && checkTargetState)
-            return new MoveResult(board, MoveType.InvalidMove, BoardState.InvalidMove);
-        else if (!checkStartState && checkTargetState)
-            return new MoveResult(board, MoveType.InvalidMove, BoardState.InvalidMove);
-
-        PiecePosition? passiveKing = ChessBoard.GetKingPosition(cloneBoard, passiveTurn);
-
-        if (ChessRules.IsChecked(cloneBoard, passiveKing, passiveTurn))
-        {
-            if (ChessRules.IsCheckmate(cloneBoard, passiveTurn))
-                return new MoveResult(cloneBoard, currentMoveType, BoardState.CheckMate);
-            acctiveTurn = MoveChanger(acctiveTurn);
-            return new MoveResult(cloneBoard, currentMoveType, BoardState.Check);
-        }
-
-        if (ChessRules.IsStaleMate(cloneBoard, passiveTurn))
-            return new MoveResult(cloneBoard, currentMoveType, BoardState.StaleMate);
-
-        acctiveTurn = MoveChanger(acctiveTurn);
-        return new MoveResult(cloneBoard, currentMoveType, BoardState.Ongoing);
-    }
-    /// <summary>
-    /// Փոխում է հերթը՝ վերադարձնելով հակառակ գույնի խաղացողին
-    /// </summary>
-    /// <param name="acctiveTurn">Ներկայիս խաղացողի գույնը</param>
-    /// <returns>
-    /// Հակառակ գույնը (եթե White է՝ կվերադարձնի Black, և հակառակը)
-    /// </returns>
-    /// <summary>
-    /// Ստուգում է արդյոք տրված գույնի խաղացողը գտնվում է մատի (checkmate) մեջ՝
-    /// փորձելով նրա բոլոր հնարավոր քայլերը և ստուգելով,
-    /// արդյոք կա գոնե մեկ քայլ, որի արդյունքում թագավորը դուրս է գալիս շախից
-    /// </summary>
-    /// <param name="board">Խաղատախտակի ընթացիկ վիճակը</param>
-    /// <param name="color">Խաղացողի գույնը, որի համար կատարվում է ստուգումը</param>
-    /// <returns>
-    /// true՝ եթե մատ է (ոչ մի թույլատրելի քայլ չի փրկում շախից),
-    /// false՝ եթե կա գոնե մեկ անվտանգ քայլ
-    /// </returns>
-    PieceColor MoveChanger(PieceColor acctiveTurn)
-        => acctiveTurn is PieceColor.White
-        ? PieceColor.Black
-        : PieceColor.White;
-    public static bool IsCheckMate(ChessBoard board, PieceColor color)
-    {
-        var kingBoard = ChessBoard.GetKingPosition(board, color);
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                var piece = board[i, j];
-                if (piece is null || piece.Color != color)
-                    continue;
-
-                List<PiecePosition> moves = piece.GetPossibleMoves(board).Item1;
-
-                foreach (var move in moves)
-                {
-                    var cloneBoard = (ChessBoard)board.Clone();
-
-                    cloneBoard[move] = piece;
-                    cloneBoard[move]!.Position = move;
-                    cloneBoard[i, j] = null;
-
-                    var kingAfter = ChessBoard.GetKingPosition(cloneBoard, color);
-
-                    if (!ChessRules.IsChecked(cloneBoard, kingAfter, color))
-                    {
-                        cloneBoard[i, j] = piece;
-                        cloneBoard[i, j]!.Position = new PiecePosition(i, j);
-                        cloneBoard[move] = null;
-                        cloneBoard = (ChessBoard)board.Clone();
-                        return false;
-                    }
-                    cloneBoard[i, j] = piece;
-                    cloneBoard[i, j]!.Position = new PiecePosition(i, j);
-                    cloneBoard[move] = null;
-                }
-            }
-        }
-
-        return true;
     }
     #endregion
 
     #region PawnPromotion
-    /// <summary>
-    /// Ստուգում է արդյոք տվյալ քայլով pawn-ը հասնում է վերջին հորիզոնականին և պետք է փոխակերպվի
-    /// </summary>
-    /// <param name="board">Խաղատախտակի ընթացիկ վիճակը</param>
-    /// <param name="moveInfo">Քայլի սկզբնական և վերջնական դիրքերը</param>
-    /// <returns>
-    /// true, եթե զինվորը հասնում է վերջին տողին (0 կամ 7), հակառակ դեպքում false
-    /// </returns>
-    public static bool IsPawnPromotion(ChessBoard board, MoveInfo moveInfo)
-    {
-        if (moveInfo.Start is null) return false;
-        if (moveInfo.Target is null) return false;
-        if (board[moveInfo.Start] is null) return false;
-
-        Piece? piece = board[moveInfo.Start];
-
-        return piece?.Type == PieceType.Pawn &&
-            (moveInfo?.Target.Row == 7 || moveInfo?.Target.Row == 0);
-    }
     /// <summary>
     /// Ստուգում է pawn promotion-ի պայմանը և ցուցադրում համապատասխան ընտրության overlay-ը
     /// (սպիտակ կամ սև), պահպանելով քայլի տվյալները հետագա օգտագործման համար
@@ -888,151 +589,5 @@ public partial class MainWindow : Window
         boardEnteredImage = img;
         _moveInfo = moveInfo;
     }
-    /// <summary>
-    /// Ստեղծում է նոր ֆիգուր՝ ըստ օգտատիրոջ ընտրության (Queen, Rook, Bishop, Knight)
-    /// և կիրառում է pawn promotion-ը խաղատախտակի վրա
-    /// </summary>
-    /// <param name="tagSelectedImage">Ընտրված ֆիգուրի տեսակը (Tag-ից)</param>
-    /// <returns>
-    /// Թարմացված պատկերը, որը պետք է արտացոլվի UI-ում
-    /// </returns>
-    // My
-    /*public void PawnPromotionMove(string? tagSelectedImage)
-    {
-        if (boardEnteredImage is null || _moveInfo is null)
-            return;
-
-        string name = boardEnteredImage.Name.ToString();
-        PieceColor newColor = PieceColor.White;
-        if (name[0] == 'b')
-            newColor = PieceColor.Black;
-
-        Piece? newPiece = tagSelectedImage switch
-        {
-            "Queen" => new Queen(newColor),
-            "Rook" => new Rook(newColor),
-            "Knight" => new Knight(newColor),
-            "Bishop" => new Bishop(newColor),
-            _ => null
-        };
-
-        PawnPromotionMove(pieceBoard, _moveInfo, newPiece);
-    }*/
-    public void PawnPromotionMove(string? tagSelectedImage)
-    {
-        if (_moveInfo is null || _moveInfo.Target is null)
-            return;
-
-        MoveInfo moveInfo = _moveInfo;
-        PiecePosition target = moveInfo.Target;
-
-        PieceType? promotionType = tagSelectedImage switch
-        {
-            "Queen" => PieceType.Queen,
-            "Rook" => PieceType.Rook,
-            "Knight" => PieceType.Knight,
-            "Bishop" => PieceType.Bishop,
-            _ => null
-        };
-
-        if (promotionType is null)
-            return;
-
-        // Զինվորը նախ տեղափոխվում է վերջին շարք։
-        Game.RegularMove(pieceBoard, moveInfo);
-
-        // Իսկ փոխակերպման կանոնը կատարվում է Library-ում։
-        Game.PromotePawn(pieceBoard, target, promotionType.Value);
-    }
-    private void NextClick(object sender, RoutedEventArgs e)
-    {
-        if (_nextSnapshots.Count == 0)
-            return;
-
-        GameSnapshot currentSnapshot = CreateSnapshot();
-        _previousSnapshots.Push(currentSnapshot);
-
-        GameSnapshot nextSnapshot = _nextSnapshots.Pop();
-        RestoreSnapshot(nextSnapshot);
-
-        SoundManager.Play("move");
-        UpdateHistoryButtons();
-    }
-
-    /// <summary>
-    /// Կատարում է pawn promotion-ի լոգիկան՝ փոխարինելով pawn-ը ընտրված ֆիգուրով
-    /// և թարմացնելով խաղատախտակի վիճակը
-    /// </summary>
-    /// <param name="board">Խաղատախտակը, որի վրա կատարվում է փոփոխությունը</param>
-    /// <param name="moveInfo">Քայլի սկզբնական և վերջնական դիրքերը</param>
-    /// <param name="selectedPiece">Նոր ֆիգուրը, որով փոխարինվում է pawn-ը</param>
-    // My
-    /*public void PawnPromotionMove(ChessBoard board, MoveInfo moveInfo, Piece? selectedPiece)
-    {
-        if (selectedPiece is null)
-            return;
-
-        if (moveInfo.Start is null || moveInfo.Target is null)
-            return;
-
-        Piece? piece = board[moveInfo.Start];
-        board[moveInfo.Target] = null;
-        board[moveInfo.Target] = selectedPiece;
-        piece?.HasMoved = true;
-        board[moveInfo.Start] = null;
-        selectedPiece?.Position = moveInfo.Target;
-    }*/
     #endregion
-
-    // My
-    /*public void BoardLocParsal(ChessBoard boardPiece)
-    {
-        var images = grid_figure.Children.OfType<Image>().ToList();
-        for (int i = 0; i < images.Count; i++)
-        {
-
-            int cellSize = 57;
-            int centerCol = (int)Math.Round(images[i].Margin.Left + images[i].Width / 2);
-            int centerRow = (int)Math.Round(images[i].Margin.Top + images[i].Height / 2);
-
-            int col = centerCol / cellSize;
-            int row = centerRow / cellSize;
-
-            row = Math.Clamp(row, 0, 7);
-            col = Math.Clamp(col, 0, 7);
-
-            string? imageName = images[i].Name.ToString();
-
-            if (images[i].Tag.ToString() == "rook" && imageName[0] == 'w')
-                boardPiece[row, col] = new Rook(PieceColor.White) { Position = new PiecePosition(row, col) };
-            else if (images[i].Tag.ToString() == "rook" && imageName[0] == 'b')
-                boardPiece[row, col] = new Rook(PieceColor.Black) { Position = new PiecePosition(row, col) };
-
-            if (images[i].Tag.ToString() == "pawn" && imageName[0] == 'w')
-                boardPiece[row, col] = new Pawn(PieceColor.White) { Position = new PiecePosition(row, col) };
-            else if (images[i].Tag.ToString() == "pawn" && imageName[0] == 'b')
-                boardPiece[row, col] = new Pawn(PieceColor.Black) { Position = new PiecePosition(row, col) };
-
-            if (images[i].Tag.ToString() == "bishop" && imageName[0] == 'w')
-                boardPiece[row, col] = new Bishop(PieceColor.White) { Position = new PiecePosition(row, col) };
-            else if (images[i].Tag.ToString() == "bishop" && imageName[0] == 'b')
-                boardPiece[row, col] = new Bishop(PieceColor.Black) { Position = new PiecePosition(row, col) };
-
-            if (images[i].Tag.ToString() == "knight" && imageName[0] == 'w')
-                boardPiece[row, col] = new Knight(PieceColor.White) { Position = new PiecePosition(row, col) };
-            else if (images[i].Tag.ToString() == "knight" && imageName[0] == 'b')
-                boardPiece[row, col] = new Knight(PieceColor.Black) { Position = new PiecePosition(row, col) };
-
-            if (images[i].Tag.ToString() == "queen" && imageName[0] == 'w')
-                boardPiece[row, col] = new Queen(PieceColor.White) { Position = new PiecePosition(row, col) };
-            else if (images[i].Tag.ToString() == "queen" && imageName[0] == 'b')
-                boardPiece[row, col] = new Queen(PieceColor.Black) { Position = new PiecePosition(row, col) };
-
-            if (images[i].Tag.ToString() == "king" && imageName[0] == 'w')
-                boardPiece[row, col] = new King(PieceColor.White) { Position = new PiecePosition(row, col) };
-            else if (images[i].Tag.ToString() == "king" && imageName[0] == 'b')
-                boardPiece[row, col] = new King(PieceColor.Black) { Position = new PiecePosition(row, col) };
-
-        }
-    }*/
 }

@@ -43,7 +43,7 @@
         <WrapPanel Name="BlackCaptures" HorizontalAlignment="Left" Height="80" Margin="757,80,0,0" VerticalAlignment="Top" Width="179"/>
         <WrapPanel Name="WhiteCaptures" HorizontalAlignment="Left" Height="80" Margin="757,538,0,0" VerticalAlignment="Top" Width="179"/>
         <Button Name="Previous" Content="PREVIOUS" HorizontalAlignment="Left" Height="60" Margin="745,450,0,0" VerticalAlignment="Top" Width="119" Click="PreviousClick"/>
-        <Button Name="Next" Content="NEXT" HorizontalAlignment="Left" Height="61" Margin="869,450,0,0" VerticalAlignment="Top" Width="119" Click="Button_Click"/>
+        <Button Name="Next" Content="NEXT" HorizontalAlignment="Left" Height="61" Margin="869,450,0,0" VerticalAlignment="Top" Width="119" Click="NextClick"/>
         <Button Content="NEW GAME"
         Width="119"
         Height="40"

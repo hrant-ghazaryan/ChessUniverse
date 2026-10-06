@@ -6,18 +6,60 @@ namespace ChessTests;
 
 public class ChessRulesTest
 {
-    /*[Theory]
-    [MemberData(nameof(MoveTestCases))]
-    public void MoveValidationTest(PiecePosition? start, PiecePosition? end,
-         PieceColor? T)
+    [Fact]
+    public void TryMove_ClearsRedoHistory_AfterUndo()
     {
-        ChessBoard board = new ChessBoard();
-        board.SetStartPosition();
+        var game = new ChessGame();
 
-        var isValid = ChessRules.MoveValidation(board, start, end, T);
+        game.TryMove(new MoveInfo(
+            new PiecePosition(6, 4),
+            new PiecePosition(4, 4)));
 
-        Assert.True(isValid);
-    }*/
+        game.TryMove(new MoveInfo(
+            new PiecePosition(1, 4),
+            new PiecePosition(3, 4)));
+
+        game.Undo();
+
+        game.TryMove(new MoveInfo(
+            new PiecePosition(1, 3),
+            new PiecePosition(2, 3)));
+
+        Assert.False(game.CanRedo);
+        Assert.IsType<Pawn>(game.Board[2, 3]);
+    }
+    [Fact]
+    public void UndoAndRedo_RestoreBoardAndTurn()
+    {
+        var game = new ChessGame();
+
+        game.TryMove(new MoveInfo(
+            new PiecePosition(6, 4),
+            new PiecePosition(4, 4)));
+
+        game.TryMove(new MoveInfo(
+            new PiecePosition(1, 4),
+            new PiecePosition(3, 4)));
+
+        bool undoSucceeded = game.Undo();
+
+        Assert.True(undoSucceeded);
+        Assert.True(game.CanRedo);
+        Assert.Equal(PieceColor.Black, game.ActiveTurn);
+
+        Assert.IsType<Pawn>(game.Board[4, 4]);
+        Assert.IsType<Pawn>(game.Board[1, 4]);
+        Assert.Null(game.Board[3, 4]);
+
+        bool redoSucceeded = game.Redo();
+
+        Assert.True(redoSucceeded);
+        Assert.Equal(PieceColor.White, game.ActiveTurn);
+
+        Assert.IsType<Pawn>(game.Board[4, 4]);
+        Assert.IsType<Pawn>(game.Board[3, 4]);
+        Assert.Null(game.Board[1, 4]);
+    }
 
     [Fact]
     public void IsCheckedTest()
@@ -718,5 +760,161 @@ public class ChessRulesTest
             PieceColor.White);
 
         Assert.False(isValid);
+    }
+
+    [Fact]
+    public void PromotePawn_AllowsPromotedQueenToGiveCheck()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[0, 1] = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(0, 1) // b8
+        };
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4) // e1
+        };
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4) // e8
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        bool promoted = Game.PromotePawn(
+            board,
+            new PiecePosition(0, 1),
+            PieceType.Queen);
+
+        PiecePosition blackKingPosition = new PiecePosition(0, 4);
+
+        Assert.True(promoted);
+        Assert.IsType<Queen>(board[0, 1]);
+
+        Assert.True(ChessRules.IsChecked(
+            board,
+            blackKingPosition,
+            PieceColor.Black));
+    }
+    [Fact]
+    public void TryMove_MovesWhitePawn_AndChangesTurn()
+    {
+        var game = new ChessGame();
+
+        MoveResult result = game.TryMove(
+            new MoveInfo(
+                new PiecePosition(6, 4),
+                new PiecePosition(4, 4)));
+
+        Assert.Equal(MoveType.RegularMove, result.MoveType);
+        Assert.Equal(BoardState.Ongoing, result.BoardState);
+
+        Assert.Null(game.Board[6, 4]);
+        Assert.IsType<Pawn>(game.Board[4, 4]);
+
+        Assert.Equal(PieceColor.Black, game.ActiveTurn);
+
+        Assert.NotNull(game.PreviousMove);
+        Assert.Equal(new PiecePosition(6, 4), game.PreviousMove.Start);
+        Assert.Equal(new PiecePosition(4, 4), game.PreviousMove.Target);
+    }
+
+    [Fact]
+    public void TryMove_ReturnsInvalidMove_WhenWrongColorMoves()
+    {
+        var game = new ChessGame();
+
+        MoveResult result = game.TryMove(
+            new MoveInfo(
+                new PiecePosition(1, 4),
+                new PiecePosition(3, 4)));
+
+        Assert.Equal(MoveType.InvalidMove, result.MoveType);
+        Assert.Equal(PieceColor.White, game.ActiveTurn);
+
+        Assert.IsType<Pawn>(game.Board[1, 4]);
+        Assert.Null(game.Board[3, 4]);
+    }
+
+    [Fact]
+    public void TryMove_RequiresPromotion_WhenPawnReachesLastRank()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[1, 0] = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(1, 0)
+        };
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4)
+        };
+
+        var game = new ChessGame();
+
+        game.RestoreSnapshot(new GameSnapshot(
+            new ChessBoard(pieces),
+            PieceColor.White,
+            null,
+            []));
+
+        MoveResult result = game.TryMove(
+            new MoveInfo(
+                new PiecePosition(1, 0),
+                new PiecePosition(0, 0)));
+
+        Assert.Equal(MoveType.PawnPromotion, result.MoveType);
+        Assert.True(game.IsPromotionPending);
+        Assert.IsType<Pawn>(game.Board[0, 0]);
+        Assert.Equal(PieceColor.White, game.ActiveTurn);
+    }
+
+    [Fact]
+    public void PromotePawn_ReplacesPawnAndChangesTurn()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[1, 0] = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(1, 0)
+        };
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4)
+        };
+
+        var game = new ChessGame();
+
+        game.RestoreSnapshot(new GameSnapshot(
+            new ChessBoard(pieces),
+            PieceColor.White,
+            null,
+            []));
+
+        game.TryMove(new MoveInfo(
+            new PiecePosition(1, 0),
+            new PiecePosition(0, 0)));
+
+        MoveResult result = game.PromotePawn(PieceType.Queen);
+
+        Assert.Equal(MoveType.PawnPromotion, result.MoveType);
+        Assert.False(game.IsPromotionPending);
+        Assert.IsType<Queen>(game.Board[0, 0]);
+        Assert.Equal(PieceColor.Black, game.ActiveTurn);
     }
 }

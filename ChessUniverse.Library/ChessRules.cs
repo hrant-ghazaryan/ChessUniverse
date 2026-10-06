@@ -104,6 +104,10 @@ public static class ChessRules
     {
         if (board is null) return false;
         if (start is null || end is null) return false;
+
+        if (start.Equals(end))
+            return false;
+
         if (board[start] is null) return false;
 
         Piece? piece = board[start];
@@ -255,5 +259,18 @@ public static class ChessRules
         return true;
     }
 
+    public static bool RequiresPawnPromotion(
+    ChessBoard board,
+    MoveInfo moveInfo)
+    {
+        if (moveInfo.Start is null || moveInfo.Target is null)
+            return false;
+
+        Piece? piece = board[moveInfo.Start];
+
+        return piece is not null &&
+               piece.Type == PieceType.Pawn &&
+               (moveInfo.Target.Row == 0 || moveInfo.Target.Row == 7);
+    }
 
 }
