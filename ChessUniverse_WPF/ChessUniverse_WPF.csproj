@@ -17,8 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="..\ChessUniverse.Library\Sounds\*.mp3">
-			<Link>Sounds\%(Filename)%(Extension)</Link>
+		<Content Include="Sounds\*.mp3">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

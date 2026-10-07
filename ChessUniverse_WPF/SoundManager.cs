@@ -1,31 +1,32 @@
 ﻿using NAudio.Wave;
-namespace ChessUniverse.Library;
+using System.IO;
 
+namespace ChessUniverse_WPF;
 
 public static class SoundManager
 {
-    private static readonly Dictionary<string, string> cache = new();
+    private static readonly Dictionary<string, string> Cache = new();
 
     public static void Load(string key, string path)
-        => cache[key] = path;
+        => Cache[key] = path;
 
     public static void Play(string key)
     {
-        if (!cache.TryGetValue(key, out string? path) ||
-        !File.Exists(path))
+        if (!Cache.TryGetValue(key, out string? path) ||
+            !File.Exists(path))
+        {
             return;
+        }
 
         Task.Run(() =>
         {
-            var reader = new AudioFileReader(cache[key]);
-
+            var reader = new AudioFileReader(path);
             var waveOut = new WaveOutEvent();
 
             waveOut.Init(reader);
-
             waveOut.Play();
 
-            waveOut.PlaybackStopped += (s, e) =>
+            waveOut.PlaybackStopped += (_, _) =>
             {
                 waveOut.Dispose();
                 reader.Dispose();

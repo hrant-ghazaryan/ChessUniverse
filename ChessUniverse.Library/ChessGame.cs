@@ -300,4 +300,26 @@ public sealed class ChessGame
         _previousSnapshots.Push(snapshot);
         _nextSnapshots.Clear();
     }
+    public void LoadPosition(
+    ChessBoard board,
+    PieceColor activeTurn,
+    MoveInfo? previousMove = null)
+    {
+        ArgumentNullException.ThrowIfNull(board);
+
+        Board = (ChessBoard)board.Clone();
+        ActiveTurn = activeTurn;
+
+        PreviousMove = previousMove is null
+            ? null
+            : new MoveInfo(previousMove);
+
+        PendingPromotionMove = null;
+        PendingPromotionCapturedPiece = null;
+        PendingPromotionSnapshot = null;
+
+        _capturedPieces.Clear();
+        _previousSnapshots.Clear();
+        _nextSnapshots.Clear();
+    }
 }

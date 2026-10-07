@@ -22,14 +22,7 @@ public partial class MainWindow : Window
 
     private bool audioPlayed;
 
-    private Image? boardEnteredImage;
-    private MoveInfo? _moveInfo;
-
     private readonly ChessGame _game = new();
-
-    private ChessBoard pieceBoard => _game.Board;
-    private PieceColor acctiveTurn => _game.ActiveTurn;
-    private MoveInfo? _previousMove => _game.PreviousMove;
 
     private static string GetSoundPath(string fileName)
         => Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
@@ -156,7 +149,6 @@ public partial class MainWindow : Window
     {
         _t = true;
         var img = (System.Windows.Controls.Image)sender;
-        boardEnteredImage = img;
         _ptLast = e.GetPosition(img);
 
         Mouse.Capture(img);
@@ -204,25 +196,30 @@ public partial class MainWindow : Window
         MoveInfo moveInfo = new MoveInfo
             (enteredPiece, imgPosition);
 
+        int capturedPiecesBeforeMove = _game.CapturedPieces.Count;
         MoveResult moveDetails = _game.TryMove(moveInfo);
         currentMoveType = moveDetails.MoveType;
+        bool wasCapture = _game.CapturedPieces.Count > capturedPiecesBeforeMove;
 
         if (currentMoveType == MoveType.PawnPromotion)
         {
 
-            ShowPromotionOverlay(img, moveInfo);
-            MoveUIUpdate(img, moveInfo, currentMoveType);
+            Piece? promotionPawn = _game.Board[moveInfo.Target!];
+
+            if (promotionPawn is not null)
+                ShowPromotionOverlay(promotionPawn.Color);
+
+            MoveUIUpdate(img, currentMoveType, wasCapture);
         }
         else
         {
             BoardStateUpdate(moveDetails);
-            MoveUIUpdate(img, moveInfo, currentMoveType);
-
+            MoveUIUpdate(img, currentMoveType, wasCapture);
             if (currentMoveType != MoveType.InvalidMove)
             {
                 UpdateHistoryButtons();
 
-                RenderBoard(pieceBoard);
+                RenderBoard(_game.Board);
                 RenderCapturedPieces();
             }
         }
@@ -256,16 +253,13 @@ public partial class MainWindow : Window
         if (result.MoveType == MoveType.InvalidMove)
             return;
 
-        _moveInfo = null;
-        boardEnteredImage = null;
-
         WhitePromotionOverlay.Visibility = Visibility.Collapsed;
         BlackPromotionOverlay.Visibility = Visibility.Collapsed;
 
-        RenderBoard(pieceBoard);
+        RenderBoard(_game.Board);
         RenderCapturedPieces();
 
-        MoveShower.Content = acctiveTurn.ToString();
+        MoveShower.Content = _game.ActiveTurn.ToString();
 
         BoardStateUpdate(result);
         UpdateHistoryButtons();
@@ -294,223 +288,40 @@ public partial class MainWindow : Window
     #endregion
 
     #region MOVE_UI
-    /// <summary>
-    /// Տեղափոխում է վերցված ֆիգուրը խաղատախտակից դեպի captures panel
-    /// և հարմարեցնում է դրա տեսքն ու behavior-ը
-    /// </summary>
-    /// <param name="imgCaptured">Վերցված ֆիգուրի պատկերը</param>
-    private void AddingCaptureToWrap(Image? imgCaptured)
+    private void MoveUIUpdate(
+    Image image,
+    MoveType moveType,
+    bool wasCapture)
     {
-        if (imgCaptured is null)
+        MoveShower.Content = _game.ActiveTurn.ToString();
+
+        if (moveType == MoveType.InvalidMove)
+        {
+            if (!audioPlayed)
+            {
+                SoundManager.Play("invalidMove");
+                audioPlayed = true;
+            }
+
+            image.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
             return;
+        }
+
+        string soundName = moveType switch
+        {
+            MoveType.LeftCastling or MoveType.RightCastling => "castle",
+            MoveType.PawnPromotion => "promotion",
+            MoveType.EnPassant => "capture",
+            _ when wasCapture => "capture",
+            _ => "move"
+        };
 
         if (!audioPlayed)
-            SoundManager.Play("capture"); audioPlayed = true;
-
-        grid_figure.Children.Remove(imgCaptured);
-        imgCaptured?.Margin = new Thickness(0);
-        imgCaptured?.Width = 20;
-        imgCaptured?.Height = 20;
-        imgCaptured?.IsHitTestVisible = false;
-        string? name = imgCaptured!.Name.ToString();
-        if (name[0] == 'b')
-            BlackCaptures.Children.Add(imgCaptured);
-        else
-            WhiteCaptures.Children.Add(imgCaptured);
-    }
-    /// <summary>
-    /// Իրականացնում է capture-ի UI թարմացումը՝
-    /// հակառակ ֆիգուրը տեղափոխելով WrapPanel,
-    /// իսկ սխալ քայլի դեպքում վերադարձնելով ֆիգուրը սկզբնական դիրք
-    /// </summary>
-    /// <param name="img">Տեղափոխվող ֆիգուրի պատկերը</param>
-    /// <param name="moveInfo">Քայլի տվյալները (նպատակային դիրքը ներառյալ)</param>
-    private void CaptureToWrap(Image? img, MoveInfo moveInfo)
-    {
-        if (moveInfo.Target is null)
-            return;
-
-        if (pieceBoard[moveInfo.Target] is not null)
         {
-            bool isCaptured = false;
-            var imgCaptured = img;
-
-            // Ստուգում ենք ֆիգուրի վերջնական դիրքում ուրիշ ֆիգուրայի առկայությունը
-            foreach (var item in grid_figure.Children)
-            {
-                var imgTarget = (Image)item;
-                int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
-                int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
-
-                if (rowTarget == moveInfo.Target.Row && colTarget == moveInfo.Target.Col &&
-                imgTarget?.Name?.ToString()?[0] != img?.Name?.ToString()?[0])
-                {
-                    isCaptured = true;
-                    imgCaptured = imgTarget;
-                }
-            }
-            // Ուրիշ ֆիգուրայի առկայության դեպքում ջնջում ենք ֆիգուրան խաղատախտակից
-            // և ավելացնում սպանված ֆիգուրների WrapPanel ում
-            if (isCaptured)
-            {
-                if (!audioPlayed) { SoundManager.Play("capture"); audioPlayed = true; }
-                AddingCaptureToWrap(imgCaptured);
-            }
-
-            // Արդեն առկա ֆիգուրի նույն գույնը ունենալու դեպքում
-            // ընտրված ֆիգուրի վերադարձը իր նախնական դիրք
-            else
-                img?.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
+            SoundManager.Play(soundName);
+            audioPlayed = true;
         }
     }
-    private void EnPassantCaptureToWrap(Image movedImage, MoveInfo moveInfo)
-    {
-        if (moveInfo.Start is null || moveInfo.Target is null)
-            return;
-
-        int capturedPawnRow = moveInfo.Start.Row;
-        int capturedPawnCol = moveInfo.Target.Col;
-
-        Image? capturedImage = grid_figure.Children
-            .OfType<Image>()
-            .FirstOrDefault(image =>
-            {
-                int row = (int)(image.Margin.Top + 28.5) / _cellSize;
-                int col = (int)(image.Margin.Left + 28.5) / _cellSize;
-
-                return image != movedImage &&
-                       row == capturedPawnRow &&
-                       col == capturedPawnCol &&
-                       image.Name[0] != movedImage.Name[0];
-            });
-
-        if (capturedImage is not null)
-            AddingCaptureToWrap(capturedImage);
-
-        movedImage.Margin = new Thickness(
-            moveInfo.Target.Col * _cellSize + (_cellSize - movedImage.Width) / 2,
-            moveInfo.Target.Row * _cellSize + (_cellSize - movedImage.Height) / 2,
-            0,
-            0);
-    }
-    /// <summary>
-    /// Թարմացնում է UI-ը ձախ ռոկիրովկայի ժամանակ՝
-    /// տեղափոխելով թագավորին դեպի նպատակային դիրք և նավին համապատասխան դիրք
-    /// </summary>
-    /// <param name="img">Տեղափոխվող թագավորի պատկերը</param>
-    /// <param name="moveInfo">Քայլի տվյալները (նպատակային դիրքը ներառյալ)</param>
-    private void LeftCastlingUI(Image img, MoveInfo moveInfo)
-    {
-        if (moveInfo is null) return;
-        if (moveInfo.Target is null) return;
-
-        if (!audioPlayed) { SoundManager.Play("castle"); audioPlayed = true; }
-        img?.Margin = new Thickness(
-                moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
-                moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
-                0, 0);
-
-        foreach (var item in grid_figure.Children)
-        {
-            var imgTarget = (Image)item;
-            int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
-            int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
-            if (rowTarget == moveInfo.Target.Row && colTarget == 0)
-            {
-                imgTarget.Margin = new Thickness(imgTarget.Margin.Left + (_cellSize * 3),
-                    imgTarget.Margin.Top,
-                    0, 0);
-            }
-        }
-        Mouse.Capture(null);
-        StackPanel.SetZIndex(img, 0);
-    }
-    /// <summary>
-    /// Թարմացնում է UI-ը աջ ռոկիրովկայի ժամանակ՝
-    /// տեղափոխելով թագավորի պատկերը դեպի նպատակային դիրք
-    /// և համապատասխան նավի (rook) պատկերը նոր դիրք
-    /// </summary>
-    /// <param name="img">Տեղափոխվող թագավորի պատկերը</param>
-    /// <param name="moveInfo">Քայլի տվյալները, ներառյալ նպատակային դիրքը</param>
-    private void RightCastlingUI(Image img, MoveInfo moveInfo)
-    {
-        if (moveInfo is null) return;
-        if (moveInfo.Target is null) return;
-
-        img?.Margin = new Thickness(
-                 moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
-                moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
-                0, 0);
-        if (!audioPlayed) { SoundManager.Play("castle"); audioPlayed = true; }
-
-        foreach (var item in grid_figure.Children)
-        {
-            var imgTarget = (Image)item;
-            int rowTarget = (int)(imgTarget.Margin.Top + 28.5) / 57;
-            int colTarget = (int)(imgTarget.Margin.Left + 28.5) / 57;
-            if (rowTarget == moveInfo.Target.Row && colTarget == 7)
-            {
-                imgTarget.Margin = new Thickness(imgTarget.Margin.Left - (_cellSize * 2),
-                    imgTarget.Margin.Top,
-                    0, 0);
-            }
-        }
-        Mouse.Capture(null);
-        StackPanel.SetZIndex(img, 0);
-    }
-    /// <summary>
-    /// Կառավարում է խաղատախտակի UI-ի թարմացումը՝
-    /// ըստ քայլի տեսակի՝ կատարելով ֆիգուրի տեղաշարժ,
-    /// capture-ի մշակումը և հատուկ քայլերի (ռոկիրովկա, promotion) արտացոլումը
-    /// </summary>
-    /// /// <param name="img">Տեղափոխվող ֆիգուրի պատկերը</param>
-    /// <param name="moveInfo">Քայլի տվյալները (սկիզբ և նպատակային դիրք)</param>
-    /// <param name="moveType">Քայլի տեսակը (MoveType)</param>
-    private void MoveUIUpdate(Image img, MoveInfo moveInfo, MoveType moveType)
-    {
-        if (img == null) return;
-        if (moveInfo is null) return;
-        if (moveInfo.Target is null) return;
-        MoveShower.Content = acctiveTurn.ToString();
-        switch (moveType)
-        {
-            case MoveType.InvalidMove:
-                if (!audioPlayed) { SoundManager.Play("invalidMove"); audioPlayed = true; }
-                img.Margin = new Thickness(_imgDownX, _imgDownY, 0, 0);
-                break;
-            case MoveType.RegularMove:
-                CaptureToWrap(img, moveInfo);
-                if (!audioPlayed) { SoundManager.Play("move"); audioPlayed = true; }
-                img?.Margin = new Thickness(
-            moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
-            moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
-            0, 0);
-                break;
-            case MoveType.LeftCastling:
-                LeftCastlingUI(img, moveInfo);
-                break;
-            case MoveType.RightCastling:
-                RightCastlingUI(img, moveInfo);
-                break;
-            case MoveType.PawnPromotion:
-                CaptureToWrap(img, moveInfo);
-                if (!audioPlayed) { SoundManager.Play("promotion"); audioPlayed = true; }
-                img?.Margin = new Thickness(
-                moveInfo.Target.Col * _cellSize + (_cellSize - img.Width) / 2,
-                moveInfo.Target.Row * _cellSize + (_cellSize - img.Height) / 2,
-                0, 0);
-                break;
-            case MoveType.EnPassant:
-                EnPassantCaptureToWrap(img, moveInfo);
-                break;
-        }
-    }
-    /// <summary>
-    /// Թարմացնում է խաղի վիճակի UI արտացոլումը՝ ըստ MoveResult-ի,
-    /// ցուցադրում է համապատասխան հաղորդագրություններ (շախ, մատ)
-    /// և մատի դեպքում փակում է պատուհանը
-    /// </summary>
-    /// <param name="moveResult">Քայլի արդյունքը, որը պարունակում է BoardState-ը</param>
     private void BoardStateUpdate(MoveResult moveResult)
     {
         switch (moveResult.BoardState)
@@ -518,7 +329,11 @@ public partial class MainWindow : Window
             case BoardState.CheckMate:
                 if (!audioPlayed) { SoundManager.Play("checkMate"); audioPlayed = true; }
                 MessageBox.Show("CHECKMATE");
-                MessageBox.Show($"{acctiveTurn.ToString().ToUpper()} WIN");
+                PieceColor winner = _game.ActiveTurn == PieceColor.White
+                    ? PieceColor.Black
+                    : PieceColor.White;
+
+                MessageBox.Show($"{winner.ToString().ToUpper()} WIN");
                 Close();
                 break;
             case BoardState.Check:
@@ -536,22 +351,23 @@ public partial class MainWindow : Window
         WhitePromotionOverlay.Visibility = Visibility.Collapsed;
         BlackPromotionOverlay.Visibility = Visibility.Collapsed;
 
-        boardEnteredImage = null;
-        _moveInfo = null;
+        MoveShower.Content = _game.ActiveTurn.ToString();
 
-        MoveShower.Content = acctiveTurn.ToString();
-
-        RenderBoard(pieceBoard);
+        RenderBoard(_game.Board);
         RenderCapturedPieces();
 
         UpdateHistoryButtons();
     }
+    private void ShowPromotionOverlay(PieceColor color)
+    {
+        if (color == PieceColor.White)
+            WhitePromotionOverlay.Visibility = Visibility.Visible;
+        else
+            BlackPromotionOverlay.Visibility = Visibility.Visible;
+    }
     private void StartNewGame()
     {
         _game.StartNewGame();
-
-        _moveInfo = null;
-        boardEnteredImage = null;
 
         WhiteCaptures.Children.Clear();
         BlackCaptures.Children.Clear();
@@ -559,35 +375,11 @@ public partial class MainWindow : Window
         WhitePromotionOverlay.Visibility = Visibility.Collapsed;
         BlackPromotionOverlay.Visibility = Visibility.Collapsed;
 
-        MoveShower.Content = acctiveTurn.ToString();
+        MoveShower.Content = _game.ActiveTurn.ToString();
 
-        RenderBoard(pieceBoard);
+        RenderBoard(_game.Board);
 
         UpdateHistoryButtons();
-    }
-    #endregion
-
-    #region PawnPromotion
-    /// <summary>
-    /// Ստուգում է pawn promotion-ի պայմանը և ցուցադրում համապատասխան ընտրության overlay-ը
-    /// (սպիտակ կամ սև), պահպանելով քայլի տվյալները հետագա օգտագործման համար
-    /// </summary>
-    /// <param name="board">Խաղատախտակի ընթացիկ վիճակը</param>
-    /// <param name="img">Ընտրված ֆիգուրի պատկերը</param>
-    /// <param name="moveInfo">Քայլի սկզբնական և վերջնական դիրքերը</param>
-    public void ShowPromotionOverlay(Image? img, MoveInfo moveInfo)
-    {
-        if (img is null || moveInfo.Start is null ||
-         moveInfo.Target is null)
-            return;
-
-        string name = img.Name;
-        if (name[0] == 'w')
-            WhitePromotionOverlay.Visibility = Visibility.Visible;
-        else
-            BlackPromotionOverlay.Visibility = Visibility.Visible;
-        boardEnteredImage = img;
-        _moveInfo = moveInfo;
     }
     #endregion
 }

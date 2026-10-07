@@ -2,7 +2,7 @@
 
 namespace ChessUniverse.Library;
 
-public class MoveInfo
+public class MoveInfo : IEquatable<MoveInfo>
 {
     public PiecePosition? Start { get; set; }
     public PiecePosition? Target { get; set; }
@@ -44,4 +44,14 @@ public class MoveInfo
         CapturedPiece = capturedFigure;
         Castling = castling;
     }
+    public bool Equals(MoveInfo? other)
+        => other is not null &&
+               object.Equals(Start, other.Start) &&
+               object.Equals(Target, other.Target);
+
+    public override bool Equals(object? obj)
+        => Equals(obj as MoveInfo);
+
+    public override int GetHashCode()
+        => HashCode.Combine(Start, Target);
 }
