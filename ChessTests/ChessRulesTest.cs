@@ -7,6 +7,298 @@ namespace ChessTests;
 public class ChessRulesTest
 {
     [Fact]
+    public void PuzzleSession_PlaysOpponentMoveAfterPromotion()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[1, 0] = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(1, 0)
+        };
+
+        pieces[1, 7] = new Pawn(PieceColor.Black)
+        {
+            Position = new PiecePosition(1, 7)
+        };
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        pieces[1, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(1, 4)
+        };
+
+        pieces[7, 6] = new Knight(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 6)
+        };
+
+        var puzzle = new ChessPuzzle(
+            id: 4,
+            worldId: 1,
+            levelNumber: 4,
+            title: "Promotion-ից հետո պատասխան",
+            initialBoard: new ChessBoard(pieces),
+            activeTurn: PieceColor.White,
+            solutionMoves:
+            [
+                new MoveInfo(
+                new PiecePosition(1, 0),
+                new PiecePosition(0, 0),
+                PieceType.Queen),
+
+            new MoveInfo(
+                new PiecePosition(1, 7),
+                new PiecePosition(2, 7)),
+
+            new MoveInfo(
+                new PiecePosition(7, 6),
+                new PiecePosition(5, 5))
+            ]);
+
+        var session = new ChessPuzzleSession(puzzle);
+
+        session.TryMove(new MoveInfo(
+            new PiecePosition(1, 0),
+            new PiecePosition(0, 0)));
+
+        PuzzleMoveResult promotionResult =
+            session.PromotePawn(PieceType.Queen);
+
+        Assert.Equal(PuzzleMoveStatus.CorrectMove, promotionResult.Status);
+        Assert.Single(promotionResult.AutomaticMoveResults);
+
+        Assert.Equal(2, session.CurrentStep);
+        Assert.Equal(PieceColor.White, session.ActiveTurn);
+
+        Assert.IsType<Queen>(session.Board[0, 0]);
+        Assert.IsType<Pawn>(session.Board[2, 7]);
+
+        PuzzleMoveResult finalResult = session.TryMove(
+            new MoveInfo(
+                new PiecePosition(7, 6),
+                new PiecePosition(5, 5)));
+
+        Assert.Equal(PuzzleMoveStatus.Completed, finalResult.Status);
+        Assert.True(session.IsCompleted);
+    }
+    [Fact]
+    public void PuzzleSession_CompletesPromotion_WhenCorrectPieceIsSelected()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[1, 0] = new Pawn(PieceColor.White)
+        {
+            Position = new PiecePosition(1, 0)
+        };
+
+        pieces[7, 4] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(7, 4)
+        };
+
+        pieces[0, 4] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 4)
+        };
+
+        var puzzle = new ChessPuzzle(
+            id: 3,
+            worldId: 1,
+            levelNumber: 3,
+            title: "Փոխակերպում Queen-ի",
+            initialBoard: new ChessBoard(pieces),
+            activeTurn: PieceColor.White,
+            solutionMoves:
+            [
+                new MoveInfo(
+                new PiecePosition(1, 0),
+                new PiecePosition(0, 0),
+                PieceType.Queen)
+            ]);
+
+        var session = new ChessPuzzleSession(puzzle);
+
+        PuzzleMoveResult moveResult = session.TryMove(
+            new MoveInfo(
+                new PiecePosition(1, 0),
+                new PiecePosition(0, 0)));
+
+        Assert.Equal(PuzzleMoveStatus.PromotionRequired, moveResult.Status);
+        Assert.IsType<Pawn>(session.Board[0, 0]);
+
+        PuzzleMoveResult wrongPromotion =
+            session.PromotePawn(PieceType.Knight);
+
+        Assert.Equal(PuzzleMoveStatus.IncorrectMove, wrongPromotion.Status);
+        Assert.IsType<Pawn>(session.Board[0, 0]);
+
+        PuzzleMoveResult promotionResult =
+            session.PromotePawn(PieceType.Queen);
+
+        Assert.Equal(PuzzleMoveStatus.Completed, promotionResult.Status);
+        Assert.True(session.IsCompleted);
+
+        Assert.IsType<Queen>(session.Board[0, 0]);
+        Assert.Equal(PieceColor.Black, session.ActiveTurn);
+    }
+    [Fact]
+    public void PuzzleSession_GetHint_ReturnsNextExpectedMove()
+    {
+        ChessPuzzle puzzle = PuzzleCatalog.GetPuzzle(1)!;
+
+        var session = new ChessPuzzleSession(puzzle);
+
+        MoveInfo? hint = session.GetHint();
+
+        Assert.NotNull(hint);
+        Assert.Equal(new PiecePosition(2, 6), hint.Start);
+        Assert.Equal(new PiecePosition(1, 6), hint.Target);
+
+        hint.Target!.Col = 5;
+
+        MoveInfo? nextHint = session.GetHint();
+
+        Assert.NotNull(nextHint);
+        Assert.Equal(new PiecePosition(1, 6), nextHint.Target);
+    }
+    [Fact]
+    public void PuzzleSession_Restart_RestoresInitialPosition()
+    {
+        ChessPuzzle puzzle = PuzzleCatalog.GetPuzzle(1)!;
+
+        var session = new ChessPuzzleSession(puzzle);
+
+        session.TryMove(new MoveInfo(
+            new PiecePosition(2, 6),
+            new PiecePosition(1, 6)));
+
+        Assert.True(session.IsCompleted);
+        Assert.IsType<Queen>(session.Board[1, 6]);
+
+        session.Restart();
+
+        Assert.False(session.IsCompleted);
+        Assert.Equal(0, session.CurrentStep);
+        Assert.Equal(PieceColor.White, session.ActiveTurn);
+
+        Assert.IsType<Queen>(session.Board[2, 6]);
+        Assert.Null(session.Board[1, 6]);
+    }
+    [Fact]
+    public void FenNotation_ParsesAndSerializesActiveTurn()
+    {
+        const string positionText =
+            "7k/8/5KQ1/8/8/8/8/8 b";
+
+        FenPosition position =
+            FenNotation.ParsePosition(positionText);
+
+        Assert.Equal(PieceColor.Black, position.ActiveTurn);
+        Assert.IsType<King>(position.Board[0, 7]);
+        Assert.IsType<Queen>(position.Board[2, 6]);
+
+        string serializedPosition = FenNotation.ToPosition(
+            position.Board,
+            position.ActiveTurn);
+
+        Assert.Equal(positionText, serializedPosition);
+    }
+    [Fact]
+    public void FenNotation_ParsesAndSerializesBoardPlacement()
+    {
+        const string boardPlacement =
+            "7k/8/5KQ1/8/8/8/8/8";
+
+        ChessBoard board =
+            FenNotation.ParseBoardPlacement(boardPlacement);
+
+        Piece? blackKing = board[0, 7];
+        Piece? whiteKing = board[2, 5];
+        Piece? whiteQueen = board[2, 6];
+
+        Assert.IsType<King>(blackKing);
+        Assert.Equal(PieceColor.Black, blackKing.Color);
+
+        Assert.IsType<King>(whiteKing);
+        Assert.Equal(PieceColor.White, whiteKing.Color);
+
+        Assert.IsType<Queen>(whiteQueen);
+        Assert.Equal(PieceColor.White, whiteQueen.Color);
+
+        string serializedBoardPlacement =
+            FenNotation.ToBoardPlacement(board);
+
+        Assert.Equal(boardPlacement, serializedBoardPlacement);
+    }
+    [Fact]
+    public void PuzzleCatalog_ReturnsPlayableMateInOnePuzzle()
+    {
+        ChessWorld? world = PuzzleCatalog.GetWorld(1);
+        ChessPuzzle? puzzle = PuzzleCatalog.GetPuzzle(1);
+
+        Assert.NotNull(world);
+        Assert.NotNull(puzzle);
+
+        Assert.Equal("Սկսնակ աշխարհ", world.Title);
+        Assert.Equal("Մատ մեկ քայլում", puzzle.Title);
+
+        var session = new ChessPuzzleSession(puzzle);
+
+        PuzzleMoveResult result = session.TryMove(
+            new MoveInfo(
+                new PiecePosition(2, 6),
+                new PiecePosition(1, 6)));
+
+        Assert.Equal(PuzzleMoveStatus.Completed, result.Status);
+        Assert.True(session.IsCompleted);
+
+        Assert.NotNull(result.GameMoveResult);
+        Assert.Equal(
+            BoardState.CheckMate,
+            result.GameMoveResult.BoardState);
+    }
+    [Fact]
+    public void ChessWorld_SortsPuzzlesByLevelNumber()
+    {
+        ChessBoard board = new ChessBoard();
+        board.SetStartPosition();
+
+        MoveInfo solutionMove = new MoveInfo(
+            new PiecePosition(6, 4),
+            new PiecePosition(4, 4));
+
+        var secondLevel = new ChessPuzzle(
+            id: 2,
+            worldId: 1,
+            levelNumber: 2,
+            title: "Երկրորդ մակարդակ",
+            initialBoard: board,
+            activeTurn: PieceColor.White,
+            solutionMoves: [solutionMove]);
+
+        var firstLevel = new ChessPuzzle(
+            id: 1,
+            worldId: 1,
+            levelNumber: 1,
+            title: "Առաջին մակարդակ",
+            initialBoard: board,
+            activeTurn: PieceColor.White,
+            solutionMoves: [solutionMove]);
+
+        var world = new ChessWorld(
+            id: 1,
+            title: "Սկսնակ աշխարհ",
+            puzzles: [secondLevel, firstLevel]);
+
+        Assert.Equal(2, world.Puzzles.Count);
+        Assert.Equal(1, world.Puzzles[0].LevelNumber);
+        Assert.Equal(2, world.Puzzles[1].LevelNumber);
+    }
+    [Fact]
     public void PuzzleSession_PlaysOpponentMoveAutomatically()
     {
         ChessBoard board = new ChessBoard();

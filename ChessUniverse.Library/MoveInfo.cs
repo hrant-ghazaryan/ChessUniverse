@@ -10,6 +10,7 @@ public class MoveInfo : IEquatable<MoveInfo>
     public Piece? MovedPiece { get; set; }
     public Piece? CapturedPiece { get; set; }
     public PieceColor Turn { get; set; }
+    public PieceType? PromotionType { get; set; }
 
     public MoveInfo() { }
     public MoveInfo(MoveInfo original)
@@ -24,11 +25,19 @@ public class MoveInfo : IEquatable<MoveInfo>
         MovedPiece = (Piece?)original.MovedPiece?.Clone();
         CapturedPiece = (Piece?)original.CapturedPiece?.Clone();
         Turn = original.Turn;
+        PromotionType = original.PromotionType;
     }
     public MoveInfo(PiecePosition start, PiecePosition target)
     {
         Start = start;
         Target = target;
+    }
+    public MoveInfo(PiecePosition start, PiecePosition target,
+    PieceType promotionType)
+    {
+        Start = start;
+        Target = target;
+        PromotionType = promotionType;
     }
     public MoveInfo(PiecePosition start, PiecePosition target, PieceColor turn)
     {
@@ -48,10 +57,8 @@ public class MoveInfo : IEquatable<MoveInfo>
         => other is not null &&
                object.Equals(Start, other.Start) &&
                object.Equals(Target, other.Target);
-
     public override bool Equals(object? obj)
         => Equals(obj as MoveInfo);
-
     public override int GetHashCode()
         => HashCode.Combine(Start, Target);
 }

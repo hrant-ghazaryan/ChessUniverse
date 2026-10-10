@@ -5,6 +5,7 @@ public enum PuzzleMoveStatus
     IncorrectMove,
     InvalidMove,
     InvalidPuzzle,
+    PromotionRequired,
     CorrectMove,
     Completed
 }

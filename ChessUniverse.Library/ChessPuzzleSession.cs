@@ -18,6 +18,7 @@ public sealed class ChessPuzzleSession
         _nextSolutionMoveIndex >= _puzzle.SolutionMoves.Count;
 
     public int CurrentStep => _nextSolutionMoveIndex;
+    private MoveInfo? _pendingPromotionMove;
 
     public ChessPuzzleSession(ChessPuzzle puzzle)
     {
@@ -40,8 +41,36 @@ public sealed class ChessPuzzleSession
             _puzzle.ActiveTurn);
 
         _nextSolutionMoveIndex = 0;
+        _pendingPromotionMove = null;
     }
+    public MoveInfo? GetHint()
+    {
+        if (IsCompleted)
+            return null;
 
+        MoveInfo expectedMove =
+            _puzzle.SolutionMoves[_nextSolutionMoveIndex];
+
+        return new MoveInfo(expectedMove);
+    }
+    public PuzzleMoveResult PromotePawn(PieceType promotionType)
+    {
+        if (_pendingPromotionMove is null)
+            return new PuzzleMoveResult(PuzzleMoveStatus.InvalidMove);
+
+        if (_pendingPromotionMove.PromotionType != promotionType)
+            return new PuzzleMoveResult(PuzzleMoveStatus.IncorrectMove);
+
+        MoveResult gameMoveResult = _game.PromotePawn(promotionType);
+
+        if (gameMoveResult.MoveType == MoveType.InvalidMove)
+            return new PuzzleMoveResult(PuzzleMoveStatus.InvalidMove);
+
+        _pendingPromotionMove = null;
+        _nextSolutionMoveIndex++;
+
+        return CompletePlayerMove(gameMoveResult);
+    }
     public PuzzleMoveResult TryMove(MoveInfo moveInfo)
     {
         ArgumentNullException.ThrowIfNull(moveInfo);
@@ -63,8 +92,29 @@ public sealed class ChessPuzzleSession
         if (gameMoveResult.MoveType == MoveType.InvalidMove)
             return new PuzzleMoveResult(PuzzleMoveStatus.InvalidMove);
 
+        if (gameMoveResult.MoveType == MoveType.PawnPromotion)
+        {
+            if (expectedMove.PromotionType is null)
+            {
+                return new PuzzleMoveResult(
+                    PuzzleMoveStatus.InvalidPuzzle,
+                    gameMoveResult);
+            }
+
+            _pendingPromotionMove = new MoveInfo(expectedMove);
+
+            return new PuzzleMoveResult(
+                PuzzleMoveStatus.PromotionRequired,
+                gameMoveResult);
+        }
+
         _nextSolutionMoveIndex++;
 
+        return CompletePlayerMove(gameMoveResult);
+    }
+
+    private PuzzleMoveResult CompletePlayerMove(MoveResult gameMoveResult)
+    {
         List<MoveResult> automaticMoves = [];
 
         while (!IsCompleted && ActiveTurn != PlayerColor)
