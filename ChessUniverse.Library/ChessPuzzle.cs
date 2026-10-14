@@ -17,11 +17,58 @@ public sealed class ChessPuzzle
     public PieceColor ActiveTurn { get; }
 
     public IReadOnlyList<MoveInfo> SolutionMoves { get; }
+    public PuzzleCategory Category { get; }
+    public PuzzleDifficulty Difficulty { get; }
 
     public ChessPuzzle(
         int id,
         int worldId,
         int levelNumber,
+        string title,
+        ChessBoard initialBoard,
+        PieceColor activeTurn,
+        IEnumerable<MoveInfo> solutionMoves)
+        : this(
+            id,
+            worldId,
+            levelNumber,
+            PuzzleCategory.MateInOne,
+            PuzzleDifficulty.Easy,
+            title,
+            initialBoard,
+            activeTurn,
+            solutionMoves)
+    {
+    }
+
+    public ChessPuzzle(
+        int id,
+        int worldId,
+        int levelNumber,
+        PuzzleCategory category,
+        string title,
+        ChessBoard initialBoard,
+        PieceColor activeTurn,
+        IEnumerable<MoveInfo> solutionMoves)
+        : this(
+            id,
+            worldId,
+            levelNumber,
+            category,
+            PuzzleDifficulty.Easy,
+            title,
+            initialBoard,
+            activeTurn,
+            solutionMoves)
+    {
+    }
+
+    public ChessPuzzle(
+        int id,
+        int worldId,
+        int levelNumber,
+        PuzzleCategory category,
+        PuzzleDifficulty difficulty,
         string title,
         ChessBoard initialBoard,
         PieceColor activeTurn,
@@ -38,6 +85,8 @@ public sealed class ChessPuzzle
         Id = id;
         WorldId = worldId;
         LevelNumber = levelNumber;
+        Category = category;
+        Difficulty = difficulty;
         Title = title;
 
         InitialBoard = (ChessBoard)initialBoard.Clone();

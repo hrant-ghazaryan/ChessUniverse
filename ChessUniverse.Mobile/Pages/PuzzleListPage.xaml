@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="ChessUniverse.Mobile.Pages.PuzzleListPage"
+    Title="{Binding CategoryTitle}">
+
+    <VerticalStackLayout
+        Padding="24"
+        Spacing="16">
+
+        <Label
+            Text="{Binding CategoryTitle}"
+            FontSize="32"
+            FontAttributes="Bold" />
+
+        <Label
+            Text="Ընտրիր մակարդակը"
+            FontSize="16"
+            TextColor="Gray" />
+
+        <CollectionView
+            ItemsSource="{Binding Puzzles}"
+            SelectionMode="Single"
+            SelectionChanged="OnPuzzleSelectionChanged">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout
+                    Padding="24"
+                    Spacing="8"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                    <Label
+                        Text="Շուտով"
+                        FontSize="24"
+                        FontAttributes="Bold"
+                        HorizontalTextAlignment="Center" />
+                    <Label
+                        Text="Այս բարդության խնդիրները դեռ ավելացվում են։"
+                        FontSize="15"
+                        TextColor="Gray"
+                        HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout
+                    Orientation="Vertical"
+                    Span="2"
+                    HorizontalItemSpacing="12"
+                    VerticalItemSpacing="12" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border
+                        WidthRequest="150"
+                        HeightRequest="150"
+                        Padding="18"
+                        StrokeShape="RoundRectangle 14"
+                        HorizontalOptions="Center">
+
+                        <Image
+                            Source="{Binding PreviewImage}"
+                            Aspect="AspectFit" />
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </VerticalStackLayout>
+</ContentPage>

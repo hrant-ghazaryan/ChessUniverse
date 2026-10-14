@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="ChessUniverse.Mobile.Pages.PuzzleDifficultyPage"
+    Title="{Binding CategoryTitle}">
+
+    <VerticalStackLayout
+        Padding="24"
+        Spacing="16">
+
+        <Label
+            Text="{Binding CategoryTitle}"
+            FontSize="32"
+            FontAttributes="Bold" />
+
+        <Label
+            Text="Ընտրիր բարդությունը"
+            FontSize="16"
+            TextColor="Gray" />
+
+        <CollectionView
+            ItemsSource="{Binding Difficulties}"
+            SelectionMode="Single"
+            SelectionChanged="OnDifficultySelectionChanged">
+
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout
+                    Orientation="Vertical"
+                    Span="2"
+                    HorizontalItemSpacing="12"
+                    VerticalItemSpacing="12" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border
+                        WidthRequest="150"
+                        HeightRequest="150"
+                        Padding="16"
+                        Background="{Binding Color}"
+                        StrokeShape="RoundRectangle 14"
+                        HorizontalOptions="Center">
+
+                        <VerticalStackLayout
+                            Spacing="8"
+                            VerticalOptions="Center">
+                            <Label
+                                Text="{Binding Title}"
+                                FontSize="24"
+                                FontAttributes="Bold"
+                                TextColor="White"
+                                HorizontalTextAlignment="Center" />
+
+                            <Label
+                                Text="{Binding Description}"
+                                FontSize="13"
+                                TextColor="White"
+                                HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

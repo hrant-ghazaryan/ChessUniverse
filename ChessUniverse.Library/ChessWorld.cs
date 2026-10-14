@@ -27,11 +27,16 @@ public sealed class ChessWorld
         }
 
         if (puzzleList
-            .GroupBy(puzzle => puzzle.LevelNumber)
+            .GroupBy(puzzle => new
+            {
+                puzzle.Category,
+                puzzle.Difficulty,
+                puzzle.LevelNumber
+            })
             .Any(group => group.Count() > 1))
         {
             throw new ArgumentException(
-                "Level numbers must be unique within a world.",
+                "Level numbers must be unique within each category and difficulty.",
                 nameof(puzzles));
         }
 
@@ -39,7 +44,9 @@ public sealed class ChessWorld
         Title = title;
 
         Puzzles = puzzleList
-            .OrderBy(puzzle => puzzle.LevelNumber)
+            .OrderBy(puzzle => puzzle.Category)
+            .ThenBy(puzzle => puzzle.Difficulty)
+            .ThenBy(puzzle => puzzle.LevelNumber)
             .ToList()
             .AsReadOnly();
     }

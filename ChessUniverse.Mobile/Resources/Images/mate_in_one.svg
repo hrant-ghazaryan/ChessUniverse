@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#f0d9b5"/>
+  <g fill="#b58863">
+    <path d="M32 0h32v32H32zm64 0h32v32H96zm64 0h32v32h-32zm64 0h32v32h-32zM0 32h32v32H0zm64 0h32v32H64zm64 0h32v32h-32zm64 0h32v32h-32zM32 64h32v32H32zm64 0h32v32H96zm64 0h32v32h-32zm64 0h32v32h-32zM0 96h32v32H0zm64 0h32v32H64zm64 0h32v32h-32zm64 0h32v32h-32zM32 128h32v32H32zm64 0h32v32H96zm64 0h32v32h-32zm64 0h32v32h-32zM0 160h32v32H0zm64 0h32v32H64zm64 0h32v32h-32zm64 0h32v32h-32zM32 192h32v32H32zm64 0h32v32H96zm64 0h32v32h-32zm64 0h32v32h-32zM0 224h32v32H0zm64 0h32v32H64zm64 0h32v32h-32zm64 0h32v32h-32z"/>
+  </g>
+  <rect x="192" y="32" width="32" height="32" rx="4" fill="#e9d74c"/>
+  <g font-family="Segoe UI Symbol, Arial" font-size="31" text-anchor="middle" dominant-baseline="central">
+    <text x="240" y="16" fill="#1d1d1d">♚</text>
+    <text x="176" y="80" fill="#ffffff" stroke="#333" stroke-width="1">♔</text>
+    <text x="208" y="80" fill="#ffffff" stroke="#333" stroke-width="1">♕</text>
+  </g>
+</svg>

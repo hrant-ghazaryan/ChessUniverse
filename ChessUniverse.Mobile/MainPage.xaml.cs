@@ -1,24 +1,27 @@
-﻿namespace ChessUniverse.Mobile
+﻿using ChessUniverse.Mobile.Pages;
+using ChessUniverse.Mobile.ViewModels;
+
+namespace ChessUniverse.Mobile;
+
+public partial class MainPage : ContentPage
 {
-    public partial class MainPage : ContentPage
+    public MainPage()
     {
-        int count = 0;
+        InitializeComponent();
 
-        public MainPage()
-        {
-            InitializeComponent();
-        }
+        BindingContext = new PuzzleCategoriesViewModel();
+    }
+    private async void OnCategorySelectionChanged(
+    object? sender,
+    SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is not PuzzleCategoryCard categoryCard)
+            return;
 
-        private void OnCounterClicked(object? sender, EventArgs e)
-        {
-            count++;
+        if (sender is CollectionView collectionView)
+            collectionView.SelectedItem = null;
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
-
-            SemanticScreenReader.Announce(CounterBtn.Text);
-        }
+        await Navigation.PushAsync(
+            new PuzzleDifficultyPage(categoryCard.Category));
     }
 }

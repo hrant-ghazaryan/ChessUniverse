@@ -7,6 +7,42 @@ namespace ChessTests;
 public class ChessRulesTest
 {
     [Fact]
+    public void PuzzleCatalog_ReturnsPlayableMateInTwoPuzzle()
+    {
+        ChessPuzzle mateInTwo = Assert.Single(
+            PuzzleCatalog.GetPuzzles(PuzzleCategory.MateInTwo));
+
+        Assert.Equal("Մատ երկու քայլում", mateInTwo.Title);
+        Assert.Equal(1, mateInTwo.LevelNumber);
+
+        var session = new ChessPuzzleSession(mateInTwo);
+
+        PuzzleMoveResult firstResult = session.TryMove(
+            new MoveInfo(
+                new PiecePosition(3, 5),
+                new PiecePosition(3, 6)));
+
+        Assert.Equal(PuzzleMoveStatus.CorrectMove, firstResult.Status);
+        Assert.Single(firstResult.AutomaticMoveResults);
+
+        Assert.IsType<Queen>(session.Board[3, 6]);
+        Assert.IsType<King>(session.Board[1, 7]);
+        Assert.Equal(PieceColor.White, session.ActiveTurn);
+
+        PuzzleMoveResult finalResult = session.TryMove(
+            new MoveInfo(
+                new PiecePosition(3, 6),
+                new PiecePosition(1, 6)));
+
+        Assert.Equal(PuzzleMoveStatus.Completed, finalResult.Status);
+        Assert.True(session.IsCompleted);
+
+        Assert.NotNull(finalResult.GameMoveResult);
+        Assert.Equal(
+            BoardState.CheckMate,
+            finalResult.GameMoveResult.BoardState);
+    }
+    [Fact]
     public void PuzzleSession_PlaysOpponentMoveAfterPromotion()
     {
         Piece?[,] pieces = new Piece?[8, 8];
