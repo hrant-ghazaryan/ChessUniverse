@@ -20,12 +20,37 @@
             TextColor="Gray" />
 
         <Grid
+    HorizontalOptions="Center"
+    ColumnDefinitions="Auto,Auto"
+    ColumnSpacing="10">
+
+        <Grid
             x:Name="BoardGrid"
-            WidthRequest="336"
-            HeightRequest="336"
-            HorizontalOptions="Center"
+            Grid.Column="0"
+            WidthRequest="260"
+            HeightRequest="260"
             RowDefinitions="*,*,*,*,*,*,*,*"
             ColumnDefinitions="*,*,*,*,*,*,*,*" />
+
+        <VerticalStackLayout
+            Grid.Column="1"
+            WidthRequest="48"
+            VerticalOptions="Center">
+
+        <Button
+            Text="→"
+            WidthRequest="48"
+            HeightRequest="56"
+            FontSize="26"
+            FontAttributes="Bold"
+            TextColor="White"
+            BackgroundColor="#2563EB"
+            CornerRadius="14"
+            IsVisible="{Binding IsNextButtonVisible}"
+            Clicked="OnNextClicked" />
+        </VerticalStackLayout>
+
+        </Grid>
 
     </VerticalStackLayout>
 </ContentPage>

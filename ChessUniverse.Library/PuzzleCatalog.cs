@@ -8,28 +8,25 @@ public static class PuzzleCatalog
     public static IReadOnlyList<ChessWorld> Worlds { get; } =
         CreateWorlds();
 
-
     public static ChessWorld? GetWorld(int worldId)
-    {
-        return Worlds.FirstOrDefault(world => world.Id == worldId);
-    }
+        => Worlds.FirstOrDefault(world => world.Id == worldId);
 
     public static ChessPuzzle? GetPuzzle(int puzzleId)
-    {
-        return Worlds
+         => Worlds
             .SelectMany(world => world.Puzzles)
             .FirstOrDefault(puzzle => puzzle.Id == puzzleId);
-    }
 
     private static IReadOnlyList<ChessWorld> CreateWorlds()
     {
         ChessPuzzle mateInOne = CreateMateInOnePuzzle();
         ChessPuzzle mateInTwo = CreateMateInTwoPuzzle();
+        ChessPuzzle mateInOneLevel2 = CreateMateInOnePuzzleLevel2();
+        ChessPuzzle mateInOneLevel3 = CreateMateInOnePuzzleLevel3();
 
         var firstWorld = new ChessWorld(
             id: 1,
             title: "Սկսնակ աշխարհ",
-            puzzles: [mateInOne, mateInTwo]);
+            puzzles: [mateInOne, mateInTwo, mateInOneLevel2, mateInOneLevel3]);
 
         return [firstWorld];
     }
@@ -102,8 +99,87 @@ public static class PuzzleCatalog
                 new MoveInfo(
                     new PiecePosition(2, 6),
                     new PiecePosition(1, 6))
-            ]);     
-       
+            ]);
+
+    }
+    private static ChessPuzzle CreateMateInOnePuzzleLevel2()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[0, 0] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 0)
+        };
+
+        pieces[1, 2] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(1, 2)
+        };
+
+        pieces[2, 5] = new Rook(PieceColor.White)
+        {
+            Position = new PiecePosition(2, 5)
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        return new ChessPuzzle(
+            id: 3,
+            worldId: 1,
+            levelNumber: 2,
+            category: PuzzleCategory.MateInOne,
+            difficulty: PuzzleDifficulty.Easy,
+            title: "Մատ մեկ քայլում",
+            initialBoard: board,
+            activeTurn: PieceColor.White,
+            solutionMoves:
+            [
+                new MoveInfo(
+                    new PiecePosition(2, 5),
+                    new PiecePosition(2, 0))       
+            ]);
+    }
+    public static ChessPuzzle CreateMateInOnePuzzleLevel3()
+    {
+        Piece?[,] pieces = new Piece?[8, 8];
+
+        pieces[0, 7] = new King(PieceColor.Black)
+        {
+            Position = new PiecePosition(0, 7)
+        };
+
+        pieces[2, 6] = new King(PieceColor.White)
+        {
+            Position = new PiecePosition(2, 6)
+        };
+
+        pieces[4, 2] = new Bishop(PieceColor.White)
+        {
+            Position = new PiecePosition(4, 2)
+        };
+
+        pieces[6, 5] = new Bishop(PieceColor.White)
+        {
+            Position = new PiecePosition(6, 5)
+        };
+
+        ChessBoard board = new ChessBoard(pieces);
+
+        return new ChessPuzzle(
+            id: 4,
+            worldId: 1,
+            levelNumber: 3,
+            category: PuzzleCategory.MateInOne,
+            difficulty: PuzzleDifficulty.Easy,
+            title: "Մատ մեկ քայլում",
+            initialBoard: board,
+            activeTurn: PieceColor.White,
+            solutionMoves:
+            [
+                new MoveInfo(
+                    new PiecePosition(6, 5),
+                    new PiecePosition(4, 3))
+            ]);
     }
     private static ChessPuzzle CreateMateInTwoPuzzle()
     {

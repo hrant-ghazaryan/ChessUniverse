@@ -38,7 +38,8 @@ public sealed class ChessPuzzleSession
     {
         _game.LoadPosition(
             _puzzle.InitialBoard,
-            _puzzle.ActiveTurn);
+            _puzzle.ActiveTurn,
+            _puzzle.PreviousMove);
 
         _nextSolutionMoveIndex = 0;
         _pendingPromotionMove = null;
@@ -84,7 +85,7 @@ public sealed class ChessPuzzleSession
         MoveInfo expectedMove =
             _puzzle.SolutionMoves[_nextSolutionMoveIndex];
 
-        if (!expectedMove.Equals(moveInfo))
+        if (!expectedMove.Equals(moveInfo) && !IsAlternativeMate(moveInfo))
             return new PuzzleMoveResult(PuzzleMoveStatus.IncorrectMove);
 
         MoveResult gameMoveResult = _game.TryMove(moveInfo);
@@ -124,8 +125,16 @@ public sealed class ChessPuzzleSession
 
             MoveResult automaticMove = _game.TryMove(opponentMove);
 
-            if (automaticMove.MoveType == MoveType.InvalidMove ||
-                automaticMove.MoveType == MoveType.PawnPromotion)
+            // Հակառակորդի փոխակերպում. լուծման մեջ նշված խաղաքարով ավարտում ենք քայլը։
+            if (automaticMove.MoveType == MoveType.PawnPromotion &&
+                _game.IsPromotionPending)
+            {
+                automaticMove = opponentMove.PromotionType is PieceType promotionType
+                    ? _game.PromotePawn(promotionType)
+                    : InvalidResult(automaticMove);
+            }
+
+            if (automaticMove.MoveType == MoveType.InvalidMove)
             {
                 return new PuzzleMoveResult(
                     PuzzleMoveStatus.InvalidPuzzle,
@@ -146,4 +155,17 @@ public sealed class ChessPuzzleSession
             gameMoveResult,
             automaticMoves);
     }
+
+    // Լուծման ՎԵՐՋԻՆ քայլում ցանկացած մատ ճիշտ է համարվում,
+    // նույնիսկ եթե այն տարբերվում է լուծման մեջ գրված քայլից։
+    private bool IsAlternativeMate(MoveInfo moveInfo)
+    {
+        bool isFinalMove =
+            _nextSolutionMoveIndex == _puzzle.SolutionMoves.Count - 1;
+
+        return isFinalMove && _game.IsCheckmatingMove(moveInfo);
+    }
+
+    private static MoveResult InvalidResult(MoveResult source)
+        => new(source.Board, MoveType.InvalidMove, BoardState.InvalidMove, source.Turn);
 }

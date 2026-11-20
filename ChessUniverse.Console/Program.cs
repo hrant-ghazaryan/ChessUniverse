@@ -1,34 +1,51 @@
 using ChessUniverse.Library;
 using ChessUniverse.Library.Enums;
 
-int q = 0;
-PieceColor Turn = PieceColor.White;
-ChessBoard chessBoard = new ChessBoard();
-chessBoard.SetStartPosition();
-PrintBoard(chessBoard);
-Game game = new Game();
-do
+// Պարզ console տարբերակ debug-ի համար. քայլերը մուտքագրվում են "e2 e4" ձևով։
+ChessGame game = new();
+
+while (true)
 {
-    Console.WriteLine(Turn == PieceColor.White ? "White Please: " : "Black Please: ");
+    PrintBoard(game.Board);
+    Console.WriteLine($"{game.ActiveTurn} to move (e.g. e2 e4, 'q' to quit): ");
 
-    PiecePosition start = new PiecePosition();
-    Console.Write("Enter start position: ");
-    EnterNumber(start);
+    string? input = Console.ReadLine();
+    if (input is null || input.Trim() == "q")
+        break;
 
-    PiecePosition target = new PiecePosition();
-    Console.Write("Enter target position: ");
-    EnterNumber(target);
+    string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-    MoveInfo moveInfo = new MoveInfo(start, target, Turn);
-    game.Move(ref chessBoard, ref moveInfo);
-    PrintBoard(chessBoard);
+    if (parts.Length != 2 ||
+        !PiecePosition.TryParse(parts[0], out PiecePosition? start) ||
+        !PiecePosition.TryParse(parts[1], out PiecePosition? target))
+    {
+        Console.WriteLine("Invalid input.");
+        continue;
+    }
 
-    q++;
-    Turn = moveInfo.T;
-} while (q != 120);
+    MoveResult result = game.TryMove(new MoveInfo(start!, target!));
 
+    if (result.MoveType == MoveType.PawnPromotion && game.IsPromotionPending)
+        result = game.PromotePawn(PieceType.Queen);
 
-void PrintBoard(ChessBoard chessBoard)
+    if (result.MoveType == MoveType.InvalidMove)
+    {
+        Console.WriteLine("Illegal move.");
+        continue;
+    }
+
+    if (result.BoardState is BoardState.CheckMate or BoardState.StaleMate)
+    {
+        PrintBoard(game.Board);
+        Console.WriteLine(result.BoardState);
+        break;
+    }
+
+    if (result.BoardState == BoardState.Check)
+        Console.WriteLine("Check!");
+}
+
+static void PrintBoard(ChessBoard board)
 {
     for (int row = 0; row < 8; row++)
     {
@@ -38,30 +55,12 @@ void PrintBoard(ChessBoard chessBoard)
             bool isLightSquare = (row + col) % 2 == 0;
             Console.BackgroundColor = isLightSquare ? ConsoleColor.Gray : ConsoleColor.DarkGray;
             Console.ForegroundColor = ConsoleColor.Black;
-            var piece = chessBoard[row, col];
+            Piece? piece = board[row, col];
             char symbol = piece?.GetSymbol(piece.Color) ?? '.';
             Console.Write($" {symbol} ");
         }
         Console.ResetColor();
         Console.WriteLine();
     }
-    Console.WriteLine("    A  B  C  D  E  F  G  H");
+    Console.WriteLine("    a  b  c  d  e  f  g  h");
 }
-PiecePosition EnterNumber(PiecePosition position)
-{
-    string? coordinate;
-    do
-    {
-        coordinate = Console.ReadLine();
-    } while (coordinate?.Length != 2 || coordinate[0] - 'A' < 0 || coordinate[0] - 'A' > 7
-                         || 7 - (coordinate[1] - '1') < 0 || 7 - (coordinate[1] - '1') > 7);
-
-    char file = coordinate[0]; // A - H
-    char rank = coordinate[1]; // 1 - 8
-    position.Row = 7 - (rank - '1');
-    position.Col = file - 'A';
-
-    return position;
-}
-
-

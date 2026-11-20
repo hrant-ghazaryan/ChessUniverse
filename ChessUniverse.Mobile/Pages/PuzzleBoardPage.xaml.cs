@@ -6,13 +6,21 @@ namespace ChessUniverse.Mobile.Pages;
 public partial class PuzzleBoardPage : ContentPage
 {
     private readonly PuzzleBoardViewModel _viewModel;
-    private readonly Dictionary<BoardSquareViewModel, Button> _squareButtons = [];
+    private readonly ChessPuzzle? _nextPuzzle;
+    private readonly Dictionary<BoardSquareViewModel, Border> _squareControls = [];
 
     public PuzzleBoardPage(ChessPuzzle puzzle)
     {
         InitializeComponent();
 
-        _viewModel = new PuzzleBoardViewModel(puzzle);
+        _nextPuzzle = PuzzleCatalog
+            .GetPuzzles(puzzle.Category, puzzle.Difficulty)
+            .FirstOrDefault(next =>
+                next.LevelNumber > puzzle.LevelNumber);
+
+        _viewModel = new PuzzleBoardViewModel(
+            puzzle,
+            _nextPuzzle is not null);
         BindingContext = _viewModel;
 
         CreateBoard();
@@ -22,46 +30,62 @@ public partial class PuzzleBoardPage : ContentPage
     {
         foreach (BoardSquareViewModel square in _viewModel.Squares)
         {
-            Button button = new()
+            Label pieceLabel = new()
             {
-                Padding = 0,
-                CornerRadius = 0,
-                BorderWidth = 0,
                 FontSize = 30,
                 TextColor = Colors.Black,
+                InputTransparent = true,
+                HorizontalTextAlignment = TextAlignment.Center,
+                VerticalTextAlignment = TextAlignment.Center,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center
+            };
+
+            Border squareControl = new()
+            {
+                Padding = 0,
+                StrokeThickness = 0,
+                Content = pieceLabel,
                 BindingContext = square
             };
 
-            button.Clicked += OnSquareClicked;
+            TapGestureRecognizer tap = new();
+            tap.Tapped += (_, _) => OnSquareSelected(square);
+            squareControl.GestureRecognizers.Add(tap);
 
-            Grid.SetRow(button, square.Row);
-            Grid.SetColumn(button, square.Col);
+            Grid.SetRow(squareControl, square.Row);
+            Grid.SetColumn(squareControl, square.Col);
 
-            BoardGrid.Children.Add(button);
-            _squareButtons.Add(square, button);
+            BoardGrid.Children.Add(squareControl);
+            _squareControls.Add(square, squareControl);
         }
 
         RefreshBoardButtons();
     }
 
-    private void OnSquareClicked(object? sender, EventArgs e)
+    private void OnSquareSelected(BoardSquareViewModel square)
     {
-        if (sender is not Button button ||
-            button.BindingContext is not BoardSquareViewModel square)
-        {
-            return;
-        }
-
         _viewModel.SelectSquare(square);
         RefreshBoardButtons();
     }
 
+    private async void OnNextClicked(object? sender, EventArgs e)
+    {
+        if (_nextPuzzle is null)
+            return;
+
+        await Navigation.PushAsync(new PuzzleBoardPage(_nextPuzzle));
+        Navigation.RemovePage(this);
+    }
+
     private void RefreshBoardButtons()
     {
-        foreach ((BoardSquareViewModel square, Button button) in _squareButtons)
+        foreach ((BoardSquareViewModel square, Border control) in _squareControls)
         {
-            button.Text = square.PieceSymbol;
-            button.BackgroundColor = Color.FromArgb(square.BackgroundColor);
+            if (control.Content is Label pieceLabel)
+                pieceLabel.Text = square.PieceSymbol;
+
+            control.BackgroundColor = Color.FromArgb(square.BackgroundColor);
         }
     }
 }

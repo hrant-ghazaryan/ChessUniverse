@@ -21,8 +21,9 @@ public abstract class Piece(PieceColor color, PieceType type, char symbol, Piece
         else
             return Symbol;
     }   
+    // Pseudo-legal. խաղաքարի շարժման ձևը (առանց սեփական թագավորի անվտանգության)։
+    // Օրինական քայլերի համար օգտագործիր ChessRules.GetLegalMoves / ChessGame.GetLegalMoves։
     public abstract bool CanMove(ChessBoard chessBoard, PiecePosition target);
-    public abstract (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard chessBoard);
     public abstract object Clone();
 };
 

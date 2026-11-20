@@ -9,12 +9,16 @@ namespace ChessUniverse.Mobile.ViewModels;
 public sealed class PuzzleBoardViewModel : INotifyPropertyChanged
 {
     private readonly ChessPuzzleSession _session;
+    private readonly bool _hasNextPuzzle;
     private BoardSquareViewModel? _selectedSquare;
     private string _statusMessage;
 
     public string Title { get; }
 
     public ObservableCollection<BoardSquareViewModel> Squares { get; }
+
+    public bool IsNextButtonVisible =>
+        _session.IsCompleted && _hasNextPuzzle;
 
     public string StatusMessage
     {
@@ -26,10 +30,13 @@ public sealed class PuzzleBoardViewModel : INotifyPropertyChanged
         }
     }
 
-    public PuzzleBoardViewModel(ChessPuzzle puzzle)
+    public PuzzleBoardViewModel(
+        ChessPuzzle puzzle,
+        bool hasNextPuzzle)
     {
         Title = puzzle.Title;
         _session = new ChessPuzzleSession(puzzle);
+        _hasNextPuzzle = hasNextPuzzle;
         _statusMessage = "Ընտրիր սպիտակ խաղաքարը";
         Squares = [];
 
@@ -84,6 +91,9 @@ public sealed class PuzzleBoardViewModel : INotifyPropertyChanged
         };
 
         RefreshBoard();
+
+        if (result.Status == PuzzleMoveStatus.Completed)
+            OnPropertyChanged(nameof(IsNextButtonVisible));
     }
 
     private void RefreshBoard()

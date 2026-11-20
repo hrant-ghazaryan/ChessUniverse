@@ -20,67 +20,6 @@ public class King(PieceColor color) : Piece(color, PieceType.King, 'k', new Piec
               || CastlingRules.IsCastlingLeftPossible(chessBoard, moveInfo)
               || CastlingRules.IsCastlingRightPossible(chessBoard, moveInfo);
     }
-    /*public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
-    {
-
-        bool IsCheckedForStaleMate(ChessBoard chessBoard, PiecePosition position)
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    var piece = chessBoard[i, j];
-                    var pieceparam = chessBoard[position];
-                    if (piece is not null)
-                    {
-                        if (piece.IsMovePossible(chessBoard, position))
-                            return true;
-                    }
-                }
-            }
-            return false;
-        }
-        ChessBoard copyBoard = (ChessBoard)board.Clone();
-
-        List<PiecePosition> possibleMoves = new List<PiecePosition>();
-
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                if (i == Position.Row && j == Position.Col)
-                    continue;
-                PiecePosition targetposition = new PiecePosition(i, j);
-                if (ChessRules.MoveValidation(board, Position, targetposition, board[Position]!.Color))
-                {
-                    if (!IsCheckedForStaleMate(copyBoard, targetposition))
-                        possibleMoves.Add(targetposition);
-                }
-            }
-        }
-        return (possibleMoves, possibleMoves.Count > 0);
-    }*/
-    public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
-    {
-        ChessBoard copyBoard = (ChessBoard)board.Clone();
-        List<PiecePosition> possibleMoves = new List<PiecePosition>();
-
-        int[] dRow = { 1, 1, 1, 0, 0, -1, -1, -1 };
-        int[] dCol = { -1, 0, 1, -1, 1, -1, 0, 1 };
-
-        for (int i = 0; i < 8; i++)
-        {
-            if (ChessRules.IsInside(Position.Row + dRow[i]) &&
-                ChessRules.IsInside(Position.Col + dCol[i]))
-            {
-                var kingPosition = new PiecePosition(Position.Row + dRow[i], Position.Col + dCol[i]);
-                var piece = copyBoard[Position];
-                if (piece!.CanMove(copyBoard,kingPosition))
-                    possibleMoves.Add(kingPosition);
-            }
-        }
-        return (possibleMoves, possibleMoves.Count > 0);
-    }
     public override Piece Clone()
         => new King(this.Color)
         {

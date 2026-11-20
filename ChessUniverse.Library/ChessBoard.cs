@@ -9,31 +9,46 @@ public class ChessBoard : ICloneable
     private Piece?[,] _squares = new Piece[n, n];
     public ChessBoard() { }
     public ChessBoard(Piece?[,] newBoard)
-    => _squares = newBoard;
+    {
+        ArgumentNullException.ThrowIfNull(newBoard);
+
+        if (newBoard.GetLength(0) != n || newBoard.GetLength(1) != n)
+            throw new ArgumentException("Board must be 8x8.", nameof(newBoard));
+
+        // Անցնում ենք setter-ով, որ յուրաքանչյուր խաղաքարի Position-ը
+        // համընկնի իր իրական վանդակի հետ։
+        for (int row = 0; row < n; row++)
+            for (int col = 0; col < n; col++)
+                this[row, col] = newBoard[row, col];
+    }
     public Piece? this[PiecePosition position]
     {
         get
         {
-            if (position.Row < 0 || position.Row > 7 ||
-            position.Col < 0 || position.Col > 7)
+            if (!position.IsOnBoard)
                 return null;
 
             return _squares[position.Row, position.Col];
         }
-        set
-        {
-            int row = position.Row; // 1 - 8
-            int col = position.Col; // A - H
-            if (position.Row < 0 || position.Row > 7
-             || position.Col < 0 || position.Col > 7)
-                return;
-            _squares[position.Row, position.Col] = value;
-        }
+        set => this[position.Row, position.Col] = value;
     }
     public Piece? this[int row, int col]
     {
         get => _squares[row, col];
-        set => _squares[row, col] = value;
+        set
+        {
+            // Fail fast. տախտակից դուրս գրելը ծրագրի սխալ է, ոչ թե «ոչինչ չանել»։
+            if (row is < 0 or >= n || col is < 0 or >= n)
+                throw new ArgumentOutOfRangeException(
+                    nameof(row), $"Square ({row},{col}) is outside the board.");
+
+            _squares[row, col] = value;
+
+            // Ինվարիանտ. խաղաքարի Position-ը միշտ իր վանդակն է։
+            // Նոր օբյեկտ ենք ստեղծում, որ Position-ը ուրիշ օբյեկտի (օր. MoveInfo.Target) հետ չկիսվի։
+            if (value is not null)
+                value.Position = new PiecePosition(row, col);
+        }
     }
     public Piece? this[string coordinate]
     {

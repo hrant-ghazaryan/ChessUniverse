@@ -25,25 +25,6 @@ public class Knight(PieceColor color) : Piece(color, PieceType.Knight, 't', new 
 
         return (dRow == 1 && dCol == 2) || (dRow == 2 && dCol == 1);
     }
-    public override (List<PiecePosition>, bool) GetPossibleMoves(ChessBoard board)
-    {
-        List<PiecePosition> possibleMoves = new List<PiecePosition>();
-        Piece? knight = board[Position];
-
-        if (knight is null)
-            return (possibleMoves, false);
-
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                PiecePosition targetposition = new PiecePosition(i, j);
-                if (ChessRules.MoveValidation(board, Position, targetposition, knight.Color))
-                    possibleMoves.Add(targetposition);
-            }
-        }
-        return (possibleMoves, possibleMoves.Count > 0);
-    }
     public override Piece Clone()
         => new Knight(this.Color)
         {

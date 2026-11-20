@@ -50,60 +50,6 @@ public class Pawn : Piece
         }
         return false;
     }
-    public override (List<PiecePosition>,bool) GetPossibleMoves(ChessBoard board)
-    {
-        var pawn = board[Position];
-        pawn?.Position = Position;
-
-        List<PiecePosition> possibleMoves = new List<PiecePosition>();
-        ChessBoard cloneBoard = (ChessBoard)board.Clone();
-
-        switch (Color)
-        {
-            case PieceColor.White:
-                if (Position.Row == 6)
-                {
-                    if (pawn!.CanMove(cloneBoard, new PiecePosition(Position.Row - 2, Position.Col)))
-                        possibleMoves.Add(new PiecePosition(Position.Row - 2, Position.Col));
-                }
-                if (ChessRules.IsInside(Position.Row - 1) && 
-                    pawn!.CanMove(cloneBoard, new PiecePosition(Position.Row - 1, Position.Col)))
-                    possibleMoves.Add(new PiecePosition(Position.Row - 1, Position.Col));
-
-                if (ChessRules.IsInside(Position.Row - 1) && 
-                    ChessRules.IsInside(Position.Col - 1) && 
-                    pawn!.CanMove(cloneBoard, new PiecePosition(Position.Row - 1, Position.Col - 1)))
-                    possibleMoves.Add(new PiecePosition(Position.Row - 1, Position.Col - 1));
-
-                if (ChessRules.IsInside(Position.Row - 1) && 
-                    ChessRules.IsInside(Position.Col + 1) && 
-                    pawn!.CanMove(cloneBoard, new PiecePosition(Position.Row - 1, Position.Col + 1)))
-                    possibleMoves.Add(new PiecePosition(Position.Row - 1, Position.Col + 1));
-                break;
-
-            case PieceColor.Black:
-                if (Position.Row == 1)
-                {
-                    if (pawn!.CanMove(cloneBoard, new PiecePosition(Position.Row + 2, Position.Col)))
-                        possibleMoves.Add(new PiecePosition(Position.Row + 2, Position.Col));
-                }
-                if (ChessRules.IsInside(Position.Row + 1) &&
-                    pawn!.CanMove(cloneBoard, new PiecePosition(Position.Row + 1, Position.Col)))
-                    possibleMoves.Add(new PiecePosition(Position.Row + 1, Position.Col));
-
-                if (ChessRules.IsInside(Position.Row + 1) &&
-                    ChessRules.IsInside(Position.Col - 1) &&
-                    pawn!.CanMove(cloneBoard, new PiecePosition(Position.Row + 1, Position.Col - 1)))
-                    possibleMoves.Add(new PiecePosition(Position.Row + 1, Position.Col - 1));
-
-                if (ChessRules.IsInside(Position.Row + 1) &&
-                    ChessRules.IsInside(Position.Col + 1) &&
-                    pawn!.CanMove(cloneBoard, new PiecePosition(Position.Row + 1, Position.Col + 1)))
-                    possibleMoves.Add(new PiecePosition(Position.Row + 1, Position.Col + 1));
-                break;
-        }
-        return (possibleMoves, possibleMoves.Count > 0);
-    }
     public override Piece Clone()
         => new Pawn(this.Color)
         {

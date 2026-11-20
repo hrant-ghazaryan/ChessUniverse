@@ -42,9 +42,12 @@
                             StrokeShape="RoundRectangle 14"
                             HorizontalOptions="Center">
 
-                            <Image
-                                Source="{Binding PreviewImage}"
-                                Aspect="AspectFit" />
+                            <Label
+                                Text="{Binding Title}"
+                                FontSize="24"
+                                FontAttributes="Bold"
+                                HorizontalTextAlignment="Center"
+                                VerticalTextAlignment="Center" />
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

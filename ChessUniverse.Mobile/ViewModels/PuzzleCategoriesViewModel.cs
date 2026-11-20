@@ -8,24 +8,24 @@ public sealed class PuzzleCategoriesViewModel
     [
         new(
             PuzzleCategory.MateInOne,
-            "mate_in_one.png"),
+            "Mate in 1"),
 
         new(
             PuzzleCategory.MateInTwo,
-            "mate_in_two.png")
+            "Mate in 2")
     ];
 }
 public sealed class PuzzleCategoryCard
 {
     public PuzzleCategory Category { get; }
 
-    public string PreviewImage { get; }
+    public string Title { get; }
 
     public PuzzleCategoryCard(
         PuzzleCategory category,
-        string previewImage)
+        string title)
     {
         Category = category;
-        PreviewImage = previewImage;
+        Title = title;
     }
 }

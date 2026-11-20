@@ -18,7 +18,6 @@ public sealed class ChessGame
     private GameSnapshot? PendingPromotionSnapshot { get; set; }
 
     public bool CanUndo => _previousSnapshots.Count > 0;
-
     public bool CanRedo => _nextSnapshots.Count > 0;
 
     public IReadOnlyList<Piece> CapturedPieces =>
@@ -55,89 +54,84 @@ public sealed class ChessGame
         if (IsPromotionPending)
             return InvalidMoveResult();
 
-        if (moveInfo.Start is null || moveInfo.Target is null)
+        if (moveInfo is null)
             return InvalidMoveResult();
 
-        Piece? movingPiece = Board[moveInfo.Start];
-
-        if (movingPiece is null || movingPiece.Color != ActiveTurn)
+        // Ամբողջ օրինականության ստուգումը մեկ տեղում է (ChessRules.TrySimulateMove).
+        // այստեղ միայն պահպանում ենք արդյունքը խաղի վիճակում։
+        if (!ChessRules.TrySimulateMove(
+                Board, moveInfo, ActiveTurn, PreviousMove,
+                out ChessBoard boardAfterMove, out MoveType moveType))
+        {
             return InvalidMoveResult();
+        }
 
         GameSnapshot snapshotBeforeMove = CreateSnapshot();
 
-        ChessBoard boardAfterMove = (ChessBoard)Board.Clone();
-        MoveType moveType;
+        // Board-ը դեռ քայլից առաջվա տախտակն է. այստեղից ենք վերցնում վերցված խաղաքարը։
+        Piece? capturedPiece = GetCapturedPiece(Board, moveInfo, moveType);
 
-        if (PreviousMove is not null &&
-            ChessRules.TryEnPassant(boardAfterMove, moveInfo, PreviousMove))
+        if (moveType == MoveType.PawnPromotion)
         {
-            moveType = MoveType.EnPassant;
-        }
-        else
-        {
-            if (!ChessRules.MoveValidation(
-                    Board,
-                    moveInfo.Start, moveInfo.Target,
-                    ActiveTurn))
-            {
-                return InvalidMoveResult();
-            }
+            // Քայլը կիսատ է. սպասում ենք PromotePawn()-ին։ Վերցված խաղաքարը
+            // պահում ենք մինչև այդ, որ PromotePawn-ը ավելացնի այն ցուցակում։
+            Board = boardAfterMove;
+            PendingPromotionMove = new MoveInfo(moveInfo);
+            PendingPromotionSnapshot = snapshotBeforeMove;
+            PendingPromotionCapturedPiece = capturedPiece;
 
-            if (ChessRules.RequiresPawnPromotion(boardAfterMove, moveInfo))
-            {
-                Game.RegularMove(boardAfterMove, moveInfo);
-
-                if (LeavesOwnKingInCheck(boardAfterMove))
-                    return InvalidMoveResult();
-
-                Board = boardAfterMove;
-                PendingPromotionMove = new MoveInfo(moveInfo);
-                PendingPromotionSnapshot = snapshotBeforeMove;
-
-                return new MoveResult(
-                    Board,
-                    MoveType.PawnPromotion,
-                    BoardState.Ongoing,
-                    ActiveTurn);
-            }
-
-            if (CastlingRules.IsCastlingLeftPossible(boardAfterMove, moveInfo))
-            {
-                Game.Castling(boardAfterMove, moveInfo);
-                moveType = MoveType.LeftCastling;
-            }
-            else if (CastlingRules.IsCastlingRightPossible(boardAfterMove, moveInfo))
-            {
-                Game.Castling(boardAfterMove, moveInfo);
-                moveType = MoveType.RightCastling;
-            }
-            else
-            {
-                Game.RegularMove(boardAfterMove, moveInfo);
-                moveType = MoveType.RegularMove;
-            }
+            return new MoveResult(
+                Board,
+                MoveType.PawnPromotion,
+                BoardState.Ongoing,
+                ActiveTurn);
         }
 
-        if (LeavesOwnKingInCheck(boardAfterMove))
-            return InvalidMoveResult();
+        if (capturedPiece is not null)
+            _capturedPieces.Add((Piece)capturedPiece.Clone());
 
-        PieceColor nextTurn = ChangeTurn(ActiveTurn);
-        BoardState boardState = GetBoardState(boardAfterMove, nextTurn);
-
-        AddCapturedPiece(Board, moveInfo, moveType);
-        PendingPromotionCapturedPiece = GetCapturedPiece(Board,
-                                            moveInfo, MoveType.PawnPromotion);
         Board = boardAfterMove;
         PreviousMove = new MoveInfo(moveInfo);
-        ActiveTurn = nextTurn;
+        ActiveTurn = ChangeTurn(ActiveTurn);
 
         SaveSnapshot(snapshotBeforeMove);
 
         return new MoveResult(
             Board,
             moveType,
-            boardState,
+            ChessRules.GetBoardState(Board, ActiveTurn, PreviousMove),
             ActiveTurn);
+    }
+
+    // Ընտրված վանդակի խաղաքարի բոլոր օրինական քայլերը (UI-ի համար՝ հուշման կետեր)։
+    public IReadOnlyList<PiecePosition> GetLegalMoves(PiecePosition from)
+    {
+        if (IsPromotionPending)
+            return [];
+
+        return ChessRules.GetLegalMoves(Board, from, ActiveTurn, PreviousMove);
+    }
+
+    // Ստուգում է՝ արդյոք քայլը մատ կտա, առանց խաղի վիճակը փոխելու։
+    // Եթե քայլը փոխակերպում է, օգտագործվում է moveInfo.PromotionType-ը։
+    public bool IsCheckmatingMove(MoveInfo moveInfo)
+    {
+        if (IsPromotionPending ||
+            !ChessRules.TrySimulateMove(
+                Board, moveInfo, ActiveTurn, PreviousMove,
+                out ChessBoard boardAfterMove, out MoveType moveType))
+        {
+            return false;
+        }
+
+        if (moveType == MoveType.PawnPromotion &&
+            (moveInfo.PromotionType is null ||
+             !Game.PromotePawn(boardAfterMove, moveInfo.Target!, moveInfo.PromotionType.Value)))
+        {
+            return false;
+        }
+
+        return ChessRules.IsCheckmate(boardAfterMove, ChangeTurn(ActiveTurn), moveInfo);
     }
 
     public MoveResult PromotePawn(PieceType promotionType)
@@ -151,7 +145,7 @@ public sealed class ChessGame
             return InvalidMoveResult();
 
         PieceColor nextTurn = ChangeTurn(ActiveTurn);
-        BoardState boardState = GetBoardState(Board, nextTurn);
+        BoardState boardState = ChessRules.GetBoardState(Board, nextTurn, PendingPromotionMove);
 
         if (PendingPromotionCapturedPiece is not null)
             _capturedPieces.Add(
@@ -196,60 +190,14 @@ public sealed class ChessGame
             _capturedPieces.Add((Piece)piece.Clone());
     }
 
-    private bool LeavesOwnKingInCheck(ChessBoard board)
-    {
-        PiecePosition? kingPosition =
-            ChessBoard.GetKingPosition(board, ActiveTurn);
-
-        return kingPosition is null ||
-               ChessRules.IsChecked(board, kingPosition, ActiveTurn);
-    }
-
-    private static BoardState GetBoardState(
-        ChessBoard board,
-        PieceColor colorToMove)
-    {
-        if (ChessRules.IsCheckmate(board, colorToMove))
-            return BoardState.CheckMate;
-
-        if (ChessRules.IsStaleMate(board, colorToMove))
-            return BoardState.StaleMate;
-
-        PiecePosition? kingPosition =
-            ChessBoard.GetKingPosition(board, colorToMove);
-
-        if (kingPosition is not null &&
-            ChessRules.IsChecked(board, kingPosition, colorToMove))
-        {
-            return BoardState.Check;
-        }
-
-        return BoardState.Ongoing;
-    }
-
     private static PieceColor ChangeTurn(PieceColor currentTurn)
-        => currentTurn == PieceColor.White
-            ? PieceColor.Black
-            : PieceColor.White;
+        => ChessRules.Opposite(currentTurn);
     private MoveResult InvalidMoveResult()
         => new MoveResult(
             Board,
             MoveType.InvalidMove,
             BoardState.InvalidMove,
             ActiveTurn);
-    private void AddCapturedPiece(
-    ChessBoard boardBeforeMove,
-    MoveInfo moveInfo,
-    MoveType moveType)
-    {
-        Piece? capturedPiece = GetCapturedPiece(
-            boardBeforeMove,
-            moveInfo,
-            moveType);
-
-        if (capturedPiece is not null)
-            _capturedPieces.Add((Piece)capturedPiece.Clone());
-    }
     private static Piece? GetCapturedPiece(
         ChessBoard board,
         MoveInfo moveInfo,
@@ -300,6 +248,13 @@ public sealed class ChessGame
         _previousSnapshots.Push(snapshot);
         _nextSnapshots.Clear();
     }
+    // Բեռնում է դիրքը FEN տեքստից (կարճ կամ ստանդարտ 6 դաշտանոց ձևով)։
+    public void LoadFen(string fen)
+    {
+        FenPosition position = FenNotation.ParsePosition(fen);
+        LoadPosition(position.Board, position.ActiveTurn, position.PreviousMove);
+    }
+
     public void LoadPosition(
     ChessBoard board,
     PieceColor activeTurn,

@@ -20,6 +20,9 @@ public sealed class ChessPuzzle
     public PuzzleCategory Category { get; }
     public PuzzleDifficulty Difficulty { get; }
 
+    // Puzzle-ից առաջ կատարված քայլը (FEN-ի en passant դաշտից). անհրաժեշտ է en passant-ի համար։
+    public MoveInfo? PreviousMove { get; }
+
     public ChessPuzzle(
         int id,
         int worldId,
@@ -37,9 +40,7 @@ public sealed class ChessPuzzle
             title,
             initialBoard,
             activeTurn,
-            solutionMoves)
-    {
-    }
+            solutionMoves) { }
 
     public ChessPuzzle(
         int id,
@@ -59,9 +60,7 @@ public sealed class ChessPuzzle
             title,
             initialBoard,
             activeTurn,
-            solutionMoves)
-    {
-    }
+            solutionMoves) { }
 
     public ChessPuzzle(
         int id,
@@ -72,7 +71,8 @@ public sealed class ChessPuzzle
         string title,
         ChessBoard initialBoard,
         PieceColor activeTurn,
-        IEnumerable<MoveInfo> solutionMoves)
+        IEnumerable<MoveInfo> solutionMoves,
+        MoveInfo? previousMove = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(worldId);
@@ -91,6 +91,7 @@ public sealed class ChessPuzzle
 
         InitialBoard = (ChessBoard)initialBoard.Clone();
         ActiveTurn = activeTurn;
+        PreviousMove = previousMove is null ? null : new MoveInfo(previousMove);
 
         SolutionMoves = solutionMoves
             .Select(move => new MoveInfo(move))
